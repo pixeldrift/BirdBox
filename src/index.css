@@ -83,6 +83,26 @@ button {
   cursor: default;
 }
 
+/* Extra-puffy raised surface for egg tiles: deeper bevel, bigger bubble feel. */
+.clay-egg {
+  background: linear-gradient(165deg, #ffffff, var(--cream-panel) 55%);
+  box-shadow:
+    inset 0 4px 0 var(--clay-highlight),
+    inset 0 -7px 10px rgba(90, 62, 20, 0.18),
+    inset 3px 0 7px rgba(255, 255, 255, 0.5),
+    inset -3px 0 6px rgba(90, 62, 20, 0.08),
+    0 2px 2px var(--clay-shade),
+    0 11px 18px var(--clay-shade-strong);
+  transition: box-shadow 120ms ease, transform 120ms ease;
+}
+
+.clay-egg.clay-interactive:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow:
+    inset 0 5px 8px var(--clay-shade-strong),
+    inset 0 -1px 0 var(--clay-highlight);
+}
+
 /* Sunken "clay" surface: for wells that hold tiles, and text inputs. */
 .clay-inset {
   background: var(--cream-inset);
@@ -95,12 +115,33 @@ button {
 .clay-accent {
   background: linear-gradient(165deg, var(--accent-light), var(--accent) 55%, var(--accent-dark));
   color: #fff8ee;
+  text-shadow: 0 1px 1.5px rgba(64, 30, 0, 0.4);
   box-shadow:
     inset 0 1.5px 0 rgba(255, 255, 255, 0.55),
     inset 0 -3px 5px rgba(120, 60, 10, 0.25),
     0 1px 1px rgba(120, 60, 10, 0.3),
     0 5px 10px rgba(120, 60, 10, 0.28);
   transition: box-shadow 120ms ease, transform 120ms ease;
+}
+
+/* Lighter accent surface: same orange fill, gentler bevel for small/tight controls. */
+.clay-accent-soft {
+  background: linear-gradient(165deg, var(--accent-light), var(--accent) 55%, var(--accent-dark));
+  color: #fff8ee;
+  text-shadow: 0 1px 1.5px rgba(64, 30, 0, 0.4);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    inset 0 -2px 3px rgba(120, 60, 10, 0.16),
+    0 1px 1px rgba(120, 60, 10, 0.16),
+    0 2px 4px rgba(120, 60, 10, 0.14);
+  transition: box-shadow 120ms ease, transform 120ms ease;
+}
+
+.clay-accent-soft.clay-interactive:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow:
+    inset 0 1px 2px rgba(90, 40, 0, 0.3),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.25);
 }
 
 .clay-accent:active:not(:disabled) {
@@ -145,11 +186,10 @@ button {
   top: 3px;
   width: 20px;
   height: 20px;
-  background: var(--cream-panel);
+  background: linear-gradient(165deg, #ffffff, var(--cream-panel) 45%);
   border: 3px solid var(--accent);
   border-radius: 4px;
   transform: rotate(45deg);
-  box-shadow: -2px -2px 3px rgba(90, 62, 20, 0.06);
 }
 
 .popover-tail.tail-down {

@@ -1,5 +1,6 @@
 import { Popover } from '@/components/Popover'
 import { eggVisual } from '@/components/EggTile'
+import { XGlyph } from '@/components/icons'
 import { EGG_STATUS_OPTIONS, type Egg, type EggStatus } from '@/types'
 
 interface StatusPopupProps {
@@ -51,10 +52,12 @@ export function StatusPopup({ open, egg, anchorEl, onClose, onSelect, onDelete }
           onDelete()
           onClose()
         }}
-        className="clay-inset clay-interactive mt-4 w-full rounded-xl py-2.5 text-sm font-bold transition-colors"
-        style={{ color: 'var(--ink)', opacity: 0.6 }}
+        className="clay clay-interactive mt-4 flex w-full items-center justify-center gap-2.5 rounded-xl py-2.5 text-sm font-bold transition-colors"
+        style={{ color: 'var(--ink)', opacity: 0.65 }}
       >
+        <XGlyph className="h-3.5 w-3.5" style={{ color: 'var(--accent)' }} />
         Remove this egg
+        <XGlyph className="h-3.5 w-3.5" style={{ color: 'var(--accent)' }} />
       </button>
     </Popover>
   )

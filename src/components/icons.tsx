@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react'
+import { useId, type CSSProperties } from 'react'
 
 interface GlyphProps {
   className?: string
@@ -24,9 +24,38 @@ export function ChevronIcon({ dir = 'left', className = '', style }: DirGlyphPro
 }
 
 export function TriangleGlyph({ dir = 'left', className = '', style }: DirGlyphProps) {
+  const id = useId()
+  const gradientId = `tri-grad-${id}`
   return (
-    <svg viewBox="0 0 24 24" className={className} style={style} aria-hidden="true">
-      <path d={dir === 'left' ? 'M16 4L6 12l10 8V4Z' : 'M8 4l10 8-10 8V4Z'} fill="currentColor" />
+    <svg
+      viewBox="0 0 24 24"
+      className={className}
+      style={{ filter: 'drop-shadow(0 2px 1.5px rgba(120,60,10,0.4))', ...style }}
+      aria-hidden="true"
+    >
+      <defs>
+        <linearGradient id={gradientId} x1="0" y1="0" x2="0.7" y2="1">
+          <stop offset="0%" stopColor="var(--accent-light)" />
+          <stop offset="55%" stopColor="var(--accent)" />
+          <stop offset="100%" stopColor="var(--accent-dark)" />
+        </linearGradient>
+      </defs>
+      <path d={dir === 'left' ? 'M16 4L6 12l10 8V4Z' : 'M8 4l10 8-10 8V4Z'} fill={`url(#${gradientId})`} />
+    </svg>
+  )
+}
+
+export function RecordPencilGlyph({ className = '', style }: GlyphProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style} aria-hidden="true">
+      <path d="M3.5 8.5h7.5M3.5 12.5h5.5M3.5 16.5h4" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" />
+      <path
+        d="M9.5 20.2l.9-3.9L19.2 7.6a1.5 1.5 0 0 1 2.1 0l.9.9a1.5 1.5 0 0 1 0 2.1L13.4 19.3l-3.9.9Z"
+        stroke="currentColor"
+        strokeWidth={1.7}
+        strokeLinejoin="round"
+      />
+      <path d="M18.3 9.5l2.1 2.1" stroke="currentColor" strokeWidth={1.7} />
     </svg>
   )
 }

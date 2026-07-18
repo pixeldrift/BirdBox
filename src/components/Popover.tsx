@@ -12,12 +12,14 @@ interface PopoverProps {
 
 const MARGIN = 12
 const GAP = 14
+const MIN_AVAILABLE = 160
 
 interface Placement {
   top: number
   left: number
   tailLeft: number
   placement: 'below' | 'above'
+  maxHeight: number
 }
 
 export function Popover({ open, anchorEl, onClose, title, children, widthClassName = 'w-[calc(100vw-2rem)] max-w-sm' }: PopoverProps) {
@@ -32,25 +34,29 @@ export function Popover({ open, anchorEl, onClose, title, children, widthClassNa
     function place() {
       const card = cardRef.current
       if (!card || !anchorEl) return
+      // Measure the card's natural (unconstrained) size first.
+      card.style.maxHeight = 'none'
       const anchorRect = anchorEl.getBoundingClientRect()
       const cardRect = card.getBoundingClientRect()
       const width = cardRect.width
-      const height = cardRect.height
+      const naturalHeight = cardRect.height
 
       let left = anchorRect.left + anchorRect.width / 2 - width / 2
       left = Math.min(Math.max(left, MARGIN), Math.max(MARGIN, window.innerWidth - width - MARGIN))
 
-      const spaceBelow = window.innerHeight - anchorRect.bottom
-      const spaceAbove = anchorRect.top
-      const placement: 'below' | 'above' = spaceBelow >= height + GAP + MARGIN || spaceBelow >= spaceAbove ? 'below' : 'above'
+      const spaceBelow = window.innerHeight - anchorRect.bottom - GAP - MARGIN
+      const spaceAbove = anchorRect.top - GAP - MARGIN
+      const placement: 'below' | 'above' = spaceBelow >= spaceAbove ? 'below' : 'above'
+      const available = Math.max(MIN_AVAILABLE, placement === 'below' ? spaceBelow : spaceAbove)
+      // Stay snug against the anchor: shrink (and let content scroll) rather than drift away from it.
+      const height = Math.min(naturalHeight, available)
 
-      const rawTop = placement === 'below' ? anchorRect.bottom + GAP : anchorRect.top - height - GAP
-      const top = Math.min(Math.max(rawTop, MARGIN), Math.max(MARGIN, window.innerHeight - height - MARGIN))
+      const top = placement === 'below' ? anchorRect.bottom + GAP : anchorRect.top - GAP - height
 
       const anchorCenter = anchorRect.left + anchorRect.width / 2
       const tailLeft = Math.min(Math.max(anchorCenter - left, 24), width - 24)
 
-      setPos({ top, left, tailLeft, placement })
+      setPos({ top, left, tailLeft, placement, maxHeight: height })
     }
     place()
     window.addEventListener('resize', place)
@@ -71,24 +77,34 @@ export function Popover({ open, anchorEl, onClose, title, children, widthClassNa
   const cardStyle: CSSProperties = {
     top: pos?.top ?? -9999,
     left: pos?.left ?? -9999,
+    maxHeight: pos?.maxHeight,
     visibility: pos ? 'visible' : 'hidden',
-    borderColor: 'var(--accent)',
-    background: 'var(--cream-panel)',
     ['--pop-origin-x' as string]: pos ? `${pos.tailLeft}px` : '50%',
   }
 
   return createPortal(
     <div className="fixed inset-0 z-50">
       <div className="absolute inset-0 bg-[#241f17]/25" onClick={onClose} />
-      <div ref={cardRef} className={`clay popover-pop fixed rounded-[1.75rem] border-[3px] p-5 ${widthClassName}`} style={cardStyle}>
+      {/* Outer wrapper: measured/positioned, holds the tail (which must NOT be clipped). */}
+      <div ref={cardRef} className={`popover-pop fixed flex flex-col ${widthClassName}`} style={cardStyle}>
         {pos && (
           <span
             className={`popover-tail ${pos.placement === 'above' ? 'tail-down -bottom-[13px]' : '-top-[13px]'}`}
             style={{ left: pos.tailLeft - 13 }}
           />
         )}
-        {title && <h2 className="font-display mb-4 text-center text-xl font-bold" style={{ color: 'var(--ink)' }}>{title}</h2>}
-        <div className="max-h-[70vh] overflow-y-auto">{children}</div>
+        {/* Inner card: the visible surface, clipped to its rounded corners and maxHeight. */}
+        <div
+          className="clay flex min-h-0 flex-1 flex-col overflow-hidden rounded-[1.75rem] border-[3px] p-5"
+          style={{ borderColor: 'var(--accent)', background: 'var(--cream-panel)' }}
+        >
+          {title && (
+            <h2 className="font-display mb-4 shrink-0 text-center text-xl font-bold" style={{ color: 'var(--ink)' }}>
+              {title}
+            </h2>
+          )}
+          <div className="min-h-0 flex-1 overflow-y-auto pb-1">{children}</div>
+        </div>
       </div>
     </div>,
     document.body,
