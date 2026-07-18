@@ -79,31 +79,32 @@ export function Popover({ open, anchorEl, onClose, title, children, widthClassNa
     left: pos?.left ?? -9999,
     maxHeight: pos?.maxHeight,
     visibility: pos ? 'visible' : 'hidden',
-    borderColor: 'var(--accent)',
-    background: 'var(--cream-panel)',
     ['--pop-origin-x' as string]: pos ? `${pos.tailLeft}px` : '50%',
   }
 
   return createPortal(
     <div className="fixed inset-0 z-50">
       <div className="absolute inset-0 bg-[#241f17]/25" onClick={onClose} />
-      <div
-        ref={cardRef}
-        className={`clay popover-pop fixed flex flex-col rounded-[1.75rem] border-[3px] p-5 ${widthClassName}`}
-        style={cardStyle}
-      >
+      {/* Outer wrapper: measured/positioned, holds the tail (which must NOT be clipped). */}
+      <div ref={cardRef} className={`popover-pop fixed flex flex-col ${widthClassName}`} style={cardStyle}>
         {pos && (
           <span
             className={`popover-tail ${pos.placement === 'above' ? 'tail-down -bottom-[13px]' : '-top-[13px]'}`}
             style={{ left: pos.tailLeft - 13 }}
           />
         )}
-        {title && (
-          <h2 className="font-display mb-4 shrink-0 text-center text-xl font-bold" style={{ color: 'var(--ink)' }}>
-            {title}
-          </h2>
-        )}
-        <div className="overflow-y-auto">{children}</div>
+        {/* Inner card: the visible surface, clipped to its rounded corners and maxHeight. */}
+        <div
+          className="clay flex min-h-0 flex-1 flex-col overflow-hidden rounded-[1.75rem] border-[3px] p-5"
+          style={{ borderColor: 'var(--accent)', background: 'var(--cream-panel)' }}
+        >
+          {title && (
+            <h2 className="font-display mb-4 shrink-0 text-center text-xl font-bold" style={{ color: 'var(--ink)' }}>
+              {title}
+            </h2>
+          )}
+          <div className="min-h-0 flex-1 overflow-y-auto pb-1">{children}</div>
+        </div>
       </div>
     </div>,
     document.body,

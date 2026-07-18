@@ -117,9 +117,9 @@ const TOGGLE_W = 110
 const TOGGLE_H = 50
 const TOGGLE_PAD = 3
 const THUMB_W = 64
-const ICON_BTN_W = 34
-const ICON_BTN_OFFSET = 5
-const ICON_SIZE = 32
+const ICON_BTN_W = 32
+const ICON_BTN_OFFSET = 8
+const ICON_SIZE = 28
 const EMBOSS = { filter: 'drop-shadow(0 1px 1px rgba(64,30,0,0.4))' } as const
 
 function EditModeToggle({
@@ -135,12 +135,9 @@ function EditModeToggle({
 }) {
   // "Record" (today's default) docks the thumb right; "Revise" (unlock a past date) docks it left.
   const recordActive = canEdit && (editMode || isTodaySelected)
-  const wellStyle = { top: TOGGLE_PAD, bottom: TOGGLE_PAD, width: ICON_BTN_W }
 
   return (
     <div className="clay-inset relative rounded-full" style={{ width: TOGGLE_W, height: TOGGLE_H, padding: TOGGLE_PAD }}>
-      <span className="clay-inset-sm absolute rounded-full" style={{ ...wellStyle, left: ICON_BTN_OFFSET }} />
-      <span className="clay-inset-sm absolute rounded-full" style={{ ...wellStyle, right: ICON_BTN_OFFSET }} />
       <div
         className="clay-accent-soft absolute rounded-full transition-[left,right] duration-200 ease-out"
         style={
@@ -253,7 +250,7 @@ function NumberNav({
         <button
           type="button"
           onClick={(e) => onOpen(e.currentTarget)}
-          className="clay clay-interactive font-display min-w-[6.5rem] rounded-2xl border-[3px] px-3 py-5 text-7xl leading-none font-extrabold tabular-nums"
+          className="clay clay-interactive font-display min-w-[6rem] rounded-2xl border-[3px] px-2 py-2 text-8xl leading-none font-extrabold tabular-nums"
           style={{ borderColor: 'var(--accent)', color: 'var(--ink)' }}
         >
           {String(value).padStart(2, '0')}
