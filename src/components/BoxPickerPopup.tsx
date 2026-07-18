@@ -26,8 +26,12 @@ export function BoxPickerPopup({ open, anchorEl, onClose, count, selected, onSel
                 onSelect(id)
                 onClose()
               }}
-              className={`font-display aspect-square rounded-lg text-xs font-bold transition-colors ${active ? 'clay-accent' : ''}`}
-              style={!active ? { color: done ? 'var(--accent)' : 'var(--ink)', opacity: done ? 1 : 0.75 } : undefined}
+              className={`font-display aspect-square rounded-lg text-xs font-bold transition-colors ${active ? 'clay-accent' : done ? 'border-2' : ''}`}
+              style={
+                !active
+                  ? { color: done ? 'var(--accent)' : 'var(--ink)', opacity: done ? 1 : 0.75, borderColor: done ? 'var(--accent)' : undefined }
+                  : undefined
+              }
             >
               {String(id).padStart(2, '0')}
             </button>
