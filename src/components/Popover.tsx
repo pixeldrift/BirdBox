@@ -55,6 +55,16 @@ interface Placement {
   maxHeight: number
 }
 
+// The layout viewport (window.innerWidth/Height) does NOT shrink when a mobile
+// on-screen keyboard opens — only visualViewport does. Sizing against innerHeight
+// alone can leave a popover's bottom (e.g. its submit button) hidden behind the
+// keyboard even though the math "fits". Prefer visualViewport wherever available.
+function getViewport() {
+  const vv = window.visualViewport
+  if (vv) return { width: vv.width, height: vv.height, offsetTop: vv.offsetTop, offsetLeft: vv.offsetLeft }
+  return { width: window.innerWidth, height: window.innerHeight, offsetTop: 0, offsetLeft: 0 }
+}
+
 export function Popover({ open, anchorEl, onClose, title, children, widthClassName = 'w-[calc(100vw-2rem)] max-w-sm' }: PopoverProps) {
   const cardRef = useRef<HTMLDivElement>(null)
   const [pos, setPos] = useState<Placement | null>(null)
@@ -73,23 +83,28 @@ export function Popover({ open, anchorEl, onClose, title, children, widthClassNa
       const cardRect = card.getBoundingClientRect()
       const width = cardRect.width
       const naturalHeight = cardRect.height
+      const vp = getViewport()
+      const vpLeft = vp.offsetLeft
+      const vpTop = vp.offsetTop
+      const vpRight = vp.offsetLeft + vp.width
+      const vpBottom = vp.offsetTop + vp.height
 
       let left = anchorRect.left + anchorRect.width / 2 - width / 2
-      left = Math.min(Math.max(left, MARGIN), Math.max(MARGIN, window.innerWidth - width - MARGIN))
+      left = Math.min(Math.max(left, vpLeft + MARGIN), Math.max(vpLeft + MARGIN, vpRight - width - MARGIN))
 
-      // Expand to fit the content, capped by the viewport (scrolls internally past that point) —
-      // but keep the card adjacent to its anchor. Only slide it toward the center as far as
-      // needed to stay fully on screen, so the tail never ends up pointing at a distant, unrelated
-      // element just because it happened to land near wherever the popover was centered.
-      const heightCap = window.innerHeight - MARGIN * 2
+      // Expand to fit the content, capped by the (keyboard-aware) viewport — scrolls internally
+      // past that point — but keep the card adjacent to its anchor. Only slide it toward the
+      // center as far as needed to stay fully visible, so the tail never ends up pointing at a
+      // distant, unrelated element just because it happened to land near wherever it centered.
+      const heightCap = vp.height - MARGIN * 2
       const height = Math.min(naturalHeight, heightCap)
 
-      const spaceBelow = window.innerHeight - anchorRect.bottom - GAP
-      const spaceAbove = anchorRect.top - GAP
+      const spaceBelow = vpBottom - anchorRect.bottom - GAP
+      const spaceAbove = anchorRect.top - vpTop - GAP
       const placement: 'below' | 'above' = spaceBelow >= spaceAbove ? 'below' : 'above'
 
       const preferredTop = placement === 'below' ? anchorRect.bottom + GAP : anchorRect.top - GAP - height
-      const top = Math.min(Math.max(preferredTop, MARGIN), Math.max(MARGIN, window.innerHeight - height - MARGIN))
+      const top = Math.min(Math.max(preferredTop, vpTop + MARGIN), Math.max(vpTop + MARGIN, vpBottom - height - MARGIN))
 
       const anchorCenterX = anchorRect.left + anchorRect.width / 2
       const tailLeft = Math.min(Math.max(anchorCenterX - left, 24), width - 24)
@@ -98,7 +113,13 @@ export function Popover({ open, anchorEl, onClose, title, children, widthClassNa
     }
     place()
     window.addEventListener('resize', place)
-    return () => window.removeEventListener('resize', place)
+    window.visualViewport?.addEventListener('resize', place)
+    window.visualViewport?.addEventListener('scroll', place)
+    return () => {
+      window.removeEventListener('resize', place)
+      window.visualViewport?.removeEventListener('resize', place)
+      window.visualViewport?.removeEventListener('scroll', place)
+    }
   }, [open, anchorEl])
 
   useEffect(() => {

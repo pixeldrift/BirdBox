@@ -57,7 +57,6 @@ export function StatusPopup({ open, egg, anchorEl, onClose, onSelect, onDelete }
       >
         <XGlyph className="h-3.5 w-3.5" style={{ color: 'var(--accent)' }} />
         Remove this egg
-        <XGlyph className="h-3.5 w-3.5" style={{ color: 'var(--accent)' }} />
       </button>
     </Popover>
   )

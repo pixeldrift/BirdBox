@@ -214,8 +214,8 @@ export default function App() {
       <BandDetailsPopup
         open={babyEdit !== null}
         anchorEl={babyEdit?.anchor ?? null}
-        title="Baby"
-        submitLabel="Save"
+        title="New Hatchling"
+        submitLabel="+ Add New"
         initial={babyBeingEdited ?? undefined}
         onClose={() => setBabyEdit(null)}
         onSubmit={(details) => babyBeingEdited && store.updateBaby(babyBeingEdited.id, details)}
