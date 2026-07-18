@@ -1,7 +1,11 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent, type RefObject } from 'react'
 import { createPortal } from 'react-dom'
-import { VerticalDragGlyph } from '@/components/icons'
+import { TriangleGlyph, VerticalDragGlyph } from '@/components/icons'
 import { SCROLL_SLACK, useScrollFade } from '@/lib/useScrollFade'
+
+// Marks the app's bordered shell in App.tsx so popovers can clamp their
+// placement to it instead of the full browser viewport.
+export const APP_VIEWPORT_ID = 'app-viewport'
 
 const SCROLLBAR_WIDTH = 14
 const SCROLLBAR_INSET = 6
@@ -168,12 +172,62 @@ interface PopoverProps {
   anchorEl: HTMLElement | null
   onClose: () => void
   title?: string
+  onStep?: (delta: number) => void
   children: React.ReactNode
   widthClassName?: string
 }
 
 const MARGIN = 16
 const GAP = 14
+
+const SCRUB_PX_PER_STEP = 18
+const SCRUB_DRAG_THRESHOLD = 6
+
+// A small arrow flanking the popover title: tap it for a single step, or
+// press and drag horizontally (in either direction, from either arrow) to
+// scrub the value continuously — one step per SCRUB_PX_PER_STEP dragged.
+function TitleScrubArrow({ dir, onStep }: { dir: 'left' | 'right'; onStep: (delta: number) => void }) {
+  const dragRef = useRef({ active: false, startX: 0, appliedSteps: 0, dragged: false })
+
+  function onPointerDown(e: ReactPointerEvent<HTMLButtonElement>) {
+    e.currentTarget.setPointerCapture(e.pointerId)
+    dragRef.current = { active: true, startX: e.clientX, appliedSteps: 0, dragged: false }
+  }
+
+  // Pointer capture routes subsequent move/up events here even off-element,
+  // but a plain hover (no button pressed) also fires onPointerMove — guard on
+  // `active` so idle mouse movement never gets mistaken for a scrub gesture.
+  function onPointerMove(e: ReactPointerEvent<HTMLButtonElement>) {
+    const drag = dragRef.current
+    if (!drag.active) return
+    const dx = e.clientX - drag.startX
+    if (Math.abs(dx) > SCRUB_DRAG_THRESHOLD) drag.dragged = true
+    const steps = Math.trunc(dx / SCRUB_PX_PER_STEP)
+    if (steps !== drag.appliedSteps) {
+      onStep(steps - drag.appliedSteps)
+      drag.appliedSteps = steps
+    }
+  }
+
+  function onPointerUp() {
+    if (!dragRef.current.active) return
+    if (!dragRef.current.dragged) onStep(dir === 'left' ? -1 : 1)
+    dragRef.current.active = false
+  }
+
+  return (
+    <button
+      type="button"
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      className="clay-interactive flex touch-none items-center justify-center rounded-full p-2 active:scale-90"
+      aria-label={dir === 'left' ? 'Decrease' : 'Increase'}
+    >
+      <TriangleGlyph dir={dir} className="h-4 w-4" />
+    </button>
+  )
+}
 
 interface Placement {
   top: number
@@ -183,14 +237,37 @@ interface Placement {
   maxHeight: number
 }
 
+interface Bounds {
+  left: number
+  top: number
+  right: number
+  bottom: number
+}
+
 // The layout viewport (window.innerWidth/Height) does NOT shrink when a mobile
 // on-screen keyboard opens — only visualViewport does. Sizing against innerHeight
 // alone can leave a popover's bottom (e.g. its submit button) hidden behind the
 // keyboard even though the math "fits". Prefer visualViewport wherever available.
-function getViewport() {
+//
+// Popovers should also never spill outside the app's own bordered shell (its
+// "viewport", visually) — so intersect the keyboard-aware window bounds with
+// that shell's own rect, falling back to the window bounds alone if the shell
+// isn't found (e.g. in isolated tests).
+function getPlacementBounds(): Bounds {
   const vv = window.visualViewport
-  if (vv) return { width: vv.width, height: vv.height, offsetTop: vv.offsetTop, offsetLeft: vv.offsetLeft }
-  return { width: window.innerWidth, height: window.innerHeight, offsetTop: 0, offsetLeft: 0 }
+  const windowBounds: Bounds = vv
+    ? { left: vv.offsetLeft, top: vv.offsetTop, right: vv.offsetLeft + vv.width, bottom: vv.offsetTop + vv.height }
+    : { left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight }
+
+  const shell = document.getElementById(APP_VIEWPORT_ID)
+  if (!shell) return windowBounds
+  const shellRect = shell.getBoundingClientRect()
+  return {
+    left: Math.max(windowBounds.left, shellRect.left),
+    top: Math.max(windowBounds.top, shellRect.top),
+    right: Math.min(windowBounds.right, shellRect.right),
+    bottom: Math.min(windowBounds.bottom, shellRect.bottom),
+  }
 }
 
 // Ref-counted so nested popovers (e.g. band details + its color palette) don't
@@ -213,7 +290,15 @@ function unlockBodyScroll() {
   }
 }
 
-export function Popover({ open, anchorEl, onClose, title, children, widthClassName = 'w-[calc(100vw-2rem)] max-w-sm' }: PopoverProps) {
+export function Popover({
+  open,
+  anchorEl,
+  onClose,
+  title,
+  onStep,
+  children,
+  widthClassName = 'w-[calc(100vw-2rem)] max-w-sm',
+}: PopoverProps) {
   const cardRef = useRef<HTMLDivElement>(null)
   const [pos, setPos] = useState<Placement | null>(null)
 
@@ -231,20 +316,16 @@ export function Popover({ open, anchorEl, onClose, title, children, widthClassNa
       const cardRect = card.getBoundingClientRect()
       const width = cardRect.width
       const naturalHeight = cardRect.height
-      const vp = getViewport()
-      const vpLeft = vp.offsetLeft
-      const vpTop = vp.offsetTop
-      const vpRight = vp.offsetLeft + vp.width
-      const vpBottom = vp.offsetTop + vp.height
+      const { left: vpLeft, top: vpTop, right: vpRight, bottom: vpBottom } = getPlacementBounds()
 
       let left = anchorRect.left + anchorRect.width / 2 - width / 2
       left = Math.min(Math.max(left, vpLeft + MARGIN), Math.max(vpLeft + MARGIN, vpRight - width - MARGIN))
 
-      // Expand to fit the content, capped by the (keyboard-aware) viewport — scrolls internally
-      // past that point — but keep the card adjacent to its anchor. Only slide it toward the
-      // center as far as needed to stay fully visible, so the tail never ends up pointing at a
+      // Expand to fit the content, capped by the (keyboard-aware, shell-clamped) bounds — scrolls
+      // internally past that point — but keep the card adjacent to its anchor. Only slide it toward
+      // the center as far as needed to stay fully visible, so the tail never ends up pointing at a
       // distant, unrelated element just because it happened to land near wherever it centered.
-      const heightCap = vp.height - MARGIN * 2
+      const heightCap = vpBottom - vpTop - MARGIN * 2
       const height = Math.min(naturalHeight, heightCap)
 
       const spaceBelow = vpBottom - anchorRect.bottom - GAP
@@ -260,10 +341,19 @@ export function Popover({ open, anchorEl, onClose, title, children, widthClassNa
       setPos({ top, left, tailLeft, placement, maxHeight: height })
     }
     place()
+    // Descendants like the box grid's scrollbar/fade depend on useScrollFade
+    // state that isn't committed to the DOM yet on this first pass (its metrics
+    // update via a state change queued from a ref callback, landing a render
+    // *after* this effect reads the card's height) — so the very first call
+    // above can under-measure the natural height by however tall those pieces
+    // turn out to be. Re-measure once more after that settles so the popover
+    // doesn't get stuck permanently a few px short, clipping its own content.
+    const raf = requestAnimationFrame(place)
     window.addEventListener('resize', place)
     window.visualViewport?.addEventListener('resize', place)
     window.visualViewport?.addEventListener('scroll', place)
     return () => {
+      cancelAnimationFrame(raf)
       window.removeEventListener('resize', place)
       window.visualViewport?.removeEventListener('resize', place)
       window.visualViewport?.removeEventListener('scroll', place)
@@ -307,9 +397,13 @@ export function Popover({ open, anchorEl, onClose, title, children, widthClassNa
           style={{ borderColor: 'var(--accent)', background: 'var(--cream-panel)' }}
         >
           {title && (
-            <h2 className="font-display mb-4 shrink-0 text-center text-xl font-bold" style={{ color: 'var(--ink)' }}>
-              {title}
-            </h2>
+            <div className="mb-4 flex shrink-0 items-center justify-center gap-3">
+              {onStep && <TitleScrubArrow dir="left" onStep={onStep} />}
+              <h2 className="font-display text-center text-xl font-bold" style={{ color: 'var(--ink)' }}>
+                {title}
+              </h2>
+              {onStep && <TitleScrubArrow dir="right" onStep={onStep} />}
+            </div>
           )}
           <ScrollableContent>{children}</ScrollableContent>
         </div>

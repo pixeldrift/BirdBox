@@ -9,6 +9,7 @@ interface BoxPickerPopupProps {
   count: number
   selected: number
   onSelect: (id: number) => void
+  onStep: (delta: number) => void
   isDone: (id: number) => boolean
 }
 
@@ -19,7 +20,7 @@ const TILE_SIZE = 64
 const GRID_GAP = 8
 const GRID_MAX_HEIGHT = VISIBLE_ROWS * TILE_SIZE + (VISIBLE_ROWS - 1) * GRID_GAP
 
-export function BoxPickerPopup({ open, anchorEl, onClose, count, selected, onSelect, isDone }: BoxPickerPopupProps) {
+export function BoxPickerPopup({ open, anchorEl, onClose, count, selected, onSelect, onStep, isDone }: BoxPickerPopupProps) {
   const ids = Array.from({ length: count }, (_, i) => i + 1)
   const { hovered, onPointerDown } = useDragSelectGrid((value) => {
     onSelect(Number(value))
@@ -28,7 +29,7 @@ export function BoxPickerPopup({ open, anchorEl, onClose, count, selected, onSel
   const { ref, containerRef, canScrollUp, canScrollDown, scrollTop, scrollHeight, clientHeight } = useScrollFade<HTMLDivElement>()
 
   return (
-    <Popover open={open} anchorEl={anchorEl} onClose={onClose} title="Box" widthClassName="w-[calc(100vw-2rem)] max-w-xs">
+    <Popover open={open} anchorEl={anchorEl} onClose={onClose} title="Box" onStep={onStep} widthClassName="w-[calc(100vw-2rem)] max-w-xs">
       <div ref={ref} className="overflow-y-auto pr-6" style={{ maxHeight: GRID_MAX_HEIGHT }}>
         <ScrollFadeTop show={canScrollUp} />
         <CustomScrollbar containerRef={containerRef} scrollTop={scrollTop} scrollHeight={scrollHeight} clientHeight={clientHeight} />

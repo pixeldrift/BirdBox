@@ -9,10 +9,11 @@ interface BuildingPickerPopupProps {
   count: number
   selected: number
   onSelect: (id: number) => void
+  onStep: (delta: number) => void
   isDone: (id: number) => boolean
 }
 
-export function BuildingPickerPopup({ open, anchorEl, onClose, count, selected, onSelect, isDone }: BuildingPickerPopupProps) {
+export function BuildingPickerPopup({ open, anchorEl, onClose, count, selected, onSelect, onStep, isDone }: BuildingPickerPopupProps) {
   const ids = Array.from({ length: count }, (_, i) => i + 1)
   const { hovered, onPointerDown } = useDragSelectGrid((value) => {
     onSelect(Number(value))
@@ -20,7 +21,14 @@ export function BuildingPickerPopup({ open, anchorEl, onClose, count, selected, 
   })
 
   return (
-    <Popover open={open} anchorEl={anchorEl} onClose={onClose} title="Building" widthClassName="w-[calc(100vw-2rem)] max-w-md">
+    <Popover
+      open={open}
+      anchorEl={anchorEl}
+      onClose={onClose}
+      title="Building"
+      onStep={onStep}
+      widthClassName="w-[calc(100vw-2rem)] max-w-md"
+    >
       <div className="grid touch-none grid-cols-4 gap-2.5 select-none sm:grid-cols-6" onPointerDown={onPointerDown}>
         {ids.map((id) => {
           const value = String(id)

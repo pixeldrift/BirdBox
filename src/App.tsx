@@ -9,6 +9,7 @@ import { BuildingPickerPopup } from '@/components/BuildingPickerPopup'
 import { BoxPickerPopup } from '@/components/BoxPickerPopup'
 import { BandDetailsPopup } from '@/components/BandDetailsPopup'
 import { DatePickerPopup } from '@/components/DatePickerPopup'
+import { APP_VIEWPORT_ID } from '@/components/Popover'
 
 function clamp(v: number, min: number, max: number) {
   return Math.min(max, Math.max(min, v))
@@ -106,6 +107,7 @@ export default function App() {
     <div className="min-h-screen p-2 sm:p-4" style={{ background: 'var(--cream-bg)' }}>
       <div className="mx-auto flex min-h-[calc(100dvh-1rem)] w-full max-w-md flex-col sm:min-h-[calc(100dvh-2rem)]">
         <div
+          id={APP_VIEWPORT_ID}
           className="flex flex-1 flex-col rounded-[2rem] border-[6px] p-4 shadow-[0_18px_36px_rgba(36,31,23,0.22)] sm:p-5"
           style={{ borderColor: 'var(--ink)', background: 'var(--cream-panel)' }}
         >
@@ -181,6 +183,7 @@ export default function App() {
         count={store.settings.buildingCount}
         selected={store.buildingId}
         onSelect={store.setBuildingId}
+        onStep={(d) => store.setBuildingId((prev: number) => clamp(prev + d, 1, store.settings.buildingCount))}
         isDone={(id) => store.buildingHasActivity(id, store.selectedDate)}
       />
 
@@ -191,6 +194,7 @@ export default function App() {
         count={store.settings.boxCount}
         selected={store.boxId}
         onSelect={store.setBoxId}
+        onStep={(d) => store.setBoxId((prev: number) => clamp(prev + d, 1, store.settings.boxCount))}
         isDone={(id) => store.boxHasActivity(store.buildingId, id, store.selectedDate)}
       />
 

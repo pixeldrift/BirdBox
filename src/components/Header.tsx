@@ -43,7 +43,7 @@ export function Header({
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-1">
+      <div className="-mx-4 grid grid-cols-2 gap-1 sm:-mx-5">
         <NumberNav
           label="Building"
           value={buildingId}
@@ -237,21 +237,21 @@ function NumberNav({
       <div className="mb-1 text-xs font-bold uppercase tracking-wide" style={{ color: 'var(--ink)', opacity: 0.55 }}>
         {label}
       </div>
-      <div className="flex items-center justify-center gap-0">
+      <div className="flex items-center justify-center gap-1">
         <button
           type="button"
           onClick={onDec}
           disabled={disableDec}
-          className="p-0 transition-transform active:scale-90 disabled:opacity-30"
+          className="-m-1.5 flex items-center justify-center rounded-full p-1.5 transition-transform active:scale-90 disabled:opacity-30"
           aria-label={`Previous ${label}`}
         >
-          <TriangleGlyph dir="left" className="h-7 w-7" />
+          <TriangleGlyph dir="left" className="h-8 w-8" />
         </button>
         <button
           type="button"
           onClick={(e) => onOpen(e.currentTarget)}
-          className="clay clay-interactive font-display rounded-2xl border-[3px] px-1 py-1 text-8xl leading-none font-extrabold tabular-nums"
-          style={{ borderColor: 'var(--accent)', color: 'var(--ink)' }}
+          className="clay clay-interactive font-display rounded-2xl border-[3px] px-1 py-1 leading-none font-extrabold tabular-nums"
+          style={{ borderColor: 'var(--accent)', color: 'var(--ink)', fontSize: 'clamp(2.2rem, calc(36vw - 73px), 4.2rem)' }}
         >
           {String(value).padStart(2, '0')}
         </button>
@@ -259,10 +259,10 @@ function NumberNav({
           type="button"
           onClick={onInc}
           disabled={disableInc}
-          className="p-0 transition-transform active:scale-90 disabled:opacity-30"
+          className="-m-1.5 flex items-center justify-center rounded-full p-1.5 transition-transform active:scale-90 disabled:opacity-30"
           aria-label={`Next ${label}`}
         >
-          <TriangleGlyph dir="right" className="h-7 w-7" />
+          <TriangleGlyph dir="right" className="h-8 w-8" />
         </button>
       </div>
     </div>
