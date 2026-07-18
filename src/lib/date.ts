@@ -32,6 +32,33 @@ export function formatShort(s: string): string {
   })
 }
 
+export function startOfMonthStr(s: string): string {
+  const d = fromDateStr(s)
+  return toDateStr(new Date(d.getFullYear(), d.getMonth(), 1))
+}
+
+export function addMonths(s: string, delta: number): string {
+  const d = fromDateStr(s)
+  return toDateStr(new Date(d.getFullYear(), d.getMonth() + delta, 1))
+}
+
+export function formatMonthYear(s: string): string {
+  return fromDateStr(s).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })
+}
+
+/** Calendar grid for the month containing `s`, padded to full weeks; blanks are null. */
+export function monthGrid(s: string): (string | null)[] {
+  const first = fromDateStr(startOfMonthStr(s))
+  const firstDow = first.getDay()
+  const daysInMonth = new Date(first.getFullYear(), first.getMonth() + 1, 0).getDate()
+  const cells: (string | null)[] = Array.from({ length: firstDow }, () => null)
+  for (let day = 1; day <= daysInMonth; day++) {
+    cells.push(toDateStr(new Date(first.getFullYear(), first.getMonth(), day)))
+  }
+  while (cells.length % 7 !== 0) cells.push(null)
+  return cells
+}
+
 export function formatRelativeLabel(s: string): string {
   if (isToday(s)) return 'Today'
   const diffDays = Math.round(

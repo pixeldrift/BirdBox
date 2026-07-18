@@ -35,7 +35,7 @@ export function EggTile({ egg, disabled, dimmed, onActivate, onPointerDownDrag }
       disabled={disabled}
       onClick={(e) => onActivate(e.currentTarget)}
       onPointerDown={onPointerDownDrag}
-      className={`clay clay-interactive egg-shape flex aspect-[4/5] w-full touch-none select-none items-center justify-center border-[3px] disabled:opacity-50 ${dimmed ? 'opacity-40' : ''}`}
+      className={`clay-egg clay-interactive egg-shape flex aspect-[4/5] w-full touch-none select-none items-center justify-center border-[3px] disabled:opacity-50 ${dimmed ? 'opacity-40' : ''}`}
       style={{ borderColor: 'var(--ink)' }}
       aria-label={`Egg, status ${egg.status}`}
     >

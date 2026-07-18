@@ -8,6 +8,7 @@ import { StatusPopup } from '@/components/StatusPopup'
 import { BuildingPickerPopup } from '@/components/BuildingPickerPopup'
 import { BoxPickerPopup } from '@/components/BoxPickerPopup'
 import { BandDetailsPopup } from '@/components/BandDetailsPopup'
+import { DatePickerPopup } from '@/components/DatePickerPopup'
 
 function clamp(v: number, min: number, max: number) {
   return Math.min(max, Math.max(min, v))
@@ -19,6 +20,7 @@ export default function App() {
   const [statusPopup, setStatusPopup] = useState<{ eggId: string; anchor: HTMLElement } | null>(null)
   const [buildingPickerAnchor, setBuildingPickerAnchor] = useState<HTMLElement | null>(null)
   const [boxPickerAnchor, setBoxPickerAnchor] = useState<HTMLElement | null>(null)
+  const [datePickerAnchor, setDatePickerAnchor] = useState<HTMLElement | null>(null)
   const [collectPending, setCollectPending] = useState<{ eggId: string; anchor: HTMLElement | null } | null>(null)
   const [babyEdit, setBabyEdit] = useState<{ babyId: string; anchor: HTMLElement } | null>(null)
 
@@ -101,10 +103,10 @@ export default function App() {
   const babyBeingEdited = store.babies.find((b) => b.id === babyEdit?.babyId) ?? null
 
   return (
-    <div className="min-h-screen px-4 py-6 sm:py-10" style={{ background: 'var(--cream-bg)' }}>
-      <div className="mx-auto max-w-md space-y-6">
+    <div className="min-h-screen p-2 sm:p-4" style={{ background: 'var(--cream-bg)' }}>
+      <div className="mx-auto flex min-h-[calc(100dvh-1rem)] w-full max-w-md flex-col sm:min-h-[calc(100dvh-2rem)]">
         <div
-          className="rounded-[2.5rem] border-[6px] p-4 shadow-[0_18px_36px_rgba(36,31,23,0.22)] sm:p-5"
+          className="flex flex-1 flex-col rounded-[2rem] border-[6px] p-4 shadow-[0_18px_36px_rgba(36,31,23,0.22)] sm:p-5"
           style={{ borderColor: 'var(--ink)', background: 'var(--cream-panel)' }}
         >
           <Header
@@ -118,6 +120,7 @@ export default function App() {
             onOpenBoxPicker={setBoxPickerAnchor}
             selectedDate={store.selectedDate}
             onChangeDate={store.setSelectedDate}
+            onOpenDatePicker={setDatePickerAnchor}
             lastChecked={store.lastChecked}
             editMode={store.editMode}
             onSetEditMode={store.setEditMode}
@@ -200,6 +203,14 @@ export default function App() {
         onSubmit={(details) => collectPending && store.sendEggToZone(collectPending.eggId, 'collect', details)}
       />
 
+      <DatePickerPopup
+        open={datePickerAnchor !== null}
+        anchorEl={datePickerAnchor}
+        onClose={() => setDatePickerAnchor(null)}
+        selectedDate={store.selectedDate}
+        onSelect={store.setSelectedDate}
+      />
+
       <BandDetailsPopup
         open={babyEdit !== null}
         anchorEl={babyEdit?.anchor ?? null}
@@ -216,7 +227,7 @@ export default function App() {
           style={{ left: dragVisual.x - 32, top: dragVisual.y - 40 }}
         >
           <div
-            className="egg-shape clay flex aspect-[4/5] w-full items-center justify-center border-[3px]"
+            className="egg-shape clay-egg flex aspect-[4/5] w-full items-center justify-center border-[3px]"
             style={{ borderColor: 'var(--accent)' }}
           >
             {(() => {
