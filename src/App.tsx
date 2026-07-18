@@ -153,7 +153,7 @@ export default function App() {
             <BabiesRow babies={store.babies} disabled={!store.canEdit} onSelect={(babyId, anchor) => setBabyEdit({ babyId, anchor })} />
           </div>
 
-          <div className="mt-6">
+          <div className="pt-6" style={{ marginTop: 'auto' }}>
             <ActionZones
               activeZone={activeZone}
               disabled={!store.canEdit}

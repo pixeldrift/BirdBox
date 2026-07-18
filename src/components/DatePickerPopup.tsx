@@ -72,7 +72,7 @@ export function DatePickerPopup({ open, anchorEl, onClose, selectedDate, onSelec
                 onSelect(cell)
                 onClose()
               }}
-              className={`font-display aspect-square rounded-lg text-xs font-bold transition-colors disabled:opacity-25 ${isSelected ? 'clay-accent' : ''}`}
+              className={`font-display aspect-square rounded-lg text-xs font-bold transition-colors disabled:opacity-25 ${isSelected ? 'clay-accent-soft' : ''}`}
               style={
                 !isSelected
                   ? { color: 'var(--ink)', opacity: isFuture ? 0.35 : 0.85, textDecoration: isToday ? 'underline' : undefined }

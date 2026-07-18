@@ -1,3 +1,4 @@
+import { Fragment } from 'react'
 import { ChevronIcon, EraseCrumbsGlyph, RecordPencilGlyph, TriangleGlyph } from '@/components/icons'
 import { addDays, formatRelativeLabel, formatShort, todayStr } from '@/lib/date'
 
@@ -105,18 +106,16 @@ export function Header({
       <div className="flex items-center justify-between gap-3">
         <EditModeToggle editMode={editMode} isTodaySelected={isTodaySelected} canEdit={canEdit} onSetEditMode={onSetEditMode} />
 
-        <div className="clay rounded-2xl px-4 py-2 text-center">
-          <div className="font-display text-lg font-bold tabular-nums" style={{ color: 'var(--ink)' }}>
-            {stats.fertile} / {stats.eggs} / {stats.babies}
-          </div>
-          <div className="text-[9px] font-semibold uppercase tracking-wide" style={{ color: 'var(--ink)', opacity: 0.5 }}>
-            Fertile&nbsp;&nbsp;Eggs&nbsp;&nbsp;Babies
-          </div>
-        </div>
+        <StatsBox stats={stats} />
       </div>
     </div>
   )
 }
+
+const TOGGLE_W = 132
+const TOGGLE_H = 58
+const THUMB_W = 76
+const ICON_BTN_W = 34
 
 function EditModeToggle({
   editMode,
@@ -132,28 +131,63 @@ function EditModeToggle({
   const editActive = canEdit && (editMode || isTodaySelected)
 
   return (
-    <div className="clay-inset relative flex h-11 w-24 items-center rounded-full p-1">
+    <div className="clay-inset relative rounded-full" style={{ width: TOGGLE_W, height: TOGGLE_H, padding: 4 }}>
       <div
-        className="clay-accent absolute inset-y-1 rounded-full transition-[left,right] duration-200 ease-out"
-        style={{ left: editActive ? '50%' : '4px', right: editActive ? '4px' : '50%' }}
+        className="clay-accent-soft absolute rounded-full transition-[left,right] duration-200 ease-out"
+        style={
+          editActive
+            ? { top: 4, bottom: 4, right: 4, width: THUMB_W }
+            : { top: 4, bottom: 4, left: 4, width: THUMB_W }
+        }
       />
       <button
         type="button"
         onClick={() => onSetEditMode(false)}
         disabled={isTodaySelected}
         title="View mode"
-        className="clay-interactive relative z-10 flex h-full w-1/2 items-center justify-center disabled:cursor-default"
+        className="clay-interactive absolute flex items-center justify-center rounded-full disabled:cursor-default"
+        style={{ left: 10, top: 4, bottom: 4, width: ICON_BTN_W }}
       >
-        <RecordPencilGlyph className="h-5 w-5" style={{ color: editActive ? 'var(--ink)' : '#fff8ee', opacity: editActive ? 0.4 : 1 }} />
+        <RecordPencilGlyph className="h-8 w-8" style={{ color: editActive ? 'var(--ink)' : '#fff8ee', opacity: editActive ? 0.4 : 1 }} />
       </button>
       <button
         type="button"
         onClick={() => onSetEditMode(true)}
         title="Edit mode"
-        className="clay-interactive relative z-10 flex h-full w-1/2 items-center justify-center"
+        className="clay-interactive absolute flex items-center justify-center rounded-full"
+        style={{ right: 10, top: 4, bottom: 4, width: ICON_BTN_W }}
       >
-        <EraseCrumbsGlyph className="h-5 w-5" style={{ color: editActive ? '#fff8ee' : 'var(--ink)', opacity: editActive ? 1 : 0.4 }} />
+        <EraseCrumbsGlyph className="h-8 w-8" style={{ color: editActive ? '#fff8ee' : 'var(--ink)', opacity: editActive ? 1 : 0.4 }} />
       </button>
+    </div>
+  )
+}
+
+function StatsBox({ stats }: { stats: { fertile: number; eggs: number; babies: number } }) {
+  const cols = [
+    { value: stats.fertile, label: 'Fertile' },
+    { value: stats.eggs, label: 'Eggs' },
+    { value: stats.babies, label: 'Babies' },
+  ]
+  return (
+    <div className="clay flex items-start gap-2 rounded-2xl px-4 py-2">
+      {cols.map((col, i) => (
+        <Fragment key={col.label}>
+          {i > 0 && (
+            <span className="font-display pt-0.5 text-lg font-bold" style={{ color: 'var(--ink)', opacity: 0.3 }}>
+              /
+            </span>
+          )}
+          <div className="flex flex-col items-center">
+            <span className="font-display text-lg leading-tight font-bold tabular-nums" style={{ color: 'var(--ink)' }}>
+              {col.value}
+            </span>
+            <span className="text-[9px] font-semibold whitespace-nowrap uppercase tracking-wide" style={{ color: 'var(--ink)', opacity: 0.5 }}>
+              {col.label}
+            </span>
+          </div>
+        </Fragment>
+      ))}
     </div>
   )
 }
@@ -180,12 +214,12 @@ function NumberNav({
       <div className="mb-1 text-xs font-bold uppercase tracking-wide" style={{ color: 'var(--ink)', opacity: 0.55 }}>
         {label}
       </div>
-      <div className="flex items-center justify-center gap-1.5">
+      <div className="flex items-center justify-center gap-0">
         <button
           type="button"
           onClick={onDec}
           disabled={disableDec}
-          className="p-1 transition-transform active:scale-90 disabled:opacity-30"
+          className="p-0 transition-transform active:scale-90 disabled:opacity-30"
           aria-label={`Previous ${label}`}
         >
           <TriangleGlyph dir="left" className="h-9 w-9" />
@@ -193,7 +227,7 @@ function NumberNav({
         <button
           type="button"
           onClick={(e) => onOpen(e.currentTarget)}
-          className="clay clay-interactive font-display min-w-[4.75rem] rounded-full border-[3px] px-4 py-2.5 text-4xl font-bold tabular-nums"
+          className="clay clay-interactive font-display min-w-[5.5rem] rounded-2xl border-[3px] px-3 py-2 text-6xl font-bold tabular-nums"
           style={{ borderColor: 'var(--accent)', color: 'var(--ink)' }}
         >
           {String(value).padStart(2, '0')}
@@ -202,7 +236,7 @@ function NumberNav({
           type="button"
           onClick={onInc}
           disabled={disableInc}
-          className="p-1 transition-transform active:scale-90 disabled:opacity-30"
+          className="p-0 transition-transform active:scale-90 disabled:opacity-30"
           aria-label={`Next ${label}`}
         >
           <TriangleGlyph dir="right" className="h-9 w-9" />
