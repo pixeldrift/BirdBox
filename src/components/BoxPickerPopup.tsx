@@ -1,7 +1,8 @@
-import { Sheet } from '@/components/Sheet'
+import { Popover } from '@/components/Popover'
 
 interface BoxPickerPopupProps {
   open: boolean
+  anchorEl: HTMLElement | null
   onClose: () => void
   count: number
   selected: number
@@ -9,11 +10,11 @@ interface BoxPickerPopupProps {
   isDone: (id: number) => boolean
 }
 
-export function BoxPickerPopup({ open, onClose, count, selected, onSelect, isDone }: BoxPickerPopupProps) {
+export function BoxPickerPopup({ open, anchorEl, onClose, count, selected, onSelect, isDone }: BoxPickerPopupProps) {
   const ids = Array.from({ length: count }, (_, i) => i + 1)
   return (
-    <Sheet open={open} onClose={onClose} title="Box">
-      <div className="grid max-h-[60vh] grid-cols-6 gap-1.5 overflow-y-auto sm:grid-cols-10">
+    <Popover open={open} anchorEl={anchorEl} onClose={onClose} title="Box" widthClassName="w-[calc(100vw-2rem)] max-w-md">
+      <div className="grid grid-cols-6 gap-1.5 sm:grid-cols-10">
         {ids.map((id) => {
           const active = id === selected
           const done = isDone(id)
@@ -25,19 +26,14 @@ export function BoxPickerPopup({ open, onClose, count, selected, onSelect, isDon
                 onSelect(id)
                 onClose()
               }}
-              className={`aspect-square rounded-md text-xs font-semibold transition-colors ${
-                active
-                  ? 'bg-orange-500 text-white'
-                  : done
-                    ? 'text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-500/10'
-                    : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'
-              }`}
+              className={`font-display aspect-square rounded-lg text-xs font-bold transition-colors ${active ? 'clay-accent' : ''}`}
+              style={!active ? { color: done ? 'var(--accent)' : 'var(--ink)', opacity: done ? 1 : 0.75 } : undefined}
             >
               {String(id).padStart(2, '0')}
             </button>
           )
         })}
       </div>
-    </Sheet>
+    </Popover>
   )
 }

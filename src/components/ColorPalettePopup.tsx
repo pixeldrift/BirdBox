@@ -1,16 +1,17 @@
-import { Sheet } from '@/components/Sheet'
+import { Popover } from '@/components/Popover'
 import { BAND_COLORS } from '@/lib/colors'
 
 interface ColorPalettePopupProps {
   open: boolean
+  anchorEl: HTMLElement | null
   onClose: () => void
   selected?: string
   onSelect: (color: string) => void
 }
 
-export function ColorPalettePopup({ open, onClose, selected, onSelect }: ColorPalettePopupProps) {
+export function ColorPalettePopup({ open, anchorEl, onClose, selected, onSelect }: ColorPalettePopupProps) {
   return (
-    <Sheet open={open} onClose={onClose} title="Band color">
+    <Popover open={open} anchorEl={anchorEl} onClose={onClose} title="Band color" widthClassName="w-[calc(100vw-2rem)] max-w-xs">
       <div className="grid grid-cols-5 gap-3">
         {BAND_COLORS.map((c) => (
           <button
@@ -20,14 +21,14 @@ export function ColorPalettePopup({ open, onClose, selected, onSelect }: ColorPa
               onSelect(c)
               onClose()
             }}
-            style={{ backgroundColor: c }}
-            className={`aspect-square rounded-full border-2 transition-transform active:scale-90 ${
-              selected === c ? 'ring-2 ring-orange-500 ring-offset-2 dark:ring-offset-neutral-900' : ''
-            } ${c === '#ffffff' ? 'border-neutral-300' : 'border-black/10'}`}
+            style={{ backgroundColor: c, backgroundImage: 'none', borderColor: c === '#ffffff' ? 'var(--cream-inset)' : 'rgba(0,0,0,0.15)' }}
+            className={`clay clay-interactive aspect-square rounded-full border-[3px] ${
+              selected === c ? 'ring-2 ring-[var(--accent)] ring-offset-2 ring-offset-[var(--cream-panel)]' : ''
+            }`}
             aria-label={`Color ${c}`}
           />
         ))}
       </div>
-    </Sheet>
+    </Popover>
   )
 }
