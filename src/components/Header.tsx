@@ -112,10 +112,15 @@ export function Header({
   )
 }
 
-const TOGGLE_W = 148
-const TOGGLE_H = 66
-const THUMB_W = 88
-const ICON_BTN_W = 44
+// Sized to match the height of the StatsBox pill it shares a row with.
+const TOGGLE_W = 110
+const TOGGLE_H = 50
+const TOGGLE_PAD = 3
+const THUMB_W = 64
+const ICON_BTN_W = 34
+const ICON_BTN_OFFSET = 5
+const ICON_SIZE = 32
+const EMBOSS = { filter: 'drop-shadow(0 1px 1px rgba(64,30,0,0.4))' } as const
 
 function EditModeToggle({
   editMode,
@@ -130,15 +135,18 @@ function EditModeToggle({
 }) {
   // "Record" (today's default) docks the thumb right; "Revise" (unlock a past date) docks it left.
   const recordActive = canEdit && (editMode || isTodaySelected)
+  const wellStyle = { top: TOGGLE_PAD, bottom: TOGGLE_PAD, width: ICON_BTN_W }
 
   return (
-    <div className="clay-inset relative rounded-full" style={{ width: TOGGLE_W, height: TOGGLE_H, padding: 4 }}>
+    <div className="clay-inset relative rounded-full" style={{ width: TOGGLE_W, height: TOGGLE_H, padding: TOGGLE_PAD }}>
+      <span className="clay-inset-sm absolute rounded-full" style={{ ...wellStyle, left: ICON_BTN_OFFSET }} />
+      <span className="clay-inset-sm absolute rounded-full" style={{ ...wellStyle, right: ICON_BTN_OFFSET }} />
       <div
         className="clay-accent-soft absolute rounded-full transition-[left,right] duration-200 ease-out"
         style={
           recordActive
-            ? { top: 4, bottom: 4, right: 4, width: THUMB_W }
-            : { top: 4, bottom: 4, left: 4, width: THUMB_W }
+            ? { top: TOGGLE_PAD, bottom: TOGGLE_PAD, right: TOGGLE_PAD, width: THUMB_W }
+            : { top: TOGGLE_PAD, bottom: TOGGLE_PAD, left: TOGGLE_PAD, width: THUMB_W }
         }
       />
       <button
@@ -147,11 +155,17 @@ function EditModeToggle({
         disabled={isTodaySelected}
         title="Revise"
         className="clay-interactive absolute flex items-center justify-center rounded-full disabled:cursor-default"
-        style={{ left: 8, top: 4, bottom: 4, width: ICON_BTN_W }}
+        style={{ left: ICON_BTN_OFFSET, top: TOGGLE_PAD, bottom: TOGGLE_PAD, width: ICON_BTN_W }}
       >
         <RecordPencilGlyph
-          className="h-10 w-10"
-          style={{ color: recordActive ? 'var(--ink)' : '#fff8ee', opacity: recordActive ? 0.4 : 1, transform: 'rotate(180deg)' }}
+          style={{
+            height: ICON_SIZE,
+            width: ICON_SIZE,
+            color: recordActive ? 'var(--ink)' : '#fff8ee',
+            opacity: recordActive ? 0.4 : 1,
+            transform: 'rotate(180deg)',
+            ...(recordActive ? undefined : EMBOSS),
+          }}
         />
       </button>
       <button
@@ -159,9 +173,17 @@ function EditModeToggle({
         onClick={() => onSetEditMode(true)}
         title="Record"
         className="clay-interactive absolute flex items-center justify-center rounded-full"
-        style={{ right: 8, top: 4, bottom: 4, width: ICON_BTN_W }}
+        style={{ right: ICON_BTN_OFFSET, top: TOGGLE_PAD, bottom: TOGGLE_PAD, width: ICON_BTN_W }}
       >
-        <RecordPencilGlyph className="h-10 w-10" style={{ color: recordActive ? '#fff8ee' : 'var(--ink)', opacity: recordActive ? 1 : 0.4 }} />
+        <RecordPencilGlyph
+          style={{
+            height: ICON_SIZE,
+            width: ICON_SIZE,
+            color: recordActive ? '#fff8ee' : 'var(--ink)',
+            opacity: recordActive ? 1 : 0.4,
+            ...(recordActive ? EMBOSS : undefined),
+          }}
+        />
       </button>
     </div>
   )

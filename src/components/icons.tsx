@@ -48,7 +48,7 @@ export function TriangleGlyph({ dir = 'left', className = '', style }: DirGlyphP
 export function RecordPencilGlyph({ className = '', style }: GlyphProps) {
   return (
     <svg viewBox="0 0 24 24" fill="none" className={className} style={style} aria-hidden="true">
-      <path d="M3.5 8.5h7.5M3.5 12.5h5.5M3.5 16.5h4" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" opacity={0.55} />
+      <path d="M3.5 8.5h7.5M3.5 12.5h5.5M3.5 16.5h4" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" />
       <path
         d="M9.5 20.2l.9-3.9L19.2 7.6a1.5 1.5 0 0 1 2.1 0l.9.9a1.5 1.5 0 0 1 0 2.1L13.4 19.3l-3.9.9Z"
         stroke="currentColor"
