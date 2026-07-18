@@ -45,6 +45,7 @@ interface PopoverProps {
 }
 
 const MARGIN = 16
+const GAP = 14
 
 interface Placement {
   top: number
@@ -76,16 +77,19 @@ export function Popover({ open, anchorEl, onClose, title, children, widthClassNa
       let left = anchorRect.left + anchorRect.width / 2 - width / 2
       left = Math.min(Math.max(left, MARGIN), Math.max(MARGIN, window.innerWidth - width - MARGIN))
 
-      // Expand to fit the content, capped by the viewport (never clipped — it scrolls internally
-      // past that point) and centered vertically rather than jammed snug against the anchor.
+      // Expand to fit the content, capped by the viewport (scrolls internally past that point) —
+      // but keep the card adjacent to its anchor. Only slide it toward the center as far as
+      // needed to stay fully on screen, so the tail never ends up pointing at a distant, unrelated
+      // element just because it happened to land near wherever the popover was centered.
       const heightCap = window.innerHeight - MARGIN * 2
       const height = Math.min(naturalHeight, heightCap)
-      const top = Math.max(MARGIN, (window.innerHeight - height) / 2)
 
-      // Point the tail at whichever side the anchor actually falls on relative to the card.
-      const anchorCenterY = anchorRect.top + anchorRect.height / 2
-      const cardMidY = top + height / 2
-      const placement: 'below' | 'above' = anchorCenterY <= cardMidY ? 'below' : 'above'
+      const spaceBelow = window.innerHeight - anchorRect.bottom - GAP
+      const spaceAbove = anchorRect.top - GAP
+      const placement: 'below' | 'above' = spaceBelow >= spaceAbove ? 'below' : 'above'
+
+      const preferredTop = placement === 'below' ? anchorRect.bottom + GAP : anchorRect.top - GAP - height
+      const top = Math.min(Math.max(preferredTop, MARGIN), Math.max(MARGIN, window.innerHeight - height - MARGIN))
 
       const anchorCenterX = anchorRect.left + anchorRect.width / 2
       const tailLeft = Math.min(Math.max(anchorCenterX - left, 24), width - 24)
