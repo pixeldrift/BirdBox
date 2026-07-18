@@ -22,23 +22,27 @@
   --clay-shade-strong: rgba(64, 42, 10, 0.32);
 }
 
-html,
-body,
-#root {
-  height: 100%;
-}
+/* Layered (not bare) so Tailwind utility classes — which live in @layer
+   utilities — can still override these resets on the same elements. */
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
 
-body {
-  margin: 0;
-  font-family: var(--font-body);
-  -webkit-font-smoothing: antialiased;
-  background: var(--cream-bg);
-  color: var(--ink);
-}
+  body {
+    margin: 0;
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    background: var(--cream-bg);
+    color: var(--ink);
+  }
 
-button {
-  font: inherit;
-  color: inherit;
+  button {
+    font: inherit;
+    color: inherit;
+  }
 }
 
 .font-display {
@@ -171,27 +175,3 @@ button {
   transform-origin: var(--pop-origin-x, 50%) top;
 }
 
-.popover-tail {
-  position: absolute;
-  width: 26px;
-  height: 13px;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-.popover-tail::before {
-  content: '';
-  position: absolute;
-  left: 3px;
-  top: 3px;
-  width: 20px;
-  height: 20px;
-  background: linear-gradient(165deg, #ffffff, var(--cream-panel) 45%);
-  border: 3px solid var(--accent);
-  border-radius: 4px;
-  transform: rotate(45deg);
-}
-
-.popover-tail.tail-down {
-  transform: rotate(180deg);
-}

@@ -1,5 +1,39 @@
-import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
+import { useEffect, useId, useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
 import { createPortal } from 'react-dom'
+
+/**
+ * Pointer triangle drawn as two separate SVG paths: a filled triangle whose base
+ * sinks a few px into the card (masking the card's own border stroke where the
+ * tail attaches), and an open two-sided stroke that stops short of that base so
+ * no border line ever crosses behind the arrow.
+ */
+function PopoverTail({ left, pointDown }: { left: number; pointDown: boolean }) {
+  const gradientId = `popover-tail-fill-${useId()}`
+  return (
+    <svg
+      width="28"
+      height="18"
+      viewBox="0 0 28 18"
+      className="pointer-events-none absolute"
+      style={{
+        left: left - 14,
+        top: pointDown ? undefined : -15,
+        bottom: pointDown ? -15 : undefined,
+        transform: pointDown ? 'rotate(180deg)' : undefined,
+      }}
+      aria-hidden="true"
+    >
+      <defs>
+        <linearGradient id={gradientId} x1="0" y1="0" x2="0.6" y2="1">
+          <stop offset="0%" stopColor="#ffffff" />
+          <stop offset="45%" stopColor="var(--cream-panel)" />
+        </linearGradient>
+      </defs>
+      <path d="M2 18 L14 3 L26 18 Z" fill={`url(#${gradientId})`} />
+      <path d="M2 15 L14 3 L26 15" fill="none" stroke="var(--accent)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
 
 interface PopoverProps {
   open: boolean
@@ -10,9 +44,8 @@ interface PopoverProps {
   widthClassName?: string
 }
 
-const MARGIN = 12
+const MARGIN = 16
 const GAP = 14
-const MIN_AVAILABLE = 160
 
 interface Placement {
   top: number
@@ -44,17 +77,22 @@ export function Popover({ open, anchorEl, onClose, title, children, widthClassNa
       let left = anchorRect.left + anchorRect.width / 2 - width / 2
       left = Math.min(Math.max(left, MARGIN), Math.max(MARGIN, window.innerWidth - width - MARGIN))
 
-      const spaceBelow = window.innerHeight - anchorRect.bottom - GAP - MARGIN
-      const spaceAbove = anchorRect.top - GAP - MARGIN
+      // Expand to fit the content, capped by the viewport (scrolls internally past that point) —
+      // but keep the card adjacent to its anchor. Only slide it toward the center as far as
+      // needed to stay fully on screen, so the tail never ends up pointing at a distant, unrelated
+      // element just because it happened to land near wherever the popover was centered.
+      const heightCap = window.innerHeight - MARGIN * 2
+      const height = Math.min(naturalHeight, heightCap)
+
+      const spaceBelow = window.innerHeight - anchorRect.bottom - GAP
+      const spaceAbove = anchorRect.top - GAP
       const placement: 'below' | 'above' = spaceBelow >= spaceAbove ? 'below' : 'above'
-      const available = Math.max(MIN_AVAILABLE, placement === 'below' ? spaceBelow : spaceAbove)
-      // Stay snug against the anchor: shrink (and let content scroll) rather than drift away from it.
-      const height = Math.min(naturalHeight, available)
 
-      const top = placement === 'below' ? anchorRect.bottom + GAP : anchorRect.top - GAP - height
+      const preferredTop = placement === 'below' ? anchorRect.bottom + GAP : anchorRect.top - GAP - height
+      const top = Math.min(Math.max(preferredTop, MARGIN), Math.max(MARGIN, window.innerHeight - height - MARGIN))
 
-      const anchorCenter = anchorRect.left + anchorRect.width / 2
-      const tailLeft = Math.min(Math.max(anchorCenter - left, 24), width - 24)
+      const anchorCenterX = anchorRect.left + anchorRect.width / 2
+      const tailLeft = Math.min(Math.max(anchorCenterX - left, 24), width - 24)
 
       setPos({ top, left, tailLeft, placement, maxHeight: height })
     }
@@ -87,12 +125,7 @@ export function Popover({ open, anchorEl, onClose, title, children, widthClassNa
       <div className="absolute inset-0 bg-[#241f17]/25" onClick={onClose} />
       {/* Outer wrapper: measured/positioned, holds the tail (which must NOT be clipped). */}
       <div ref={cardRef} className={`popover-pop fixed flex flex-col ${widthClassName}`} style={cardStyle}>
-        {pos && (
-          <span
-            className={`popover-tail ${pos.placement === 'above' ? 'tail-down -bottom-[13px]' : '-top-[13px]'}`}
-            style={{ left: pos.tailLeft - 13 }}
-          />
-        )}
+        {pos && <PopoverTail left={pos.tailLeft} pointDown={pos.placement === 'above'} />}
         {/* Inner card: the visible surface, clipped to its rounded corners and maxHeight. */}
         <div
           className="clay flex min-h-0 flex-1 flex-col overflow-hidden rounded-[1.75rem] border-[3px] p-5"
