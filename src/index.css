@@ -1,0 +1,49 @@
+@import 'tailwindcss';
+
+:root {
+  color-scheme: light dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  background: #f5f4f0;
+  color: #171412;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background: #121110;
+    color: #f2efe9;
+  }
+}
+
+button {
+  font: inherit;
+}
+
+.egg-shape {
+  border-radius: 50% 50% 50% 50% / 58% 58% 42% 42%;
+}
+
+@keyframes sheet-pop-in {
+  from {
+    transform: translateY(16px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.sheet-pop {
+  animation: sheet-pop-in 180ms ease-out;
+}

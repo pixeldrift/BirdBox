@@ -1,0 +1,17 @@
+export const BAND_COLORS = [
+  '#1a1a1a',
+  '#1d4ed8',
+  '#38b6e8',
+  '#2fbf8f',
+  '#159a3d',
+  '#8ee23c',
+  '#f2d024',
+  '#f2932e',
+  '#e0342b',
+  '#a12a6b',
+  '#6d3fbf',
+  '#7a4a24',
+  '#c9a23b',
+  '#9ca3af',
+  '#ffffff',
+]
