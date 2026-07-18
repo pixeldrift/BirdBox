@@ -1,7 +1,25 @@
 @import 'tailwindcss';
 
 :root {
-  color-scheme: light dark;
+  color-scheme: light;
+
+  --ink: #241f17;
+  --cream-bg: #ece1cb;
+  --cream-panel: #faf5e8;
+  --cream-panel-soft: #f2ead9;
+  --cream-inset: #ece2cc;
+
+  --accent: #f2932e;
+  --accent-light: #ffbd6b;
+  --accent-dark: #c9701a;
+  --accent-soft: #fbe2bd;
+
+  --font-display: 'Baloo 2', 'Segoe UI Rounded', system-ui, sans-serif;
+  --font-body: 'Nunito', system-ui, 'Segoe UI', sans-serif;
+
+  --clay-highlight: rgba(255, 255, 255, 0.75);
+  --clay-shade: rgba(90, 62, 20, 0.16);
+  --clay-shade-strong: rgba(64, 42, 10, 0.32);
 }
 
 html,
@@ -12,38 +30,128 @@ body,
 
 body {
   margin: 0;
-  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+  font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
-  background: #f5f4f0;
-  color: #171412;
-}
-
-@media (prefers-color-scheme: dark) {
-  body {
-    background: #121110;
-    color: #f2efe9;
-  }
+  background: var(--cream-bg);
+  color: var(--ink);
 }
 
 button {
   font: inherit;
+  color: inherit;
+}
+
+.font-display {
+  font-family: var(--font-display);
 }
 
 .egg-shape {
   border-radius: 50% 50% 50% 50% / 58% 58% 42% 42%;
 }
 
-@keyframes sheet-pop-in {
+/* Raised "clay" surface: soft plastic bevel with ambient drop shadow. */
+.clay {
+  background: linear-gradient(165deg, #ffffff, var(--cream-panel) 45%);
+  box-shadow:
+    inset 0 1.5px 0 var(--clay-highlight),
+    inset 0 -3px 5px rgba(90, 62, 20, 0.08),
+    0 1px 1px var(--clay-shade),
+    0 5px 10px var(--clay-shade);
+  transition: box-shadow 120ms ease, transform 120ms ease;
+}
+
+.clay-sm {
+  box-shadow:
+    inset 0 1px 0 var(--clay-highlight),
+    inset 0 -2px 3px rgba(90, 62, 20, 0.08),
+    0 1px 1px var(--clay-shade),
+    0 3px 6px var(--clay-shade);
+}
+
+.clay-interactive {
+  cursor: pointer;
+}
+
+.clay-interactive:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow:
+    inset 0 2px 4px var(--clay-shade-strong),
+    inset 0 -1px 0 var(--clay-highlight);
+}
+
+.clay-interactive:disabled {
+  cursor: default;
+}
+
+/* Sunken "clay" surface: for wells that hold tiles, and text inputs. */
+.clay-inset {
+  background: var(--cream-inset);
+  box-shadow:
+    inset 0 2px 4px var(--clay-shade-strong),
+    inset 0 -1px 0 var(--clay-highlight);
+}
+
+/* Raised orange accent surface for primary buttons / active toggles. */
+.clay-accent {
+  background: linear-gradient(165deg, var(--accent-light), var(--accent) 55%, var(--accent-dark));
+  color: #fff8ee;
+  box-shadow:
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.55),
+    inset 0 -3px 5px rgba(120, 60, 10, 0.25),
+    0 1px 1px rgba(120, 60, 10, 0.3),
+    0 5px 10px rgba(120, 60, 10, 0.28);
+  transition: box-shadow 120ms ease, transform 120ms ease;
+}
+
+.clay-accent:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow:
+    inset 0 2px 4px rgba(90, 40, 0, 0.4),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.ink-border {
+  border-color: var(--ink);
+}
+
+@keyframes popover-pop-in {
   from {
-    transform: translateY(16px);
+    transform: translateY(6px) scale(0.97);
     opacity: 0;
   }
   to {
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
     opacity: 1;
   }
 }
 
-.sheet-pop {
-  animation: sheet-pop-in 180ms ease-out;
+.popover-pop {
+  animation: popover-pop-in 140ms cubic-bezier(0.2, 0.8, 0.3, 1);
+  transform-origin: var(--pop-origin-x, 50%) top;
+}
+
+.popover-tail {
+  position: absolute;
+  width: 26px;
+  height: 13px;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.popover-tail::before {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: 3px;
+  width: 20px;
+  height: 20px;
+  background: var(--cream-panel);
+  border: 3px solid var(--accent);
+  border-radius: 4px;
+  transform: rotate(45deg);
+  box-shadow: -2px -2px 3px rgba(90, 62, 20, 0.06);
+}
+
+.popover-tail.tail-down {
+  transform: rotate(180deg);
 }

@@ -1,4 +1,4 @@
-import { ChevronIcon, PencilGlyph } from '@/components/icons'
+import { ChevronIcon, PencilGlyph, TriangleGlyph } from '@/components/icons'
 import { addDays, formatRelativeLabel, formatShort, todayStr } from '@/lib/date'
 
 interface HeaderProps {
@@ -8,8 +8,8 @@ interface HeaderProps {
   boxCount: number
   onStepBuilding: (delta: number) => void
   onStepBox: (delta: number) => void
-  onOpenBuildingPicker: () => void
-  onOpenBoxPicker: () => void
+  onOpenBuildingPicker: (anchor: HTMLElement) => void
+  onOpenBoxPicker: (anchor: HTMLElement) => void
   selectedDate: string
   onChangeDate: (date: string) => void
   lastChecked: string | null
@@ -61,12 +61,12 @@ export function Header({
         />
       </div>
 
-      <div className="flex items-center justify-between gap-3 border-t border-b border-neutral-200 py-3 dark:border-neutral-800">
+      <div className="flex items-center justify-between gap-3 border-t-2 border-b-2 border-[var(--cream-inset)] py-3">
         <div className="flex items-center gap-1">
           <button
             type="button"
             onClick={() => onChangeDate(addDays(selectedDate, -1))}
-            className="rounded-md p-1 text-neutral-400 hover:text-orange-500"
+            className="rounded-md p-1 text-[var(--ink)]/40 transition-colors hover:text-[var(--accent)]"
             aria-label="Previous day"
           >
             <ChevronIcon dir="left" className="h-4 w-4" />
@@ -74,11 +74,11 @@ export function Header({
           <div className="relative">
             <button
               type="button"
-              className="flex items-center gap-1 rounded-full border border-neutral-300 px-3 py-1 text-sm font-semibold dark:border-neutral-700"
+              className="clay clay-sm clay-interactive flex items-center gap-1 rounded-full px-3 py-1 text-sm font-bold"
             >
               {formatRelativeLabel(selectedDate)}
-              <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" aria-hidden="true">
-                <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+              <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 text-[var(--accent)]" fill="none" aria-hidden="true">
+                <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </button>
             <input
@@ -94,45 +94,53 @@ export function Header({
             type="button"
             onClick={() => !isTodaySelected && onChangeDate(addDays(selectedDate, 1))}
             disabled={isTodaySelected}
-            className="rounded-md p-1 text-neutral-400 hover:text-orange-500 disabled:opacity-30"
+            className="rounded-md p-1 text-[var(--ink)]/40 transition-colors hover:text-[var(--accent)] disabled:opacity-30"
             aria-label="Next day"
           >
             <ChevronIcon dir="right" className="h-4 w-4" />
           </button>
         </div>
 
-        <div className="text-right text-xs text-neutral-500">
+        <div className="text-right text-xs" style={{ color: 'var(--ink)', opacity: 0.55 }}>
           <div>Last Checked:</div>
-          <div className="font-semibold text-neutral-800 dark:text-neutral-200">
+          <div className="font-bold" style={{ opacity: 1 }}>
             {lastChecked ? `${formatRelativeLabel(lastChecked)} (${formatShort(lastChecked)})` : 'No prior record'}
           </div>
         </div>
       </div>
 
       <div className="flex items-center justify-between gap-3">
-        <div className="flex overflow-hidden rounded-xl border border-neutral-300 dark:border-neutral-700">
+        <div className="clay-inset flex overflow-hidden rounded-2xl p-1">
           <button
             type="button"
             onClick={() => onSetEditMode(false)}
             disabled={isTodaySelected}
             title="View mode"
-            className={`flex items-center justify-center px-3 py-2 ${!editMode || isTodaySelected ? 'bg-neutral-100 dark:bg-neutral-800' : ''} disabled:opacity-40`}
+            className={`clay-interactive flex items-center justify-center rounded-xl px-3 py-2 disabled:opacity-30 ${
+              !editMode || isTodaySelected ? 'clay-sm bg-[var(--cream-panel)]' : ''
+            }`}
           >
-            <PencilGlyph className="h-4 w-4 text-neutral-400" />
+            <PencilGlyph className="h-4 w-4" style={{ color: 'var(--ink)', opacity: 0.4 }} />
           </button>
           <button
             type="button"
             onClick={() => onSetEditMode(true)}
             title="Edit mode"
-            className={`flex items-center justify-center border-l border-neutral-300 px-3 py-2 dark:border-neutral-700 ${canEdit && (editMode || isTodaySelected) ? 'bg-orange-500' : ''}`}
+            className={`clay-interactive ml-1 flex items-center justify-center rounded-xl px-3 py-2 ${
+              canEdit && (editMode || isTodaySelected) ? 'clay-accent' : ''
+            }`}
           >
-            <PencilGlyph className={`h-4 w-4 ${canEdit && (editMode || isTodaySelected) ? 'text-white' : 'text-neutral-400'}`} />
+            <PencilGlyph className="h-4 w-4" style={canEdit && (editMode || isTodaySelected) ? undefined : { color: 'var(--ink)', opacity: 0.4 }} />
           </button>
         </div>
 
-        <div className="rounded-lg border border-neutral-300 px-3 py-1.5 text-center text-sm font-bold dark:border-neutral-700">
-          {stats.fertile} / {stats.eggs} / {stats.babies}
-          <div className="text-[9px] font-normal text-neutral-500">Fertile&nbsp;&nbsp;Eggs&nbsp;&nbsp;Babies</div>
+        <div className="clay rounded-2xl px-4 py-2 text-center">
+          <div className="font-display text-lg font-bold tabular-nums" style={{ color: 'var(--ink)' }}>
+            {stats.fertile} / {stats.eggs} / {stats.babies}
+          </div>
+          <div className="text-[9px] font-semibold uppercase tracking-wide" style={{ color: 'var(--ink)', opacity: 0.5 }}>
+            Fertile&nbsp;&nbsp;Eggs&nbsp;&nbsp;Babies
+          </div>
         </div>
       </div>
     </div>
@@ -152,27 +160,30 @@ function NumberNav({
   value: number
   onDec: () => void
   onInc: () => void
-  onOpen: () => void
+  onOpen: (anchor: HTMLElement) => void
   disableDec: boolean
   disableInc: boolean
 }) {
   return (
     <div className="text-center">
-      <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-neutral-500">{label}</div>
+      <div className="mb-1 text-xs font-bold uppercase tracking-wide" style={{ color: 'var(--ink)', opacity: 0.55 }}>
+        {label}
+      </div>
       <div className="flex items-center justify-center gap-2">
         <button
           type="button"
           onClick={onDec}
           disabled={disableDec}
-          className="rounded-full p-1 text-orange-500 disabled:opacity-30"
+          className="p-1 text-[var(--accent)] transition-transform active:scale-90 disabled:opacity-30"
           aria-label={`Previous ${label}`}
         >
-          <ChevronIcon dir="left" className="h-6 w-6" />
+          <TriangleGlyph dir="left" className="h-7 w-7" />
         </button>
         <button
           type="button"
-          onClick={onOpen}
-          className="min-w-[3.5rem] rounded-lg border-2 border-neutral-900 px-3 py-1 text-2xl font-bold tabular-nums dark:border-neutral-100"
+          onClick={(e) => onOpen(e.currentTarget)}
+          className="clay clay-interactive font-display min-w-[3.75rem] rounded-2xl border-[3px] px-3 py-1.5 text-2xl font-bold tabular-nums"
+          style={{ borderColor: 'var(--ink)', color: 'var(--ink)' }}
         >
           {String(value).padStart(2, '0')}
         </button>
@@ -180,10 +191,10 @@ function NumberNav({
           type="button"
           onClick={onInc}
           disabled={disableInc}
-          className="rounded-full p-1 text-orange-500 disabled:opacity-30"
+          className="p-1 text-[var(--accent)] transition-transform active:scale-90 disabled:opacity-30"
           aria-label={`Next ${label}`}
         >
-          <ChevronIcon dir="right" className="h-6 w-6" />
+          <TriangleGlyph dir="right" className="h-7 w-7" />
         </button>
       </div>
     </div>

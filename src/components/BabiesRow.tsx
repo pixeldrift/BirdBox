@@ -4,7 +4,7 @@ import { ChickGlyph } from '@/components/icons'
 interface BabiesRowProps {
   babies: Baby[]
   disabled?: boolean
-  onSelect: (babyId: string) => void
+  onSelect: (babyId: string, anchor: HTMLElement) => void
 }
 
 export function BabiesRow({ babies, disabled, onSelect }: BabiesRowProps) {
@@ -16,12 +16,13 @@ export function BabiesRow({ babies, disabled, onSelect }: BabiesRowProps) {
           key={b.id}
           type="button"
           disabled={disabled}
-          onClick={() => onSelect(b.id)}
+          onClick={(e) => onSelect(b.id, e.currentTarget)}
           aria-label={`Baby${b.bandId ? `, band ${b.bandId}` : ''}`}
-          className="flex flex-col items-center gap-1 rounded-xl p-1.5 text-neutral-900 transition-colors hover:bg-orange-50 disabled:opacity-50 dark:text-neutral-100 dark:hover:bg-orange-500/10"
+          className="clay clay-interactive flex flex-col items-center gap-1 rounded-2xl p-2 disabled:opacity-50"
+          style={{ color: 'var(--ink)' }}
         >
           <ChickGlyph className="h-9 w-9" />
-          {b.bandId && <span className="text-[10px] font-medium text-neutral-500">{b.bandId}</span>}
+          {b.bandId && <span className="text-[10px] font-bold" style={{ opacity: 0.6 }}>{b.bandId}</span>}
         </button>
       ))}
     </div>

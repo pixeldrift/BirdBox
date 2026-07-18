@@ -1,21 +1,21 @@
 import type { PointerEvent as ReactPointerEvent } from 'react'
 import type { Egg } from '@/types'
-import { CheckGlyph, CrackGlyph, DeadGlyph, QuestionGlyph, XGlyph } from '@/components/icons'
+import { CheckGlyph, CrackGlyph, DeadGlyph, PlusGlyph, QuestionGlyph, XGlyph } from '@/components/icons'
 
 export function eggVisual(status: Egg['status']) {
   switch (status) {
     case 'fertile':
-      return { Glyph: CheckGlyph, color: 'text-orange-500', border: 'border-neutral-900 dark:border-neutral-100' }
+      return { Glyph: CheckGlyph, color: 'var(--accent)' }
     case 'infertile':
-      return { Glyph: XGlyph, color: 'text-neutral-900 dark:text-neutral-100', border: 'border-neutral-900 dark:border-neutral-100' }
+      return { Glyph: XGlyph, color: 'var(--ink)' }
     case 'missing':
-      return { Glyph: QuestionGlyph, color: 'text-orange-500', border: 'border-neutral-900 dark:border-neutral-100' }
+      return { Glyph: QuestionGlyph, color: 'var(--accent)' }
     case 'broken':
-      return { Glyph: CrackGlyph, color: 'text-orange-500', border: 'border-neutral-900 dark:border-neutral-100' }
+      return { Glyph: CrackGlyph, color: 'var(--accent)' }
     case 'dead-in-shell':
-      return { Glyph: DeadGlyph, color: 'text-orange-500', border: 'border-neutral-900 dark:border-neutral-100' }
+      return { Glyph: DeadGlyph, color: 'var(--accent)' }
     default:
-      return { Glyph: QuestionGlyph, color: 'text-neutral-300 dark:text-neutral-600', border: 'border-dashed border-neutral-300 dark:border-neutral-600' }
+      return { Glyph: QuestionGlyph, color: 'var(--ink)' }
   }
 }
 
@@ -23,22 +23,23 @@ interface EggTileProps {
   egg: Egg
   disabled?: boolean
   dimmed?: boolean
-  onActivate: () => void
+  onActivate: (anchor: HTMLElement) => void
   onPointerDownDrag?: (e: ReactPointerEvent) => void
 }
 
 export function EggTile({ egg, disabled, dimmed, onActivate, onPointerDownDrag }: EggTileProps) {
-  const { Glyph, color, border } = eggVisual(egg.status)
+  const { Glyph, color } = eggVisual(egg.status)
   return (
     <button
       type="button"
       disabled={disabled}
-      onClick={onActivate}
+      onClick={(e) => onActivate(e.currentTarget)}
       onPointerDown={onPointerDownDrag}
-      className={`egg-shape aspect-[4/5] w-full border-[3px] bg-white dark:bg-neutral-800 flex items-center justify-center touch-none select-none transition-transform active:scale-95 disabled:opacity-50 ${border} ${dimmed ? 'opacity-40' : ''}`}
+      className={`clay clay-interactive egg-shape flex aspect-[4/5] w-full touch-none select-none items-center justify-center border-[3px] disabled:opacity-50 ${dimmed ? 'opacity-40' : ''}`}
+      style={{ borderColor: 'var(--ink)' }}
       aria-label={`Egg, status ${egg.status}`}
     >
-      <Glyph className={`h-7 w-7 ${color}`} />
+      <Glyph className="h-7 w-7" style={{ color }} />
     </button>
   )
 }
@@ -49,12 +50,11 @@ export function AddEggTile({ onClick, disabled }: { onClick: () => void; disable
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="egg-shape aspect-[4/5] w-full border-[3px] border-dashed border-neutral-300 dark:border-neutral-600 flex items-center justify-center text-neutral-300 dark:text-neutral-600 hover:border-orange-400 hover:text-orange-500 transition-colors disabled:opacity-40 disabled:hover:border-neutral-300 disabled:hover:text-neutral-300"
+      className="clay-inset clay-interactive egg-shape flex aspect-[4/5] w-full items-center justify-center transition-colors disabled:opacity-40"
+      style={{ color: 'var(--accent)' }}
       aria-label="Add egg"
     >
-      <svg viewBox="0 0 24 24" fill="none" className="h-7 w-7" aria-hidden="true">
-        <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" />
-      </svg>
+      <PlusGlyph className="h-7 w-7" />
     </button>
   )
 }
