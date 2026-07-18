@@ -9,6 +9,20 @@ interface DirGlyphProps extends GlyphProps {
   dir?: 'left' | 'right'
 }
 
+export function VerticalDragGlyph({ className = '', style }: GlyphProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style} aria-hidden="true">
+      <path
+        d="M12 2.6L8.8 6.2M12 2.6l3.2 3.6M12 2.6v18.8M12 21.4l-3.2-3.6M12 21.4l3.2-3.6"
+        stroke="currentColor"
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
 export function ChevronIcon({ dir = 'left', className = '', style }: DirGlyphProps) {
   return (
     <svg viewBox="0 0 24 24" fill="none" className={className} style={style} aria-hidden="true">

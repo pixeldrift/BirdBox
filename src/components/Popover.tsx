@@ -1,6 +1,96 @@
-import { useEffect, useId, useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
+import { useEffect, useId, useLayoutEffect, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent, type RefObject } from 'react'
 import { createPortal } from 'react-dom'
-import { useScrollFade } from '@/lib/useScrollFade'
+import { VerticalDragGlyph } from '@/components/icons'
+import { SCROLL_SLACK, useScrollFade } from '@/lib/useScrollFade'
+
+const SCROLLBAR_WIDTH = 14
+const SCROLLBAR_INSET = 6
+const SCROLLBAR_MIN_THUMB = 30
+// Matches the `pr-6` right padding on every scrollable container the scrollbar
+// is used in. The wrapper below is laid out as a normal flow child, so its own
+// box is confined to the *content* box (padding already excluded) — without
+// clawing that space back via a negative margin, "right" offsets on the
+// channel stay relative to the content edge and sit on top of real content
+// instead of out in the reserved padding gutter.
+const SCROLLBAR_GUTTER = 24
+
+/**
+ * Custom draggable scrollbar: a recessed channel with a small raised orange
+ * thumb (a double-arrow icon marking it as a drag handle). Rendered the same
+ * "sticky + explicit pixel height + cancelling negative margin" way as the
+ * fade bars above, so it never needs an extra flex-1 wrapper (which collapses
+ * to zero height — a flex-basis:0% item needs a definite-height ancestor to
+ * size against, and during the popover's own natural-height measurement pass
+ * the ancestor's height is still indeterminate).
+ */
+export function CustomScrollbar({
+  containerRef,
+  scrollTop,
+  scrollHeight,
+  clientHeight,
+}: {
+  containerRef: RefObject<HTMLElement | null>
+  scrollTop: number
+  scrollHeight: number
+  clientHeight: number
+}) {
+  const draggingRef = useRef(false)
+  const dragStartRef = useRef({ startY: 0, startScrollTop: 0 })
+  const metricsRef = useRef({ maxTravel: 0, maxScroll: 0 })
+
+  const usableHeight = Math.max(0, clientHeight - SCROLLBAR_INSET * 2)
+  const thumbHeight = Math.min(usableHeight, Math.max(SCROLLBAR_MIN_THUMB, (clientHeight / Math.max(1, scrollHeight)) * usableHeight))
+  const maxTravel = Math.max(0, usableHeight - thumbHeight)
+  const maxScroll = Math.max(0, scrollHeight - clientHeight)
+  const thumbTop = maxScroll > 0 ? (scrollTop / maxScroll) * maxTravel : 0
+  metricsRef.current = { maxTravel, maxScroll }
+
+  useEffect(() => {
+    function move(e: PointerEvent) {
+      if (!draggingRef.current || !containerRef.current) return
+      const { maxTravel, maxScroll } = metricsRef.current
+      if (maxTravel <= 0) return
+      const dy = e.clientY - dragStartRef.current.startY
+      containerRef.current.scrollTop = dragStartRef.current.startScrollTop + (dy / maxTravel) * maxScroll
+    }
+    function up() {
+      draggingRef.current = false
+    }
+    window.addEventListener('pointermove', move)
+    window.addEventListener('pointerup', up)
+    return () => {
+      window.removeEventListener('pointermove', move)
+      window.removeEventListener('pointerup', up)
+    }
+  }, [containerRef])
+
+  if (scrollHeight <= clientHeight + SCROLL_SLACK || clientHeight === 0) return null
+
+  function onThumbPointerDown(e: ReactPointerEvent) {
+    draggingRef.current = true
+    dragStartRef.current = { startY: e.clientY, startScrollTop: containerRef.current?.scrollTop ?? 0 }
+  }
+
+  return (
+    <div
+      className="pointer-events-none sticky top-0 z-20"
+      style={{ height: clientHeight, marginBottom: -clientHeight, marginRight: -SCROLLBAR_GUTTER }}
+    >
+      <div
+        className="clay-inset absolute right-1 rounded-full"
+        style={{ top: SCROLLBAR_INSET, bottom: SCROLLBAR_INSET, width: SCROLLBAR_WIDTH }}
+      >
+        <div
+          className="clay-accent-soft clay-interactive pointer-events-auto absolute left-0 flex cursor-grab items-center justify-center rounded-full active:cursor-grabbing"
+          style={{ top: thumbTop, height: thumbHeight, width: SCROLLBAR_WIDTH }}
+          onPointerDown={onThumbPointerDown}
+        >
+          <VerticalDragGlyph className="h-2.5 w-2.5" style={{ color: '#fff8ee' }} />
+        </div>
+      </div>
+    </div>
+  )
+}
 
 /**
  * Sticky, height-cancelling fade bars for a scrollable container: each occupies
@@ -33,11 +123,12 @@ export function ScrollFadeBottom({ show }: { show: boolean }) {
 }
 
 function ScrollableContent({ children }: { children: React.ReactNode }) {
-  const { ref, canScrollUp, canScrollDown } = useScrollFade<HTMLDivElement>()
+  const { ref, containerRef, canScrollUp, canScrollDown, scrollTop, scrollHeight, clientHeight } = useScrollFade<HTMLDivElement>()
 
   return (
-    <div ref={ref} className="min-h-0 flex-1 overflow-y-auto pb-1">
+    <div ref={ref} className="min-h-0 flex-1 overflow-y-auto pr-6 pb-1">
       <ScrollFadeTop show={canScrollUp} />
+      <CustomScrollbar containerRef={containerRef} scrollTop={scrollTop} scrollHeight={scrollHeight} clientHeight={clientHeight} />
       {children}
       <ScrollFadeBottom show={canScrollDown} />
     </div>

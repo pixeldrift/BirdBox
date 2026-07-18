@@ -1,29 +1,61 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 
-/** Tracks whether a scrollable element has more content above/below the
- * current view, so callers can show a fade indicator instead of an abrupt cut. */
+interface ScrollMetrics {
+  canScrollUp: boolean
+  canScrollDown: boolean
+  scrollTop: number
+  scrollHeight: number
+  clientHeight: number
+}
+
+const INITIAL: ScrollMetrics = { canScrollUp: false, canScrollDown: false, scrollTop: 0, scrollHeight: 0, clientHeight: 0 }
+
+// A popover's height comes from measuring its own natural size and re-applying
+// it as a fixed maxHeight; that round trip can leave a few px of sub-pixel
+// slack (flex distribution rounds slightly differently in an auto-height vs.
+// fixed-height pass). Ignore overflow below this so that slack doesn't read
+// as "more content below" and paint a distracting near-full-height scrollbar.
+export const SCROLL_SLACK = 20
+
+/** Tracks a scrollable element's position/size so callers can show a fade
+ * indicator and/or a custom scrollbar instead of an abrupt, unindicated cut.
+ *
+ * Uses a callback ref rather than `useRef` + `useEffect([])`: the latter only
+ * fires once, on the *hook-owning component's* mount. If that component stays
+ * mounted while the actual scrollable element mounts/unmounts later (e.g. it
+ * lives inside a conditionally-rendered popover that starts closed), the
+ * effect already ran with a null ref and never gets another chance to attach
+ * its listeners once the element shows up. A callback ref fires exactly when
+ * the DOM node itself attaches, independent of the owning component's own
+ * lifecycle, so it works correctly either way. */
 export function useScrollFade<T extends HTMLElement>() {
-  const ref = useRef<T>(null)
-  const [canScrollUp, setCanScrollUp] = useState(false)
-  const [canScrollDown, setCanScrollDown] = useState(false)
+  const [metrics, setMetrics] = useState<ScrollMetrics>(INITIAL)
+  const containerRef = useRef<T | null>(null)
+  const cleanupRef = useRef<() => void>(() => {})
 
-  useEffect(() => {
-    const el = ref.current
+  const ref = useCallback((el: T | null) => {
+    cleanupRef.current()
+    containerRef.current = el
     if (!el) return
     function update() {
       if (!el) return
-      setCanScrollUp(el.scrollTop > 1)
-      setCanScrollDown(el.scrollTop + el.clientHeight < el.scrollHeight - 1)
+      setMetrics({
+        canScrollUp: el.scrollTop > 1,
+        canScrollDown: el.scrollTop + el.clientHeight < el.scrollHeight - SCROLL_SLACK,
+        scrollTop: el.scrollTop,
+        scrollHeight: el.scrollHeight,
+        clientHeight: el.clientHeight,
+      })
     }
     update()
     el.addEventListener('scroll', update)
     const ro = new ResizeObserver(update)
     ro.observe(el)
-    return () => {
+    cleanupRef.current = () => {
       el.removeEventListener('scroll', update)
       ro.disconnect()
     }
   }, [])
 
-  return { ref, canScrollUp, canScrollDown }
+  return { ref, containerRef, ...metrics }
 }

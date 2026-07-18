@@ -1,4 +1,4 @@
-import { Popover, ScrollFadeBottom, ScrollFadeTop } from '@/components/Popover'
+import { CustomScrollbar, Popover, ScrollFadeBottom, ScrollFadeTop } from '@/components/Popover'
 import { useDragSelectGrid } from '@/lib/useDragSelectGrid'
 import { useScrollFade } from '@/lib/useScrollFade'
 
@@ -25,12 +25,13 @@ export function BoxPickerPopup({ open, anchorEl, onClose, count, selected, onSel
     onSelect(Number(value))
     onClose()
   })
-  const { ref, canScrollUp, canScrollDown } = useScrollFade<HTMLDivElement>()
+  const { ref, containerRef, canScrollUp, canScrollDown, scrollTop, scrollHeight, clientHeight } = useScrollFade<HTMLDivElement>()
 
   return (
     <Popover open={open} anchorEl={anchorEl} onClose={onClose} title="Box" widthClassName="w-[calc(100vw-2rem)] max-w-xs">
-      <div ref={ref} className="overflow-y-auto" style={{ maxHeight: GRID_MAX_HEIGHT }}>
+      <div ref={ref} className="overflow-y-auto pr-6" style={{ maxHeight: GRID_MAX_HEIGHT }}>
         <ScrollFadeTop show={canScrollUp} />
+        <CustomScrollbar containerRef={containerRef} scrollTop={scrollTop} scrollHeight={scrollHeight} clientHeight={clientHeight} />
         <div className="grid touch-none grid-cols-4 gap-2 select-none" onPointerDown={onPointerDown}>
           {ids.map((id) => {
             const value = String(id)
