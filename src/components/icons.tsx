@@ -60,24 +60,6 @@ export function RecordPencilGlyph({ className = '', style }: GlyphProps) {
   )
 }
 
-export function EraseCrumbsGlyph({ className = '', style }: GlyphProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className} style={style} aria-hidden="true">
-      <path
-        d="M9.3 15.7L16 9a1.7 1.7 0 0 1 2.4 0l1.3 1.3a1.7 1.7 0 0 1 0 2.4L13 19.4H8.6L9.3 15.7Z"
-        stroke="currentColor"
-        strokeWidth={1.7}
-        strokeLinejoin="round"
-      />
-      <path d="M12.8 12.2l3 3" stroke="currentColor" strokeWidth={1.4} />
-      <path d="M8.6 19.4H4.3" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" />
-      <circle cx="6.2" cy="16.6" r="0.85" fill="currentColor" stroke="none" />
-      <circle cx="4.6" cy="19" r="0.6" fill="currentColor" stroke="none" />
-      <circle cx="7.3" cy="19.3" r="0.55" fill="currentColor" stroke="none" />
-    </svg>
-  )
-}
-
 export function CheckGlyph({ className = '', style }: GlyphProps) {
   return (
     <svg viewBox="0 0 24 24" fill="none" className={className} style={style} aria-hidden="true">

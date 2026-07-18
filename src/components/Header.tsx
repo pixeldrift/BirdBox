@@ -1,5 +1,5 @@
 import { Fragment } from 'react'
-import { ChevronIcon, EraseCrumbsGlyph, RecordPencilGlyph, TriangleGlyph } from '@/components/icons'
+import { ChevronIcon, RecordPencilGlyph, TriangleGlyph } from '@/components/icons'
 import { addDays, formatRelativeLabel, formatShort, todayStr } from '@/lib/date'
 
 interface HeaderProps {
@@ -112,10 +112,10 @@ export function Header({
   )
 }
 
-const TOGGLE_W = 132
-const TOGGLE_H = 58
-const THUMB_W = 76
-const ICON_BTN_W = 34
+const TOGGLE_W = 148
+const TOGGLE_H = 66
+const THUMB_W = 88
+const ICON_BTN_W = 44
 
 function EditModeToggle({
   editMode,
@@ -128,14 +128,15 @@ function EditModeToggle({
   canEdit: boolean
   onSetEditMode: (v: boolean) => void
 }) {
-  const editActive = canEdit && (editMode || isTodaySelected)
+  // "Record" (today's default) docks the thumb right; "Revise" (unlock a past date) docks it left.
+  const recordActive = canEdit && (editMode || isTodaySelected)
 
   return (
     <div className="clay-inset relative rounded-full" style={{ width: TOGGLE_W, height: TOGGLE_H, padding: 4 }}>
       <div
         className="clay-accent-soft absolute rounded-full transition-[left,right] duration-200 ease-out"
         style={
-          editActive
+          recordActive
             ? { top: 4, bottom: 4, right: 4, width: THUMB_W }
             : { top: 4, bottom: 4, left: 4, width: THUMB_W }
         }
@@ -144,20 +145,23 @@ function EditModeToggle({
         type="button"
         onClick={() => onSetEditMode(false)}
         disabled={isTodaySelected}
-        title="View mode"
+        title="Revise"
         className="clay-interactive absolute flex items-center justify-center rounded-full disabled:cursor-default"
-        style={{ left: 10, top: 4, bottom: 4, width: ICON_BTN_W }}
+        style={{ left: 8, top: 4, bottom: 4, width: ICON_BTN_W }}
       >
-        <RecordPencilGlyph className="h-8 w-8" style={{ color: editActive ? 'var(--ink)' : '#fff8ee', opacity: editActive ? 0.4 : 1 }} />
+        <RecordPencilGlyph
+          className="h-10 w-10"
+          style={{ color: recordActive ? 'var(--ink)' : '#fff8ee', opacity: recordActive ? 0.4 : 1, transform: 'rotate(180deg)' }}
+        />
       </button>
       <button
         type="button"
         onClick={() => onSetEditMode(true)}
-        title="Edit mode"
+        title="Record"
         className="clay-interactive absolute flex items-center justify-center rounded-full"
-        style={{ right: 10, top: 4, bottom: 4, width: ICON_BTN_W }}
+        style={{ right: 8, top: 4, bottom: 4, width: ICON_BTN_W }}
       >
-        <EraseCrumbsGlyph className="h-8 w-8" style={{ color: editActive ? '#fff8ee' : 'var(--ink)', opacity: editActive ? 1 : 0.4 }} />
+        <RecordPencilGlyph className="h-10 w-10" style={{ color: recordActive ? '#fff8ee' : 'var(--ink)', opacity: recordActive ? 1 : 0.4 }} />
       </button>
     </div>
   )
@@ -227,7 +231,7 @@ function NumberNav({
         <button
           type="button"
           onClick={(e) => onOpen(e.currentTarget)}
-          className="clay clay-interactive font-display min-w-[5.5rem] rounded-2xl border-[3px] px-3 py-2 text-6xl font-bold tabular-nums"
+          className="clay clay-interactive font-display min-w-[6.5rem] rounded-2xl border-[3px] px-3 py-5 text-7xl leading-none font-extrabold tabular-nums"
           style={{ borderColor: 'var(--accent)', color: 'var(--ink)' }}
         >
           {String(value).padStart(2, '0')}
