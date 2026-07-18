@@ -1,55 +1,45 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
 import { createPortal } from 'react-dom'
+import { useScrollFade } from '@/lib/useScrollFade'
 
 /**
- * Scrollable content wrapper that shows a fade at the top/bottom edge whenever
- * there's more to scroll to in that direction — otherwise a partially-cut-off
- * last row (e.g. a tall grid picker) looks like broken clipping rather than
- * "scroll for more."
+ * Sticky, height-cancelling fade bars for a scrollable container: each occupies
+ * its normal spot in flow (so it doesn't disturb a flex-1/min-h-0 sizing chain
+ * the way an extra wrapping flex item would) but a negative margin equal to
+ * its own height removes that space back out, so it adds zero scroll distance
+ * while still sticking to the edge as an overlay — a partially-cut-off row
+ * (e.g. a tall grid picker) fades into the background instead of looking like
+ * broken clipping. Place ScrollFadeTop as the first child and ScrollFadeBottom
+ * as the last child of the scrollable element itself.
  */
+export function ScrollFadeTop({ show }: { show: boolean }) {
+  if (!show) return null
+  return (
+    <div
+      className="pointer-events-none sticky top-0 z-10 -mb-7 h-7"
+      style={{ background: 'linear-gradient(to bottom, var(--cream-panel), transparent)' }}
+    />
+  )
+}
+
+export function ScrollFadeBottom({ show }: { show: boolean }) {
+  if (!show) return null
+  return (
+    <div
+      className="pointer-events-none sticky bottom-0 z-10 -mt-9 h-9"
+      style={{ background: 'linear-gradient(to top, var(--cream-panel), transparent)' }}
+    />
+  )
+}
+
 function ScrollableContent({ children }: { children: React.ReactNode }) {
-  const ref = useRef<HTMLDivElement>(null)
-  const [canScrollUp, setCanScrollUp] = useState(false)
-  const [canScrollDown, setCanScrollDown] = useState(false)
+  const { ref, canScrollUp, canScrollDown } = useScrollFade<HTMLDivElement>()
 
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
-    function update() {
-      if (!el) return
-      setCanScrollUp(el.scrollTop > 1)
-      setCanScrollDown(el.scrollTop + el.clientHeight < el.scrollHeight - 1)
-    }
-    update()
-    el.addEventListener('scroll', update)
-    const ro = new ResizeObserver(update)
-    ro.observe(el)
-    return () => {
-      el.removeEventListener('scroll', update)
-      ro.disconnect()
-    }
-  }, [])
-
-  // Sticky, height-cancelling fade bars: they occupy their normal spot in flow
-  // (so they don't disturb the flex-1/min-h-0 sizing chain the way an extra
-  // wrapping flex item would) but a negative margin equal to their own height
-  // removes that space back out, so they add zero scroll distance while still
-  // sticking to the viewport edge as an overlay.
   return (
     <div ref={ref} className="min-h-0 flex-1 overflow-y-auto pb-1">
-      {canScrollUp && (
-        <div
-          className="pointer-events-none sticky top-0 z-10 -mb-7 h-7"
-          style={{ background: 'linear-gradient(to bottom, var(--cream-panel), transparent)' }}
-        />
-      )}
+      <ScrollFadeTop show={canScrollUp} />
       {children}
-      {canScrollDown && (
-        <div
-          className="pointer-events-none sticky bottom-0 z-10 -mt-9 h-9"
-          style={{ background: 'linear-gradient(to top, var(--cream-panel), transparent)' }}
-        />
-      )}
+      <ScrollFadeBottom show={canScrollDown} />
     </div>
   )
 }
