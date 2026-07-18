@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Popover } from '@/components/Popover'
 import { TriangleGlyph } from '@/components/icons'
 import { addMonths, formatMonthYear, fromDateStr, monthGrid, startOfMonthStr, todayStr } from '@/lib/date'
+import { useDragSelectGrid } from '@/lib/useDragSelectGrid'
 
 interface DatePickerPopupProps {
   open: boolean
@@ -23,6 +24,10 @@ export function DatePickerPopup({ open, anchorEl, onClose, selectedDate, onSelec
   const today = todayStr()
   const cells = monthGrid(viewMonth)
   const nextMonthDisabled = addMonths(viewMonth, 1) > startOfMonthStr(today)
+  const { hovered, onPointerDown } = useDragSelectGrid((value) => {
+    onSelect(value)
+    onClose()
+  })
 
   return (
     <Popover open={open} anchorEl={anchorEl} onClose={onClose} widthClassName="w-[calc(100vw-2rem)] max-w-xs">
@@ -57,24 +62,29 @@ export function DatePickerPopup({ open, anchorEl, onClose, selectedDate, onSelec
         ))}
       </div>
 
-      <div className="grid grid-cols-7 gap-1">
+      <div className="grid touch-none grid-cols-7 gap-1 select-none" onPointerDown={onPointerDown}>
         {cells.map((cell, i) => {
           if (!cell) return <div key={i} />
           const isFuture = cell > today
           const isSelected = cell === selectedDate
           const isToday = cell === today
+          const dragged = hovered === cell && !isSelected
           return (
             <button
               key={cell}
               type="button"
               disabled={isFuture}
-              onClick={() => {
-                onSelect(cell)
-                onClose()
+              data-select-value={isFuture ? undefined : cell}
+              onKeyDown={(e) => {
+                if (!isFuture && (e.key === 'Enter' || e.key === ' ')) {
+                  e.preventDefault()
+                  onSelect(cell)
+                  onClose()
+                }
               }}
-              className={`font-display aspect-square rounded-lg text-xs font-bold transition-colors disabled:opacity-25 ${isSelected ? 'clay-accent-soft' : ''}`}
+              className={`font-display aspect-square rounded-lg text-xs font-bold transition-colors disabled:opacity-25 ${isSelected || dragged ? 'clay-accent-soft' : ''}`}
               style={
-                !isSelected
+                !isSelected && !dragged
                   ? { color: 'var(--ink)', opacity: isFuture ? 0.35 : 0.85, textDecoration: isToday ? 'underline' : undefined }
                   : undefined
               }

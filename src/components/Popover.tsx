@@ -1,12 +1,49 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
 import { createPortal } from 'react-dom'
+import { useScrollFade } from '@/lib/useScrollFade'
 
 /**
- * Pointer triangle drawn as two separate SVG paths: a filled triangle whose base
- * sinks a few px into the card (masking the card's own border stroke where the
- * tail attaches), and an open two-sided stroke that stops short of that base so
- * no border line ever crosses behind the arrow.
+ * Sticky, height-cancelling fade bars for a scrollable container: each occupies
+ * its normal spot in flow (so it doesn't disturb a flex-1/min-h-0 sizing chain
+ * the way an extra wrapping flex item would) but a negative margin equal to
+ * its own height removes that space back out, so it adds zero scroll distance
+ * while still sticking to the edge as an overlay — a partially-cut-off row
+ * (e.g. a tall grid picker) fades into the background instead of looking like
+ * broken clipping. Place ScrollFadeTop as the first child and ScrollFadeBottom
+ * as the last child of the scrollable element itself.
  */
+export function ScrollFadeTop({ show }: { show: boolean }) {
+  if (!show) return null
+  return (
+    <div
+      className="pointer-events-none sticky top-0 z-10 -mb-7 h-7"
+      style={{ background: 'linear-gradient(to bottom, var(--cream-panel), transparent)' }}
+    />
+  )
+}
+
+export function ScrollFadeBottom({ show }: { show: boolean }) {
+  if (!show) return null
+  return (
+    <div
+      className="pointer-events-none sticky bottom-0 z-10 -mt-9 h-9"
+      style={{ background: 'linear-gradient(to top, var(--cream-panel), transparent)' }}
+    />
+  )
+}
+
+function ScrollableContent({ children }: { children: React.ReactNode }) {
+  const { ref, canScrollUp, canScrollDown } = useScrollFade<HTMLDivElement>()
+
+  return (
+    <div ref={ref} className="min-h-0 flex-1 overflow-y-auto pb-1">
+      <ScrollFadeTop show={canScrollUp} />
+      {children}
+      <ScrollFadeBottom show={canScrollDown} />
+    </div>
+  )
+}
+
 function PopoverTail({ left, pointDown }: { left: number; pointDown: boolean }) {
   const gradientId = `popover-tail-fill-${useId()}`
   return (
@@ -63,6 +100,26 @@ function getViewport() {
   const vv = window.visualViewport
   if (vv) return { width: vv.width, height: vv.height, offsetTop: vv.offsetTop, offsetLeft: vv.offsetLeft }
   return { width: window.innerWidth, height: window.innerHeight, offsetTop: 0, offsetLeft: 0 }
+}
+
+// Ref-counted so nested popovers (e.g. band details + its color palette) don't
+// have the first one to close prematurely re-enable background scroll.
+let scrollLockCount = 0
+let previousBodyOverflow = ''
+
+function lockBodyScroll() {
+  if (scrollLockCount === 0) {
+    previousBodyOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+  }
+  scrollLockCount++
+}
+
+function unlockBodyScroll() {
+  scrollLockCount = Math.max(0, scrollLockCount - 1)
+  if (scrollLockCount === 0) {
+    document.body.style.overflow = previousBodyOverflow
+  }
 }
 
 export function Popover({ open, anchorEl, onClose, title, children, widthClassName = 'w-[calc(100vw-2rem)] max-w-sm' }: PopoverProps) {
@@ -131,6 +188,12 @@ export function Popover({ open, anchorEl, onClose, title, children, widthClassNa
     return () => document.removeEventListener('keydown', onKey)
   }, [open, onClose])
 
+  useEffect(() => {
+    if (!open) return
+    lockBodyScroll()
+    return () => unlockBodyScroll()
+  }, [open])
+
   if (!open) return null
 
   const cardStyle: CSSProperties = {
@@ -157,7 +220,7 @@ export function Popover({ open, anchorEl, onClose, title, children, widthClassNa
               {title}
             </h2>
           )}
-          <div className="min-h-0 flex-1 overflow-y-auto pb-1">{children}</div>
+          <ScrollableContent>{children}</ScrollableContent>
         </div>
       </div>
     </div>,
