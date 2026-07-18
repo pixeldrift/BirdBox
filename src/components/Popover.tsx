@@ -2,11 +2,58 @@ import { useEffect, useId, useLayoutEffect, useRef, useState, type CSSProperties
 import { createPortal } from 'react-dom'
 
 /**
- * Pointer triangle drawn as two separate SVG paths: a filled triangle whose base
- * sinks a few px into the card (masking the card's own border stroke where the
- * tail attaches), and an open two-sided stroke that stops short of that base so
- * no border line ever crosses behind the arrow.
+ * Scrollable content wrapper that shows a fade at the top/bottom edge whenever
+ * there's more to scroll to in that direction — otherwise a partially-cut-off
+ * last row (e.g. a tall grid picker) looks like broken clipping rather than
+ * "scroll for more."
  */
+function ScrollableContent({ children }: { children: React.ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const [canScrollUp, setCanScrollUp] = useState(false)
+  const [canScrollDown, setCanScrollDown] = useState(false)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    function update() {
+      if (!el) return
+      setCanScrollUp(el.scrollTop > 1)
+      setCanScrollDown(el.scrollTop + el.clientHeight < el.scrollHeight - 1)
+    }
+    update()
+    el.addEventListener('scroll', update)
+    const ro = new ResizeObserver(update)
+    ro.observe(el)
+    return () => {
+      el.removeEventListener('scroll', update)
+      ro.disconnect()
+    }
+  }, [])
+
+  // Sticky, height-cancelling fade bars: they occupy their normal spot in flow
+  // (so they don't disturb the flex-1/min-h-0 sizing chain the way an extra
+  // wrapping flex item would) but a negative margin equal to their own height
+  // removes that space back out, so they add zero scroll distance while still
+  // sticking to the viewport edge as an overlay.
+  return (
+    <div ref={ref} className="min-h-0 flex-1 overflow-y-auto pb-1">
+      {canScrollUp && (
+        <div
+          className="pointer-events-none sticky top-0 z-10 -mb-7 h-7"
+          style={{ background: 'linear-gradient(to bottom, var(--cream-panel), transparent)' }}
+        />
+      )}
+      {children}
+      {canScrollDown && (
+        <div
+          className="pointer-events-none sticky bottom-0 z-10 -mt-9 h-9"
+          style={{ background: 'linear-gradient(to top, var(--cream-panel), transparent)' }}
+        />
+      )}
+    </div>
+  )
+}
+
 function PopoverTail({ left, pointDown }: { left: number; pointDown: boolean }) {
   const gradientId = `popover-tail-fill-${useId()}`
   return (
@@ -183,7 +230,7 @@ export function Popover({ open, anchorEl, onClose, title, children, widthClassNa
               {title}
             </h2>
           )}
-          <div className="min-h-0 flex-1 overflow-y-auto pb-1">{children}</div>
+          <ScrollableContent>{children}</ScrollableContent>
         </div>
       </div>
     </div>,

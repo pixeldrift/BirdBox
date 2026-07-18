@@ -245,12 +245,12 @@ function NumberNav({
           className="p-0 transition-transform active:scale-90 disabled:opacity-30"
           aria-label={`Previous ${label}`}
         >
-          <TriangleGlyph dir="left" className="h-6 w-6" />
+          <TriangleGlyph dir="left" className="h-7 w-7" />
         </button>
         <button
           type="button"
           onClick={(e) => onOpen(e.currentTarget)}
-          className="clay clay-interactive font-display rounded-2xl border-[3px] px-1 py-1 text-7xl leading-none font-extrabold tabular-nums"
+          className="clay clay-interactive font-display rounded-2xl border-[3px] px-1 py-1 text-8xl leading-none font-extrabold tabular-nums"
           style={{ borderColor: 'var(--accent)', color: 'var(--ink)' }}
         >
           {String(value).padStart(2, '0')}
@@ -262,7 +262,7 @@ function NumberNav({
           className="p-0 transition-transform active:scale-90 disabled:opacity-30"
           aria-label={`Next ${label}`}
         >
-          <TriangleGlyph dir="right" className="h-6 w-6" />
+          <TriangleGlyph dir="right" className="h-7 w-7" />
         </button>
       </div>
     </div>
