@@ -65,6 +65,26 @@ function getViewport() {
   return { width: window.innerWidth, height: window.innerHeight, offsetTop: 0, offsetLeft: 0 }
 }
 
+// Ref-counted so nested popovers (e.g. band details + its color palette) don't
+// have the first one to close prematurely re-enable background scroll.
+let scrollLockCount = 0
+let previousBodyOverflow = ''
+
+function lockBodyScroll() {
+  if (scrollLockCount === 0) {
+    previousBodyOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+  }
+  scrollLockCount++
+}
+
+function unlockBodyScroll() {
+  scrollLockCount = Math.max(0, scrollLockCount - 1)
+  if (scrollLockCount === 0) {
+    document.body.style.overflow = previousBodyOverflow
+  }
+}
+
 export function Popover({ open, anchorEl, onClose, title, children, widthClassName = 'w-[calc(100vw-2rem)] max-w-sm' }: PopoverProps) {
   const cardRef = useRef<HTMLDivElement>(null)
   const [pos, setPos] = useState<Placement | null>(null)
@@ -130,6 +150,12 @@ export function Popover({ open, anchorEl, onClose, title, children, widthClassNa
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
   }, [open, onClose])
+
+  useEffect(() => {
+    if (!open) return
+    lockBodyScroll()
+    return () => unlockBodyScroll()
+  }, [open])
 
   if (!open) return null
 
