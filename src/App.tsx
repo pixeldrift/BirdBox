@@ -157,6 +157,7 @@ export default function App() {
             editMode={store.editMode}
             onSetEditMode={store.setEditMode}
             canEdit={store.canEdit}
+            dayHasRecord={store.dayHasRecord}
             stats={store.stats}
           />
 

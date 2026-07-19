@@ -21,7 +21,7 @@ export function BabiesRow({ babies, disabled, onSelect }: BabiesRowProps) {
           className="clay clay-interactive flex flex-col items-center gap-1 rounded-2xl p-2 disabled:opacity-50"
           style={{ color: 'var(--ink)' }}
         >
-          <ChickGlyph className="h-9 w-9" />
+          <ChickGlyph className="h-14 w-14" />
           {b.bandId && <span className="text-[10px] font-bold" style={{ opacity: 0.6 }}>{b.bandId}</span>}
         </button>
       ))}

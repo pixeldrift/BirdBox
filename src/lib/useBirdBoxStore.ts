@@ -22,10 +22,14 @@ export function useBirdBoxStore() {
     saveData(data)
   }, [data])
 
-  const canEdit = isToday(selectedDate) || editMode
-
   const key = recordKey(selectedDate, buildingId, boxId)
   const record = data.records[key]
+
+  // A past day with no existing record was never checked in the first
+  // place — there's nothing to revise, so editMode can't unlock it even if
+  // it's still on from browsing a different (checked) day.
+  const dayHasRecord = !!record && (record.eggs.length > 0 || record.babies.length > 0)
+  const canEdit = isToday(selectedDate) || (editMode && dayHasRecord)
 
   const activeEggs = useMemo(
     () =>
@@ -147,6 +151,7 @@ export function useBirdBoxStore() {
     editMode,
     setEditMode,
     canEdit,
+    dayHasRecord,
     eggs: activeEggs,
     babies,
     stats,
