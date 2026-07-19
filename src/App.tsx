@@ -15,29 +15,19 @@ function clamp(v: number, min: number, max: number) {
   return Math.min(max, Math.max(min, v))
 }
 
-// How far beyond a zone's own size it starts reacting to an approaching egg,
-// as a multiple of the zone's (larger) side length.
-const ZONE_REACH_FACTOR = 1.35
+// How far beyond a zone's own size its funnel starts fading in as an egg
+// approaches, as a multiple of the zone's (larger) side length. Generous on
+// purpose — the fade should read as a continuous approach, not a sudden
+// switch right at the box's edge.
+const ZONE_REACH_FACTOR = 1.8
 
-// A curved guide line from the dragged egg to whichever zone it's currently
-// headed towards, echoing the swooping line in the reference artwork. The
-// control point is pulled upward from the midpoint so the line arcs rather
-// than cutting straight across the other two zones.
-function renderDragGuideLine(drag: { x: number; y: number }, zoneEl: HTMLDivElement | null) {
-  if (!zoneEl) return null
-  const r = zoneEl.getBoundingClientRect()
-  const ex = r.left + r.width / 2
-  const ey = r.top + r.height * 0.1
-  const sx = drag.x
-  const sy = drag.y
-  const cx = (sx + ex) / 2
-  const cy = Math.min(sy, ey) - 40
-  return (
-    <svg className="pointer-events-none fixed inset-0 z-40 h-full w-full overflow-visible">
-      <path d={`M ${sx} ${sy} Q ${cx} ${cy} ${ex} ${ey}`} fill="none" stroke="var(--accent)" strokeWidth={3} strokeLinecap="round" />
-    </svg>
-  )
-}
+// A zone only becomes the actual drop target (for release / commit) once its
+// funnel is at least this far faded in — otherwise, three zones sitting close
+// together would make even the "closest of three far-off zones" count as
+// targeted.
+const ZONE_COMMIT_THRESHOLD = 0.5
+
+const ZERO_PROXIMITY: Record<DropZone, number> = { missing: 0, discard: 0, collect: 0 }
 
 export default function App() {
   const store = useBirdBoxStore()
@@ -50,7 +40,7 @@ export default function App() {
   const [babyEdit, setBabyEdit] = useState<{ babyId: string; anchor: HTMLElement } | null>(null)
 
   const [dragVisual, setDragVisual] = useState<{ eggId: string; x: number; y: number } | null>(null)
-  const [activeZone, setActiveZone] = useState<DropZone | null>(null)
+  const [zoneProximity, setZoneProximity] = useState<Record<DropZone, number>>(ZERO_PROXIMITY)
 
   const dragInfo = useRef<{ eggId: string; startX: number; startY: number; active: boolean } | null>(null)
   const draggedFlag = useRef(false)
@@ -72,15 +62,13 @@ export default function App() {
       }
       if (info.active) {
         setDragVisual({ eggId: info.eggId, x: e.clientX, y: e.clientY })
-        // Target the nearest zone once the pointer gets within reach of it —
-        // not only once directly overlapping — so the zone can visibly "open
-        // up" as the egg is dragged *towards* it, matching the reference
-        // artwork. Compare by distance-to-center (not padded-rect containment)
-        // so that with three zones sitting close together, the pointer always
-        // resolves to whichever one it's actually closest to instead of
-        // whichever padded region happens to come first.
+        // Each zone's funnel fades in continuously with proximity (1 = egg
+        // right over it, 0 = at rest) rather than snapping on/off, so the
+        // funnel reads as something the egg is approaching rather than a
+        // binary hover state.
+        const proximity: Record<DropZone, number> = { missing: 0, discard: 0, collect: 0 }
         let hit: DropZone | null = null
-        let bestDist = Infinity
+        let bestProximity = 0
         for (const zone of ['missing', 'discard', 'collect'] as DropZone[]) {
           const el = zoneRefs.current[zone]
           if (!el) continue
@@ -89,13 +77,19 @@ export default function App() {
           const cy = r.top + r.height / 2
           const dist = Math.hypot(e.clientX - cx, e.clientY - cy)
           const reach = Math.max(r.width, r.height) * ZONE_REACH_FACTOR
-          if (dist < reach && dist < bestDist) {
-            bestDist = dist
+          const p = clamp(1 - dist / reach, 0, 1)
+          proximity[zone] = p
+          if (p > bestProximity) {
+            bestProximity = p
             hit = zone
           }
         }
-        activeZoneRef.current = hit
-        setActiveZone(hit)
+        // Only commit to a target once its funnel is substantially faded in —
+        // otherwise, whichever of the three zones happens to be least-far
+        // away would count as targeted even while the egg is nowhere near any
+        // of them.
+        activeZoneRef.current = bestProximity >= ZONE_COMMIT_THRESHOLD ? hit : null
+        setZoneProximity(proximity)
       }
     }
     function up() {
@@ -111,7 +105,7 @@ export default function App() {
       dragInfo.current = null
       activeZoneRef.current = null
       setDragVisual(null)
-      setActiveZone(null)
+      setZoneProximity(ZERO_PROXIMITY)
     }
     window.addEventListener('pointermove', move)
     window.addEventListener('pointerup', up)
@@ -197,7 +191,7 @@ export default function App() {
 
           <div className="pt-6" style={{ marginTop: 'auto' }}>
             <ActionZones
-              activeZone={activeZone}
+              proximity={zoneProximity}
               disabled={!store.canEdit}
               registerRef={(zone, el) => {
                 zoneRefs.current[zone] = el
@@ -264,8 +258,6 @@ export default function App() {
         onClose={() => setBabyEdit(null)}
         onSubmit={(details) => babyBeingEdited && store.updateBaby(babyBeingEdited.id, details)}
       />
-
-      {dragVisual && activeZone && renderDragGuideLine(dragVisual, zoneRefs.current[activeZone])}
 
       {dragVisual && ghostEgg && (
         <div
