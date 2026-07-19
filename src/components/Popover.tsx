@@ -88,7 +88,7 @@ export function ScrollFadeBottom({ show }: { show: boolean }) {
   if (!show) return null
   return (
     <div
-      className="pointer-events-none sticky bottom-0 z-10 -mt-9 h-9"
+      className="pointer-events-none sticky bottom-0 z-10 -mt-16 h-16"
       style={{ background: 'linear-gradient(to top, var(--cream-panel), transparent)' }}
     />
   )
@@ -211,6 +211,7 @@ interface Placement {
   tailLeft: number
   placement: 'below' | 'above'
   maxHeight: number
+  maxWidth: number
 }
 
 interface Bounds {
@@ -287,12 +288,27 @@ export function Popover({
     function place() {
       const card = cardRef.current
       if (!card || !anchorEl) return
-      // Measure the card's natural (unconstrained) size first.
+      const { left: vpLeft, top: vpTop, right: vpRight, bottom: vpBottom } = getPlacementBounds()
+
+      // The card's own CSS width (widthClassName) is sized off 100vw, with no
+      // idea where the app's own bordered pane actually sits — on a narrow
+      // screen that can make it wider than the pane's available inner space,
+      // so centering math below has nowhere to put equal margins on both
+      // sides (or, worse, the card ends up flush against the border). Cap it
+      // to what the pane can actually offer before measuring/centering.
+      const maxWidth = vpRight - vpLeft - MARGIN * 2
+
+      // Measure the card's natural (unconstrained) size first. Use
+      // offsetWidth/offsetHeight rather than getBoundingClientRect() here:
+      // the card's entrance animation (scale(0.97) -> scale(1)) is a CSS
+      // transform, and transforms are applied after layout — so a rect read
+      // mid-animation reports a transiently shrunk size, while the offset*
+      // properties reflect true layout size regardless of transform.
       card.style.maxHeight = 'none'
+      card.style.maxWidth = `${maxWidth}px`
       const anchorRect = anchorEl.getBoundingClientRect()
-      const cardRect = card.getBoundingClientRect()
-      const width = cardRect.width
-      let naturalHeight = cardRect.height
+      const width = card.offsetWidth
+      let naturalHeight = card.offsetHeight
 
       // If a cap was given, don't let it inflate the *whole* natural height —
       // only the scrollable region's own share of it. Everything else (title,
@@ -303,14 +319,19 @@ export function Popover({
       if (contentMaxHeight != null) {
         const scrollEl = card.querySelector<HTMLElement>('[data-popover-scroll]')
         if (scrollEl) {
-          const scrollNaturalHeight = scrollEl.getBoundingClientRect().height
-          const chromeHeight = cardRect.height - scrollNaturalHeight
+          const scrollNaturalHeight = scrollEl.offsetHeight
+          const chromeHeight = naturalHeight - scrollNaturalHeight
           naturalHeight = chromeHeight + Math.min(scrollNaturalHeight, contentMaxHeight)
         }
       }
-      const { left: vpLeft, top: vpTop, right: vpRight, bottom: vpBottom } = getPlacementBounds()
 
-      let left = anchorRect.left + anchorRect.width / 2 - width / 2
+      // Always horizontally centered in the pane rather than centered under
+      // the anchor — the anchor can sit anywhere across the width of the
+      // header/grid, and centering on it risked the card creeping close to
+      // (or past) the app's own border on narrow screens. The tail below
+      // still points back at the anchor's actual x position, so context
+      // isn't lost by centering the card itself.
+      let left = vpLeft + (vpRight - vpLeft - width) / 2
       left = Math.min(Math.max(left, vpLeft + MARGIN), Math.max(vpLeft + MARGIN, vpRight - width - MARGIN))
 
       // Expand to fit the content, capped by the (keyboard-aware, shell-clamped) bounds — scrolls
@@ -341,7 +362,7 @@ export function Popover({
       // set ourselves. That silently uncaps the popover, which is exactly
       // the "still clipped at the bottom" bug this was supposed to prevent.
       card.style.maxHeight = `${height}px`
-      setPos({ top, left, tailLeft, placement, maxHeight: height })
+      setPos({ top, left, tailLeft, placement, maxHeight: height, maxWidth })
     }
     place()
     // Descendants like the box grid's scrollbar/fade depend on useScrollFade
@@ -384,6 +405,7 @@ export function Popover({
     top: pos?.top ?? -9999,
     left: pos?.left ?? -9999,
     maxHeight: pos?.maxHeight,
+    maxWidth: pos?.maxWidth,
     visibility: pos ? 'visible' : 'hidden',
     ['--pop-origin-x' as string]: pos ? `${pos.tailLeft}px` : '50%',
   }

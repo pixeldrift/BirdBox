@@ -143,10 +143,14 @@ export default function App() {
             ))}
             <AddEggTile
               disabled={!store.canEdit}
-              onClick={() => {
+              onClick={(anchor) => {
                 const id = store.addEgg()
-                // anchor to the grid itself; the new tile isn't in the DOM yet this tick
-                setStatusPopup({ eggId: id, anchor: gridRef.current ?? document.body })
+                // The new egg's own tile isn't in the DOM yet this tick (it
+                // renders on the next commit), but the "+" button just
+                // clicked is — anchor there instead of the whole grid so the
+                // popover's tail points at something the user actually
+                // tapped, not the grid's overall center.
+                setStatusPopup({ eggId: id, anchor })
               }}
             />
           </div>

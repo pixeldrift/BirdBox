@@ -15,7 +15,7 @@ interface StatusPopupProps {
 export function StatusPopup({ open, egg, anchorEl, onClose, onSelect, onDelete }: StatusPopupProps) {
   if (!egg) return null
   return (
-    <Popover open={open} anchorEl={anchorEl} onClose={onClose} title="Egg condition">
+    <Popover open={open} anchorEl={anchorEl} onClose={onClose} title="Egg Condition">
       <div className="grid grid-cols-3 gap-3">
         {EGG_STATUS_OPTIONS.map(({ status, label }) => {
           const { Glyph, color } = eggVisual(status)

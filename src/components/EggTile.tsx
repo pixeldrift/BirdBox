@@ -44,11 +44,11 @@ export function EggTile({ egg, disabled, dimmed, onActivate, onPointerDownDrag }
   )
 }
 
-export function AddEggTile({ onClick, disabled }: { onClick: () => void; disabled?: boolean }) {
+export function AddEggTile({ onClick, disabled }: { onClick: (anchor: HTMLElement) => void; disabled?: boolean }) {
   return (
     <button
       type="button"
-      onClick={onClick}
+      onClick={(e) => onClick(e.currentTarget)}
       disabled={disabled}
       className="clay-inset clay-interactive egg-shape flex aspect-[4/5] w-full items-center justify-center transition-colors disabled:opacity-40"
       style={{ color: 'var(--accent)' }}
