@@ -1,4 +1,20 @@
-import { useId, type CSSProperties } from 'react'
+import type { CSSProperties } from 'react'
+import chevronLeft from '@/icons/chevron-left.svg?raw'
+import chevronRight from '@/icons/chevron-right.svg?raw'
+import chick from '@/icons/chick.svg?raw'
+import check from '@/icons/check.svg?raw'
+import crack from '@/icons/crack.svg?raw'
+import dead from '@/icons/dead.svg?raw'
+import downArrow from '@/icons/down-arrow.svg?raw'
+import erasePencil from '@/icons/erase-pencil.svg?raw'
+import palette from '@/icons/palette.svg?raw'
+import pencil from '@/icons/pencil.svg?raw'
+import plus from '@/icons/plus.svg?raw'
+import question from '@/icons/question.svg?raw'
+import recordPencil from '@/icons/record-pencil.svg?raw'
+import triangleLeft from '@/icons/triangle-left.svg?raw'
+import triangleRight from '@/icons/triangle-right.svg?raw'
+import x from '@/icons/x.svg?raw'
 
 interface GlyphProps {
   className?: string
@@ -9,190 +25,85 @@ interface DirGlyphProps extends GlyphProps {
   dir?: 'left' | 'right'
 }
 
-export function VerticalDragGlyph({ className = '', style }: GlyphProps) {
+/** Renders a raw .svg file's markup, sized by the wrapper (the file itself
+ * carries no width/height, only a viewBox) so callers size icons the same
+ * way as before — with a className like "h-5 w-5" — without needing every
+ * source file to hardcode a particular pixel size. */
+function Svg({ src, className = '', style }: GlyphProps & { src: string }) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" className={className} style={style} aria-hidden="true">
-      <path
-        d="M12 2.6L8.8 6.2M12 2.6l3.2 3.6M12 2.6v18.8M12 21.4l-3.2-3.6M12 21.4l3.2-3.6"
-        stroke="currentColor"
-        strokeWidth={2}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
+    <span
+      aria-hidden="true"
+      className={`inline-block [&>svg]:block [&>svg]:h-full [&>svg]:w-full ${className}`}
+      style={style}
+      dangerouslySetInnerHTML={{ __html: src }}
+    />
   )
 }
 
-export function ChevronIcon({ dir = 'left', className = '', style }: DirGlyphProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className} style={style} aria-hidden="true">
-      <path
-        d={dir === 'left' ? 'M15 5l-7 7 7 7' : 'M9 5l7 7-7 7'}
-        stroke="currentColor"
-        strokeWidth={2.5}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
+export function ChevronIcon({ dir = 'left', className, style }: DirGlyphProps) {
+  return <Svg src={dir === 'left' ? chevronLeft : chevronRight} className={className} style={style} />
 }
 
-export function TriangleGlyph({ dir = 'left', className = '', style }: DirGlyphProps) {
-  const id = useId()
-  const gradientId = `tri-grad-${id}`
+export function TriangleGlyph({ dir = 'left', className, style }: DirGlyphProps) {
   return (
-    <svg
-      viewBox="0 0 24 24"
+    <Svg
+      src={dir === 'left' ? triangleLeft : triangleRight}
       className={className}
       style={{ filter: 'drop-shadow(0 2px 1.5px rgba(120,60,10,0.4))', ...style }}
-      aria-hidden="true"
-    >
-      <defs>
-        <linearGradient id={gradientId} x1="0" y1="0" x2="0.7" y2="1">
-          <stop offset="0%" stopColor="var(--accent-light)" />
-          <stop offset="55%" stopColor="var(--accent)" />
-          <stop offset="100%" stopColor="var(--accent-dark)" />
-        </linearGradient>
-      </defs>
-      <path
-        d={dir === 'left' ? 'M20 3L3 12l17 9V3Z' : 'M4 3l17 9-17 9V3Z'}
-        fill={`url(#${gradientId})`}
-        stroke={`url(#${gradientId})`}
-        strokeWidth={2.5}
-        strokeLinejoin="round"
-        strokeLinecap="round"
-      />
-    </svg>
+    />
   )
 }
 
-export function RecordPencilGlyph({ className = '', style }: GlyphProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className} style={style} aria-hidden="true">
-      <path d="M3.5 8.5h7.5M3.5 12.5h5.5M3.5 16.5h4" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" />
-      <path
-        d="M9.5 20.2l.9-3.9L19.2 7.6a1.5 1.5 0 0 1 2.1 0l.9.9a1.5 1.5 0 0 1 0 2.1L13.4 19.3l-3.9.9Z"
-        stroke="currentColor"
-        strokeWidth={1.7}
-        strokeLinejoin="round"
-      />
-      <path d="M18.3 9.5l2.1 2.1" stroke="currentColor" strokeWidth={1.7} />
-    </svg>
-  )
+// The "Record" and "Revise" sides of the edit-mode toggle share the same
+// pencil-and-notes drawing, just facing opposite ways — but Revise's is a
+// dedicated file with the 180° turn baked into its own internal group
+// transform, not a CSS transform on this component. A CSS rotate here would
+// also rotate whatever drop-shadow filter a caller applies via `style`,
+// flipping the shadow upside-down; see erase-pencil.svg.
+export function RecordPencilGlyph({ className, style }: GlyphProps) {
+  return <Svg src={recordPencil} className={className} style={style} />
 }
 
-export function CheckGlyph({ className = '', style }: GlyphProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className} style={style} aria-hidden="true">
-      <path d="M5 13l4.5 4.5L19 7" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
+export function EraseGlyph({ className, style }: GlyphProps) {
+  return <Svg src={erasePencil} className={className} style={style} />
 }
 
-export function XGlyph({ className = '', style }: GlyphProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className} style={style} aria-hidden="true">
-      <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" />
-    </svg>
-  )
+export function CheckGlyph({ className, style }: GlyphProps) {
+  return <Svg src={check} className={className} style={style} />
 }
 
-export function QuestionGlyph({ className = '', style }: GlyphProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className} style={style} aria-hidden="true">
-      <path
-        d="M9 9a3 3 0 1 1 4.5 2.6c-1 .6-1.5 1.1-1.5 2.4"
-        stroke="currentColor"
-        strokeWidth={2.2}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <circle cx="12" cy="18" r="1.15" fill="currentColor" stroke="none" />
-    </svg>
-  )
+export function XGlyph({ className, style }: GlyphProps) {
+  return <Svg src={x} className={className} style={style} />
 }
 
-export function CrackGlyph({ className = '', style }: GlyphProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className} style={style} aria-hidden="true">
-      <path
-        d="M8 4l3 5-3 2.5 4 3.5-2 5"
-        stroke="currentColor"
-        strokeWidth={2.2}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
+export function QuestionGlyph({ className, style }: GlyphProps) {
+  return <Svg src={question} className={className} style={style} />
 }
 
-export function DeadGlyph({ className = '', style }: GlyphProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className} style={style} aria-hidden="true">
-      <path d="M7 9l3 3m0-3l-3 3M14 9l3 3m0-3l-3 3" stroke="currentColor" strokeWidth={2} strokeLinecap="round" />
-      <path d="M8.5 16.5c1.2-1 5.8-1 7 0" stroke="currentColor" strokeWidth={2} strokeLinecap="round" />
-    </svg>
-  )
+export function CrackGlyph({ className, style }: GlyphProps) {
+  return <Svg src={crack} className={className} style={style} />
 }
 
-export function DownArrowGlyph({ className = '', style }: GlyphProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className} style={style} aria-hidden="true">
-      <path d="M12 4v14M6 12l6 6 6-6" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
+export function DeadGlyph({ className, style }: GlyphProps) {
+  return <Svg src={dead} className={className} style={style} />
 }
 
-export function PlusGlyph({ className = '', style }: GlyphProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className} style={style} aria-hidden="true">
-      <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" />
-    </svg>
-  )
+export function DownArrowGlyph({ className, style }: GlyphProps) {
+  return <Svg src={downArrow} className={className} style={style} />
 }
 
-export function PencilGlyph({ className = '', style }: GlyphProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className} style={style} aria-hidden="true">
-      <path
-        d="M4 20l.9-3.9L15.6 5.4a1.5 1.5 0 0 1 2.1 0l.9.9a1.5 1.5 0 0 1 0 2.1L7.9 19.1 4 20Z"
-        stroke="currentColor"
-        strokeWidth={1.8}
-        strokeLinejoin="round"
-      />
-      <path d="M13.5 7.5l3 3" stroke="currentColor" strokeWidth={1.8} />
-    </svg>
-  )
+export function PlusGlyph({ className, style }: GlyphProps) {
+  return <Svg src={plus} className={className} style={style} />
 }
 
-export function PaletteGlyph({ className = '', style }: GlyphProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className} style={style} aria-hidden="true">
-      <path
-        d="M12 3a9 8.5 0 1 0 0 17c1.1 0 1.7-.9 1.2-1.8-.3-.6-.1-1.3.6-1.5.7-.2 1.4-.2 2.1-.2A4.1 4.1 0 0 0 20 12.5C20 7.3 16.4 3 12 3Z"
-        stroke="currentColor"
-        strokeWidth={1.7}
-      />
-      <circle cx="7.6" cy="11" r="1.15" fill="currentColor" stroke="none" />
-      <circle cx="10.5" cy="7.3" r="1.15" fill="currentColor" stroke="none" />
-      <circle cx="15" cy="8" r="1.15" fill="currentColor" stroke="none" />
-      <circle cx="16.6" cy="11.8" r="1.15" fill="currentColor" stroke="none" />
-    </svg>
-  )
+export function PencilGlyph({ className, style }: GlyphProps) {
+  return <Svg src={pencil} className={className} style={style} />
 }
 
-export function ChickGlyph({ className = '', style }: GlyphProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className} style={style} aria-hidden="true">
-      <path d="M9 5l1.5 2M15 5l-1.5 2" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" />
-      <path
-        d="M12 7c3.3 0 5.5 2.4 5.5 5.4 0 3-2.3 6.1-5.5 6.1s-5.5-3.1-5.5-6.1C6.5 9.4 8.7 7 12 7Z"
-        stroke="currentColor"
-        strokeWidth={1.8}
-      />
-      <circle cx="10.1" cy="11.6" r="0.9" fill="currentColor" stroke="none" />
-      <circle cx="13.9" cy="11.6" r="0.9" fill="currentColor" stroke="none" />
-      <path d="M11 13.4h2l-1 1.2-1-1.2Z" fill="currentColor" stroke="none" />
-    </svg>
-  )
+export function PaletteGlyph({ className, style }: GlyphProps) {
+  return <Svg src={palette} className={className} style={style} />
+}
+
+export function ChickGlyph({ className, style }: GlyphProps) {
+  return <Svg src={chick} className={className} style={style} />
 }

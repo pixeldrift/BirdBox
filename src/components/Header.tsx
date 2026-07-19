@@ -1,5 +1,5 @@
-import { Fragment } from 'react'
-import { ChevronIcon, RecordPencilGlyph, TriangleGlyph } from '@/components/icons'
+import { Fragment, type PointerEvent as ReactPointerEvent } from 'react'
+import { ChevronIcon, EraseGlyph, RecordPencilGlyph, TriangleGlyph } from '@/components/icons'
 import { addDays, formatRelativeLabel, formatShort, todayStr } from '@/lib/date'
 
 interface HeaderProps {
@@ -118,15 +118,17 @@ const TOGGLE_H = 50
 const TOGGLE_PAD = 3
 const THUMB_W = 64
 const ICON_BTN_W = 32
+const ICON_BTN_OFFSET = 8
 const ICON_SIZE = 28
-// Each icon button's own position is fixed regardless of which side is
-// active, but the (wider) orange thumb only ever docks fully left or fully
-// right — so centering each icon on *its own* docked-thumb position (rather
-// than a shared edge offset) keeps it centered under the thumb once active,
-// even though that leaves the two icons at slightly different insets in the
-// inactive/track state.
-const LEFT_ICON_LEFT = TOGGLE_PAD + THUMB_W / 2 - ICON_BTN_W / 2
-const RIGHT_ICON_LEFT = TOGGLE_W - TOGGLE_PAD - THUMB_W / 2 - ICON_BTN_W / 2
+// The (wider) orange thumb only ever docks fully left or fully right, so an
+// icon centers under it there — but in the inactive/track state (no thumb
+// behind it) that same centered spot reads as adrift in the middle. Pull the
+// inactive icon back out toward its own edge instead; only the active side's
+// position needs to match the thumb's center.
+const LEFT_ICON_ACTIVE = TOGGLE_PAD + THUMB_W / 2 - ICON_BTN_W / 2
+const LEFT_ICON_INACTIVE = ICON_BTN_OFFSET
+const RIGHT_ICON_ACTIVE = TOGGLE_W - TOGGLE_PAD - THUMB_W / 2 - ICON_BTN_W / 2
+const RIGHT_ICON_INACTIVE = TOGGLE_W - ICON_BTN_OFFSET - ICON_BTN_W
 const EMBOSS = { filter: 'drop-shadow(0 1px 1px rgba(64,30,0,0.4))' } as const
 
 function EditModeToggle({
@@ -143,8 +145,23 @@ function EditModeToggle({
   // "Record" (today's default) docks the thumb right; "Revise" (unlock a past date) docks it left.
   const recordActive = canEdit && (editMode || isTodaySelected)
 
+  // Tapping or dragging-and-releasing anywhere on the toggle — including the
+  // recessed well between the two icons — switches to whichever side the
+  // pointer ends up on, the same way a native switch responds to a drag.
+  function onRelease(e: ReactPointerEvent<HTMLDivElement>) {
+    const rect = e.currentTarget.getBoundingClientRect()
+    const onRightSide = e.clientX - rect.left > rect.width / 2
+    if (onRightSide) onSetEditMode(true)
+    else if (!isTodaySelected) onSetEditMode(false)
+  }
+
   return (
-    <div className="clay-inset relative rounded-full" style={{ width: TOGGLE_W, height: TOGGLE_H, padding: TOGGLE_PAD }}>
+    <div
+      className="clay-inset relative touch-none rounded-full"
+      style={{ width: TOGGLE_W, height: TOGGLE_H, padding: TOGGLE_PAD }}
+      onPointerDown={(e) => e.currentTarget.setPointerCapture(e.pointerId)}
+      onPointerUp={onRelease}
+    >
       <div
         className="clay-accent-soft absolute rounded-full transition-[left,right] duration-200 ease-out"
         style={
@@ -158,16 +175,15 @@ function EditModeToggle({
         onClick={() => onSetEditMode(false)}
         disabled={isTodaySelected}
         title="Revise"
-        className="clay-interactive absolute flex items-center justify-center rounded-full disabled:cursor-default"
-        style={{ left: LEFT_ICON_LEFT, top: TOGGLE_PAD, bottom: TOGGLE_PAD, width: ICON_BTN_W }}
+        className="absolute flex items-center justify-center rounded-full transition-[left] duration-200 ease-out disabled:cursor-default"
+        style={{ left: recordActive ? LEFT_ICON_INACTIVE : LEFT_ICON_ACTIVE, top: TOGGLE_PAD, bottom: TOGGLE_PAD, width: ICON_BTN_W }}
       >
-        <RecordPencilGlyph
+        <EraseGlyph
           style={{
             height: ICON_SIZE,
             width: ICON_SIZE,
             color: recordActive ? 'var(--ink)' : '#fff8ee',
             opacity: recordActive ? 0.4 : 1,
-            transform: 'rotate(180deg)',
             ...(recordActive ? undefined : EMBOSS),
           }}
         />
@@ -176,8 +192,8 @@ function EditModeToggle({
         type="button"
         onClick={() => onSetEditMode(true)}
         title="Record"
-        className="clay-interactive absolute flex items-center justify-center rounded-full"
-        style={{ left: RIGHT_ICON_LEFT, top: TOGGLE_PAD, bottom: TOGGLE_PAD, width: ICON_BTN_W }}
+        className="absolute flex items-center justify-center rounded-full transition-[left] duration-200 ease-out"
+        style={{ left: recordActive ? RIGHT_ICON_ACTIVE : RIGHT_ICON_INACTIVE, top: TOGGLE_PAD, bottom: TOGGLE_PAD, width: ICON_BTN_W }}
       >
         <RecordPencilGlyph
           style={{
@@ -244,7 +260,7 @@ function NumberNav({
       <div className="mb-1 text-xs font-bold uppercase tracking-wide" style={{ color: 'var(--ink)', opacity: 0.55 }}>
         {label}
       </div>
-      <div className="flex items-center justify-center gap-0">
+      <div className="flex items-center justify-center gap-2">
         <button
           type="button"
           onClick={onDec}
@@ -252,13 +268,13 @@ function NumberNav({
           className="-m-1.5 flex items-center justify-center rounded-full p-1.5 transition-transform active:scale-90 disabled:opacity-30"
           aria-label={`Previous ${label}`}
         >
-          <TriangleGlyph dir="left" className="h-9 w-9" />
+          <TriangleGlyph dir="left" className="h-9 w-5" />
         </button>
         <button
           type="button"
           onClick={(e) => onOpen(e.currentTarget)}
           className="clay clay-interactive font-display rounded-2xl border-[3px] px-1 py-1 leading-none font-extrabold tabular-nums"
-          style={{ borderColor: 'var(--accent)', color: 'var(--ink)', fontSize: 'clamp(2.2rem, calc(36vw - 73px), 4.2rem)' }}
+          style={{ borderColor: 'var(--accent)', color: 'var(--ink)', fontSize: 'clamp(2.1rem, calc(32vw - 65px), 3.8rem)' }}
         >
           {String(value).padStart(2, '0')}
         </button>
@@ -269,7 +285,7 @@ function NumberNav({
           className="-m-1.5 flex items-center justify-center rounded-full p-1.5 transition-transform active:scale-90 disabled:opacity-30"
           aria-label={`Next ${label}`}
         >
-          <TriangleGlyph dir="right" className="h-9 w-9" />
+          <TriangleGlyph dir="right" className="h-9 w-5" />
         </button>
       </div>
     </div>
