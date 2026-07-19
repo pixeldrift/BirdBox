@@ -130,7 +130,7 @@ function ScrollableContent({ children }: { children: React.ReactNode }) {
   const { ref, containerRef, canScrollUp, canScrollDown, scrollTop, scrollHeight, clientHeight } = useScrollFade<HTMLDivElement>()
 
   return (
-    <div ref={ref} className="min-h-0 flex-1 overflow-y-auto pr-6 pb-1">
+    <div ref={ref} data-popover-scroll className="min-h-0 flex-1 overflow-y-auto pr-6 pb-1">
       <ScrollFadeTop show={canScrollUp} />
       <CustomScrollbar containerRef={containerRef} scrollTop={scrollTop} scrollHeight={scrollHeight} clientHeight={clientHeight} />
       {children}
@@ -175,6 +175,14 @@ interface PopoverProps {
   onStep?: (delta: number) => void
   children: React.ReactNode
   widthClassName?: string
+  // Caps how tall the scrollable content area is allowed to naturally grow
+  // before it scrolls internally (e.g. a tall grid picker), independent of
+  // the viewport heightCap below. Lets content that would rather stay
+  // compact (not fill all available screen space) use the *same* single
+  // scroll region/fade/scrollbar as everything else, instead of nesting a
+  // second scrollable div inside it — which would trap that inner
+  // scrollbar an extra padding-gutter's depth away from the card's edge.
+  contentMaxHeight?: number
 }
 
 const MARGIN = 16
@@ -298,6 +306,7 @@ export function Popover({
   onStep,
   children,
   widthClassName = 'w-[calc(100vw-2rem)] max-w-sm',
+  contentMaxHeight,
 }: PopoverProps) {
   const cardRef = useRef<HTMLDivElement>(null)
   const [pos, setPos] = useState<Placement | null>(null)
@@ -315,7 +324,22 @@ export function Popover({
       const anchorRect = anchorEl.getBoundingClientRect()
       const cardRect = card.getBoundingClientRect()
       const width = cardRect.width
-      const naturalHeight = cardRect.height
+      let naturalHeight = cardRect.height
+
+      // If a cap was given, don't let it inflate the *whole* natural height —
+      // only the scrollable region's own share of it. Everything else (title,
+      // padding) still gets its real natural size; only the part that would
+      // otherwise scroll gets clamped here, so it scrolls internally via the
+      // one shared ScrollableContent instead of the caller nesting a second
+      // scrollable div (and a second, doubly-inset scrollbar) inside it.
+      if (contentMaxHeight != null) {
+        const scrollEl = card.querySelector<HTMLElement>('[data-popover-scroll]')
+        if (scrollEl) {
+          const scrollNaturalHeight = scrollEl.getBoundingClientRect().height
+          const chromeHeight = cardRect.height - scrollNaturalHeight
+          naturalHeight = chromeHeight + Math.min(scrollNaturalHeight, contentMaxHeight)
+        }
+      }
       const { left: vpLeft, top: vpTop, right: vpRight, bottom: vpBottom } = getPlacementBounds()
 
       let left = anchorRect.left + anchorRect.width / 2 - width / 2
@@ -358,7 +382,7 @@ export function Popover({
       window.visualViewport?.removeEventListener('resize', place)
       window.visualViewport?.removeEventListener('scroll', place)
     }
-  }, [open, anchorEl])
+  }, [open, anchorEl, contentMaxHeight])
 
   useEffect(() => {
     if (!open) return
@@ -393,7 +417,7 @@ export function Popover({
         {pos && <PopoverTail left={pos.tailLeft} pointDown={pos.placement === 'above'} />}
         {/* Inner card: the visible surface, clipped to its rounded corners and maxHeight. */}
         <div
-          className="clay flex min-h-0 flex-1 flex-col overflow-hidden rounded-[1.75rem] border-[3px] p-5"
+          className="clay flex min-h-0 flex-1 flex-col overflow-hidden rounded-[1.75rem] border-[3px] py-5 pr-3 pl-5"
           style={{ borderColor: 'var(--accent)', background: 'var(--cream-panel)' }}
         >
           {title && (

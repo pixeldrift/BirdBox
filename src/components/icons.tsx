@@ -54,7 +54,14 @@ export function TriangleGlyph({ dir = 'left', className = '', style }: DirGlyphP
           <stop offset="100%" stopColor="var(--accent-dark)" />
         </linearGradient>
       </defs>
-      <path d={dir === 'left' ? 'M16 4L6 12l10 8V4Z' : 'M8 4l10 8-10 8V4Z'} fill={`url(#${gradientId})`} />
+      <path
+        d={dir === 'left' ? 'M20 3L3 12l17 9V3Z' : 'M4 3l17 9-17 9V3Z'}
+        fill={`url(#${gradientId})`}
+        stroke={`url(#${gradientId})`}
+        strokeWidth={2.5}
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      />
     </svg>
   )
 }

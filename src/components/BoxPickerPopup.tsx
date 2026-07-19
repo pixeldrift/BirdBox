@@ -1,6 +1,5 @@
-import { CustomScrollbar, Popover, ScrollFadeBottom, ScrollFadeTop } from '@/components/Popover'
+import { Popover } from '@/components/Popover'
 import { useDragSelectGrid } from '@/lib/useDragSelectGrid'
-import { useScrollFade } from '@/lib/useScrollFade'
 
 interface BoxPickerPopupProps {
   open: boolean
@@ -14,7 +13,7 @@ interface BoxPickerPopupProps {
 }
 
 // Cap the grid to ~5 rows (20 tiles) so the popup stays compact instead of
-// filling the screen; the rest is reachable via the internal scroll + fade.
+// filling the screen; the rest is reachable via the popover's own scroll + fade.
 const VISIBLE_ROWS = 5
 const TILE_SIZE = 64
 const GRID_GAP = 8
@@ -26,46 +25,48 @@ export function BoxPickerPopup({ open, anchorEl, onClose, count, selected, onSel
     onSelect(Number(value))
     onClose()
   })
-  const { ref, containerRef, canScrollUp, canScrollDown, scrollTop, scrollHeight, clientHeight } = useScrollFade<HTMLDivElement>()
 
   return (
-    <Popover open={open} anchorEl={anchorEl} onClose={onClose} title="Box" onStep={onStep} widthClassName="w-[calc(100vw-2rem)] max-w-xs">
-      <div ref={ref} className="overflow-y-auto pr-6" style={{ maxHeight: GRID_MAX_HEIGHT }}>
-        <ScrollFadeTop show={canScrollUp} />
-        <CustomScrollbar containerRef={containerRef} scrollTop={scrollTop} scrollHeight={scrollHeight} clientHeight={clientHeight} />
-        <div className="grid touch-none grid-cols-4 gap-2 select-none" onPointerDown={onPointerDown}>
-          {ids.map((id) => {
-            const value = String(id)
-            const active = id === selected
-            const done = isDone(id)
-            const dragged = hovered === value && !active
-            return (
-              <button
-                key={id}
-                type="button"
-                data-select-value={value}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault()
-                    onSelect(id)
-                    onClose()
-                  }
-                }}
-                className={`font-display aspect-square rounded-xl text-xl font-bold transition-colors ${
-                  active || dragged ? 'clay-accent' : done ? 'border-2' : ''
-                }`}
-                style={
-                  !active && !dragged
-                    ? { color: done ? 'var(--accent)' : 'var(--ink)', opacity: done ? 1 : 0.75, borderColor: done ? 'var(--accent)' : undefined }
-                    : undefined
+    <Popover
+      open={open}
+      anchorEl={anchorEl}
+      onClose={onClose}
+      title="Box"
+      onStep={onStep}
+      widthClassName="w-[calc(100vw-2rem)] max-w-xs"
+      contentMaxHeight={GRID_MAX_HEIGHT}
+    >
+      <div className="grid touch-none grid-cols-4 gap-2 select-none" onPointerDown={onPointerDown}>
+        {ids.map((id) => {
+          const value = String(id)
+          const active = id === selected
+          const done = isDone(id)
+          const dragged = hovered === value && !active
+          return (
+            <button
+              key={id}
+              type="button"
+              data-select-value={value}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  onSelect(id)
+                  onClose()
                 }
-              >
-                {String(id).padStart(2, '0')}
-              </button>
-            )
-          })}
-        </div>
-        <ScrollFadeBottom show={canScrollDown} />
+              }}
+              className={`font-display aspect-square rounded-xl text-xl font-bold transition-colors ${
+                active || dragged ? 'clay-accent' : done ? 'border-2' : ''
+              }`}
+              style={
+                !active && !dragged
+                  ? { color: done ? 'var(--accent)' : 'var(--ink)', opacity: done ? 1 : 0.75, borderColor: done ? 'var(--accent)' : undefined }
+                  : undefined
+              }
+            >
+              {String(id).padStart(2, '0')}
+            </button>
+          )
+        })}
       </div>
     </Popover>
   )
