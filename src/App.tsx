@@ -15,6 +15,30 @@ function clamp(v: number, min: number, max: number) {
   return Math.min(max, Math.max(min, v))
 }
 
+// How far beyond a zone's own size it starts reacting to an approaching egg,
+// as a multiple of the zone's (larger) side length.
+const ZONE_REACH_FACTOR = 1.35
+
+// A curved guide line from the dragged egg to whichever zone it's currently
+// headed towards, echoing the swooping line in the reference artwork. The
+// control point is pulled upward from the midpoint so the line arcs rather
+// than cutting straight across the other two zones.
+function renderDragGuideLine(drag: { x: number; y: number }, zoneEl: HTMLDivElement | null) {
+  if (!zoneEl) return null
+  const r = zoneEl.getBoundingClientRect()
+  const ex = r.left + r.width / 2
+  const ey = r.top + r.height * 0.1
+  const sx = drag.x
+  const sy = drag.y
+  const cx = (sx + ex) / 2
+  const cy = Math.min(sy, ey) - 40
+  return (
+    <svg className="pointer-events-none fixed inset-0 z-40 h-full w-full overflow-visible">
+      <path d={`M ${sx} ${sy} Q ${cx} ${cy} ${ex} ${ey}`} fill="none" stroke="var(--accent)" strokeWidth={3} strokeLinecap="round" />
+    </svg>
+  )
+}
+
 export default function App() {
   const store = useBirdBoxStore()
 
@@ -48,14 +72,26 @@ export default function App() {
       }
       if (info.active) {
         setDragVisual({ eggId: info.eggId, x: e.clientX, y: e.clientY })
+        // Target the nearest zone once the pointer gets within reach of it —
+        // not only once directly overlapping — so the zone can visibly "open
+        // up" as the egg is dragged *towards* it, matching the reference
+        // artwork. Compare by distance-to-center (not padded-rect containment)
+        // so that with three zones sitting close together, the pointer always
+        // resolves to whichever one it's actually closest to instead of
+        // whichever padded region happens to come first.
         let hit: DropZone | null = null
+        let bestDist = Infinity
         for (const zone of ['missing', 'discard', 'collect'] as DropZone[]) {
           const el = zoneRefs.current[zone]
           if (!el) continue
           const r = el.getBoundingClientRect()
-          if (e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) {
+          const cx = r.left + r.width / 2
+          const cy = r.top + r.height / 2
+          const dist = Math.hypot(e.clientX - cx, e.clientY - cy)
+          const reach = Math.max(r.width, r.height) * ZONE_REACH_FACTOR
+          if (dist < reach && dist < bestDist) {
+            bestDist = dist
             hit = zone
-            break
           }
         }
         activeZoneRef.current = hit
@@ -228,6 +264,8 @@ export default function App() {
         onClose={() => setBabyEdit(null)}
         onSubmit={(details) => babyBeingEdited && store.updateBaby(babyBeingEdited.id, details)}
       />
+
+      {dragVisual && activeZone && renderDragGuideLine(dragVisual, zoneRefs.current[activeZone])}
 
       {dragVisual && ghostEgg && (
         <div
