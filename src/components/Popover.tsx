@@ -1,6 +1,6 @@
-import { useEffect, useId, useLayoutEffect, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent, type RefObject } from 'react'
+import { useEffect, useId, useLayoutEffect, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react'
 import { createPortal } from 'react-dom'
-import { TriangleGlyph, VerticalDragGlyph } from '@/components/icons'
+import { TriangleGlyph } from '@/components/icons'
 import { SCROLL_SLACK, useScrollFade } from '@/lib/useScrollFade'
 
 // Marks the app's bordered shell in App.tsx so popovers can clamp their
@@ -19,8 +19,11 @@ const SCROLLBAR_MIN_THUMB = 30
 const SCROLLBAR_GUTTER = 24
 
 /**
- * Custom draggable scrollbar: a recessed channel with a small raised orange
- * thumb (a double-arrow icon marking it as a drag handle). Rendered the same
+ * Purely visual scroll position indicator: a recessed channel with a small
+ * raised orange thumb. Only visible while actively scrolling (fades out
+ * shortly after, like a native scrollbar) and not itself draggable — dragging
+ * the thumb to move content is the opposite of how a touch scroll works
+ * (drag up to see what's below), which read as backwards. Rendered the same
  * "sticky + explicit pixel height + cancelling negative margin" way as the
  * fade bars above, so it never needs an extra flex-1 wrapper (which collapses
  * to zero height — a flex-basis:0% item needs a definite-height ancestor to
@@ -28,69 +31,34 @@ const SCROLLBAR_GUTTER = 24
  * the ancestor's height is still indeterminate).
  */
 export function CustomScrollbar({
-  containerRef,
   scrollTop,
   scrollHeight,
   clientHeight,
+  isScrolling,
 }: {
-  containerRef: RefObject<HTMLElement | null>
   scrollTop: number
   scrollHeight: number
   clientHeight: number
+  isScrolling: boolean
 }) {
-  const draggingRef = useRef(false)
-  const dragStartRef = useRef({ startY: 0, startScrollTop: 0 })
-  const metricsRef = useRef({ maxTravel: 0, maxScroll: 0 })
-
   const usableHeight = Math.max(0, clientHeight - SCROLLBAR_INSET * 2)
   const thumbHeight = Math.min(usableHeight, Math.max(SCROLLBAR_MIN_THUMB, (clientHeight / Math.max(1, scrollHeight)) * usableHeight))
   const maxTravel = Math.max(0, usableHeight - thumbHeight)
   const maxScroll = Math.max(0, scrollHeight - clientHeight)
   const thumbTop = maxScroll > 0 ? (scrollTop / maxScroll) * maxTravel : 0
-  metricsRef.current = { maxTravel, maxScroll }
-
-  useEffect(() => {
-    function move(e: PointerEvent) {
-      if (!draggingRef.current || !containerRef.current) return
-      const { maxTravel, maxScroll } = metricsRef.current
-      if (maxTravel <= 0) return
-      const dy = e.clientY - dragStartRef.current.startY
-      containerRef.current.scrollTop = dragStartRef.current.startScrollTop + (dy / maxTravel) * maxScroll
-    }
-    function up() {
-      draggingRef.current = false
-    }
-    window.addEventListener('pointermove', move)
-    window.addEventListener('pointerup', up)
-    return () => {
-      window.removeEventListener('pointermove', move)
-      window.removeEventListener('pointerup', up)
-    }
-  }, [containerRef])
 
   if (scrollHeight <= clientHeight + SCROLL_SLACK || clientHeight === 0) return null
 
-  function onThumbPointerDown(e: ReactPointerEvent) {
-    draggingRef.current = true
-    dragStartRef.current = { startY: e.clientY, startScrollTop: containerRef.current?.scrollTop ?? 0 }
-  }
-
   return (
     <div
-      className="pointer-events-none sticky top-0 z-20"
-      style={{ height: clientHeight, marginBottom: -clientHeight, marginRight: -SCROLLBAR_GUTTER }}
+      className="pointer-events-none sticky top-0 z-20 transition-opacity duration-300"
+      style={{ height: clientHeight, marginBottom: -clientHeight, marginRight: -SCROLLBAR_GUTTER, opacity: isScrolling ? 1 : 0 }}
     >
       <div
         className="clay-inset absolute right-1 rounded-full"
         style={{ top: SCROLLBAR_INSET, bottom: SCROLLBAR_INSET, width: SCROLLBAR_WIDTH }}
       >
-        <div
-          className="clay-accent-soft clay-interactive pointer-events-auto absolute left-0 flex cursor-grab items-center justify-center rounded-full active:cursor-grabbing"
-          style={{ top: thumbTop, height: thumbHeight, width: SCROLLBAR_WIDTH }}
-          onPointerDown={onThumbPointerDown}
-        >
-          <VerticalDragGlyph className="h-2.5 w-2.5" style={{ color: '#fff8ee' }} />
-        </div>
+        <div className="clay-accent-soft absolute left-0 rounded-full" style={{ top: thumbTop, height: thumbHeight, width: SCROLLBAR_WIDTH }} />
       </div>
     </div>
   )
@@ -127,12 +95,12 @@ export function ScrollFadeBottom({ show }: { show: boolean }) {
 }
 
 function ScrollableContent({ children }: { children: React.ReactNode }) {
-  const { ref, containerRef, canScrollUp, canScrollDown, scrollTop, scrollHeight, clientHeight } = useScrollFade<HTMLDivElement>()
+  const { ref, isScrolling, canScrollUp, canScrollDown, scrollTop, scrollHeight, clientHeight } = useScrollFade<HTMLDivElement>()
 
   return (
     <div ref={ref} data-popover-scroll className="min-h-0 flex-1 overflow-y-auto pr-6 pb-1">
       <ScrollFadeTop show={canScrollUp} />
-      <CustomScrollbar containerRef={containerRef} scrollTop={scrollTop} scrollHeight={scrollHeight} clientHeight={clientHeight} />
+      <CustomScrollbar scrollTop={scrollTop} scrollHeight={scrollHeight} clientHeight={clientHeight} isScrolling={isScrolling} />
       {children}
       <ScrollFadeBottom show={canScrollDown} />
     </div>
@@ -362,6 +330,17 @@ export function Popover({
       const anchorCenterX = anchorRect.left + anchorRect.width / 2
       const tailLeft = Math.min(Math.max(anchorCenterX - left, 24), width - 24)
 
+      // Apply the real cap to the DOM directly, not just via React state: this
+      // function starts every call by reaching past React and setting
+      // maxHeight to 'none' on the raw element to measure its natural size.
+      // On any call after the first, React's own diffing compares the new
+      // `pos.maxHeight` against what it last rendered — and if this pass
+      // recomputes the *same* height as before (the common case, since only
+      // a few callers ever need a second value), React sees no change and
+      // skips writing it back, leaving the DOM stuck at the 'none' we just
+      // set ourselves. That silently uncaps the popover, which is exactly
+      // the "still clipped at the bottom" bug this was supposed to prevent.
+      card.style.maxHeight = `${height}px`
       setPos({ top, left, tailLeft, placement, maxHeight: height })
     }
     place()
