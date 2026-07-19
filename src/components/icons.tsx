@@ -9,6 +9,8 @@ import crack from '@/icons/crack.svg?raw'
 import dead from '@/icons/dead.svg?raw'
 import downArrow from '@/icons/down-arrow.svg?raw'
 import erasePencil from '@/icons/erase-pencil.svg?raw'
+import hatched from '@/icons/hatched.svg?raw'
+import infertile from '@/icons/infertile.svg?raw'
 import palette from '@/icons/palette.svg?raw'
 import pencil from '@/icons/pencil.svg?raw'
 import plus from '@/icons/plus.svg?raw'
@@ -110,4 +112,12 @@ export function PaletteGlyph({ className, style }: GlyphProps) {
 
 export function ChickGlyph({ className, style }: GlyphProps) {
   return <Svg src={chick} className={className} style={style} />
+}
+
+export function InfertileGlyph({ className, style }: GlyphProps) {
+  return <Svg src={infertile} className={className} style={style} />
+}
+
+export function HatchedGlyph({ className, style }: GlyphProps) {
+  return <Svg src={hatched} className={className} style={style} />
 }

@@ -1,19 +1,21 @@
 import type { PointerEvent as ReactPointerEvent } from 'react'
 import type { Egg } from '@/types'
-import { CheckGlyph, CrackGlyph, DeadGlyph, PlusGlyph, QuestionGlyph, XGlyph } from '@/components/icons'
+import { CheckGlyph, CrackGlyph, DeadGlyph, HatchedGlyph, InfertileGlyph, PlusGlyph, QuestionGlyph } from '@/components/icons'
 
 export function eggVisual(status: Egg['status']) {
   switch (status) {
     case 'fertile':
       return { Glyph: CheckGlyph, color: 'var(--accent)' }
     case 'infertile':
-      return { Glyph: XGlyph, color: 'var(--ink)' }
+      return { Glyph: InfertileGlyph, color: 'var(--ink)' }
     case 'missing':
       return { Glyph: QuestionGlyph, color: 'var(--accent)' }
     case 'broken':
       return { Glyph: CrackGlyph, color: 'var(--accent)' }
     case 'dead-in-shell':
       return { Glyph: DeadGlyph, color: 'var(--accent)' }
+    case 'hatched':
+      return { Glyph: HatchedGlyph, color: 'var(--accent)' }
     default:
       return { Glyph: QuestionGlyph, color: 'var(--ink)' }
   }
@@ -39,7 +41,7 @@ export function EggTile({ egg, disabled, dimmed, onActivate, onPointerDownDrag }
       style={{ borderColor: 'var(--ink)' }}
       aria-label={`Egg, status ${egg.status}`}
     >
-      <Glyph className="h-7 w-7" style={{ color }} />
+      <Glyph className="h-[80%] w-[80%]" style={{ color }} />
     </button>
   )
 }
@@ -54,7 +56,7 @@ export function AddEggTile({ onClick, disabled }: { onClick: (anchor: HTMLElemen
       style={{ color: 'var(--accent)' }}
       aria-label="Add egg"
     >
-      <PlusGlyph className="h-7 w-7" />
+      <PlusGlyph className="h-[80%] w-[80%]" />
     </button>
   )
 }

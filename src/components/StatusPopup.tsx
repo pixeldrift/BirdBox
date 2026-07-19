@@ -20,6 +20,10 @@ export function StatusPopup({ open, egg, anchorEl, onClose, onSelect, onDelete }
         {EGG_STATUS_OPTIONS.map(({ status, label }) => {
           const { Glyph, color } = eggVisual(status)
           const active = egg.status === status
+          // Hatched no longer represents an egg — the chick has left it — so
+          // it skips the egg-shaped bubble the other (still-an-egg) statuses
+          // share with the main grid tiles.
+          const isHatched = status === 'hatched'
           return (
             <button
               key={status}
@@ -30,12 +34,21 @@ export function StatusPopup({ open, egg, anchorEl, onClose, onSelect, onDelete }
               }}
               className="flex flex-col items-center gap-1.5 rounded-2xl p-2 transition-colors"
             >
-              <span
-                className="clay clay-sm flex h-11 w-11 items-center justify-center rounded-full border-[3px]"
-                style={{ borderColor: active ? 'var(--accent)' : 'var(--ink)' }}
-              >
-                <Glyph className="h-5 w-5" style={{ color }} />
-              </span>
+              {isHatched ? (
+                // Same footprint as the egg-shaped bubble below (aspect-[4/5]
+                // w-11), just without the bubble itself, so its label lines
+                // up on the same baseline as the actual egg statuses.
+                <span className="flex aspect-[4/5] w-11 items-center justify-center">
+                  <Glyph className="h-full w-full" style={{ color }} />
+                </span>
+              ) : (
+                <span
+                  className="clay-egg clay-interactive egg-shape flex aspect-[4/5] w-11 items-center justify-center border-[3px]"
+                  style={{ borderColor: active ? 'var(--accent)' : 'var(--ink)' }}
+                >
+                  <Glyph className="h-[80%] w-[80%]" style={{ color }} />
+                </span>
+              )}
               <span
                 className={`text-xs font-bold ${active ? 'underline underline-offset-2' : ''}`}
                 style={{ color: active ? 'var(--accent-dark)' : 'var(--ink)', opacity: active ? 1 : 0.7 }}
