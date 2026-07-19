@@ -39,6 +39,7 @@ export function BoxPickerPopup({ open, anchorEl, onClose, count, selected, onSel
             <button
               key={id}
               type="button"
+              data-popover-current={active || undefined}
               onClick={() => {
                 onSelect(id)
                 onClose()

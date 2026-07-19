@@ -1,6 +1,8 @@
 import type { CSSProperties } from 'react'
+import chevronDown from '@/icons/chevron-down.svg?raw'
 import chevronLeft from '@/icons/chevron-left.svg?raw'
 import chevronRight from '@/icons/chevron-right.svg?raw'
+import chevronUp from '@/icons/chevron-up.svg?raw'
 import chick from '@/icons/chick.svg?raw'
 import check from '@/icons/check.svg?raw'
 import crack from '@/icons/crack.svg?raw'
@@ -22,7 +24,7 @@ interface GlyphProps {
 }
 
 interface DirGlyphProps extends GlyphProps {
-  dir?: 'left' | 'right'
+  dir?: 'left' | 'right' | 'up' | 'down'
 }
 
 /** Renders a raw .svg file's markup, sized by the wrapper (the file itself
@@ -40,8 +42,10 @@ function Svg({ src, className = '', style }: GlyphProps & { src: string }) {
   )
 }
 
+const CHEVRON_SRC = { left: chevronLeft, right: chevronRight, up: chevronUp, down: chevronDown }
+
 export function ChevronIcon({ dir = 'left', className, style }: DirGlyphProps) {
-  return <Svg src={dir === 'left' ? chevronLeft : chevronRight} className={className} style={style} />
+  return <Svg src={CHEVRON_SRC[dir]} className={className} style={style} />
 }
 
 export function TriangleGlyph({ dir = 'left', className, style }: DirGlyphProps) {
