@@ -68,6 +68,7 @@ export function DatePickerPopup({ open, anchorEl, onClose, selectedDate, onSelec
               key={cell}
               type="button"
               disabled={isFuture}
+              data-popover-current={isSelected || undefined}
               onClick={() => {
                 onSelect(cell)
                 onClose()

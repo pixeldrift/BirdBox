@@ -1,6 +1,6 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react'
 import { createPortal } from 'react-dom'
-import { TriangleGlyph } from '@/components/icons'
+import { ChevronIcon, TriangleGlyph } from '@/components/icons'
 import { SCROLL_SLACK, useScrollFade } from '@/lib/useScrollFade'
 
 // Marks the app's bordered shell in App.tsx so popovers can clamp their
@@ -74,23 +74,29 @@ export function CustomScrollbar({
  * broken clipping. Place ScrollFadeTop as the first child and ScrollFadeBottom
  * as the last child of the scrollable element itself.
  */
+// Always mounted (never conditionally unmounted) so `show` toggling animates
+// as a smooth opacity fade instead of an abrupt pop in/out — matching how the
+// custom scrollbar itself fades. The caret rides inside the same sticky,
+// height-cancelling wrapper as the gradient so both fade together.
 export function ScrollFadeTop({ show }: { show: boolean }) {
-  if (!show) return null
   return (
     <div
-      className="pointer-events-none sticky top-0 z-10 -mb-7 h-7"
-      style={{ background: 'linear-gradient(to bottom, var(--cream-panel), transparent)' }}
-    />
+      className="pointer-events-none sticky top-0 z-10 -mb-7 flex h-7 items-center justify-center transition-opacity duration-300"
+      style={{ background: 'linear-gradient(to bottom, var(--cream-panel), transparent)', opacity: show ? 1 : 0 }}
+    >
+      <ChevronIcon dir="up" className="h-4 w-4" style={{ color: 'var(--accent)' }} />
+    </div>
   )
 }
 
 export function ScrollFadeBottom({ show }: { show: boolean }) {
-  if (!show) return null
   return (
     <div
-      className="pointer-events-none sticky bottom-0 z-10 -mt-16 h-16"
-      style={{ background: 'linear-gradient(to top, var(--cream-panel), transparent)' }}
-    />
+      className="pointer-events-none sticky bottom-0 z-10 -mt-16 flex h-16 items-center justify-center transition-opacity duration-300"
+      style={{ background: 'linear-gradient(to top, var(--cream-panel), transparent)', opacity: show ? 1 : 0 }}
+    >
+      <ChevronIcon dir="down" className="h-4 w-4" style={{ color: 'var(--accent)' }} />
+    </div>
   )
 }
 
@@ -290,6 +296,16 @@ export function Popover({
       if (!card || !anchorEl) return
       const { left: vpLeft, top: vpTop, right: vpRight, bottom: vpBottom } = getPlacementBounds()
 
+      // Measuring natural size below temporarily lifts the height cap, which
+      // momentarily makes the scrollable content fit entirely on-screen (no
+      // overflow) — the browser responds by force-clamping its scrollTop to 0,
+      // since there's nothing left to scroll. Save/restore around that so a
+      // scroll position (the user's own, or the initial center-on-open below)
+      // survives every later remeasurement (resize, keyboard, etc.), not just
+      // the first call.
+      const scrollEl = card.querySelector<HTMLElement>('[data-popover-scroll]')
+      const savedScrollTop = scrollEl?.scrollTop ?? 0
+
       // The card's own CSS width (widthClassName) is sized off 100vw, with no
       // idea where the app's own bordered pane actually sits — on a narrow
       // screen that can make it wider than the pane's available inner space,
@@ -316,13 +332,10 @@ export function Popover({
       // otherwise scroll gets clamped here, so it scrolls internally via the
       // one shared ScrollableContent instead of the caller nesting a second
       // scrollable div (and a second, doubly-inset scrollbar) inside it.
-      if (contentMaxHeight != null) {
-        const scrollEl = card.querySelector<HTMLElement>('[data-popover-scroll]')
-        if (scrollEl) {
-          const scrollNaturalHeight = scrollEl.offsetHeight
-          const chromeHeight = naturalHeight - scrollNaturalHeight
-          naturalHeight = chromeHeight + Math.min(scrollNaturalHeight, contentMaxHeight)
-        }
+      if (contentMaxHeight != null && scrollEl) {
+        const scrollNaturalHeight = scrollEl.offsetHeight
+        const chromeHeight = naturalHeight - scrollNaturalHeight
+        naturalHeight = chromeHeight + Math.min(scrollNaturalHeight, contentMaxHeight)
       }
 
       // Always horizontally centered in the pane rather than centered under
@@ -362,8 +375,24 @@ export function Popover({
       // set ourselves. That silently uncaps the popover, which is exactly
       // the "still clipped at the bottom" bug this was supposed to prevent.
       card.style.maxHeight = `${height}px`
+      if (scrollEl) scrollEl.scrollTop = savedScrollTop
       setPos({ top, left, tailLeft, placement, maxHeight: height, maxWidth })
+
+      // Open already scrolled to the current selection rather than always at
+      // the top — callers mark their active tile/day/etc. with
+      // data-popover-current. scrollIntoView works off layout-level scroll
+      // positions (not painted pixels), so it lands correctly even while the
+      // entrance animation's transform is still mid-flight; only do this once
+      // per open (guarded below) so it doesn't fight the user's own scrolling
+      // on later re-measurements (resize, keyboard, etc.) — those instead just
+      // restore whatever scrollTop was already in place, via the save/restore
+      // above.
+      if (!centeredCurrent) {
+        centeredCurrent = true
+        card.querySelector<HTMLElement>('[data-popover-current]')?.scrollIntoView({ block: 'center' })
+      }
     }
+    let centeredCurrent = false
     place()
     // Descendants like the box grid's scrollbar/fade depend on useScrollFade
     // state that isn't committed to the DOM yet on this first pass (its metrics

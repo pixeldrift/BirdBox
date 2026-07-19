@@ -32,6 +32,7 @@ export function BuildingPickerPopup({ open, anchorEl, onClose, count, selected, 
             <button
               key={id}
               type="button"
+              data-popover-current={active || undefined}
               onClick={() => {
                 onSelect(id)
                 onClose()
