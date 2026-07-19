@@ -48,21 +48,21 @@ function troughPath(ear: typeof EAR_REST) {
 // track the ears as they spread apart.
 const ROOF_D = `M ${EAR_REST.lx} ${EAR_REST.ly} L ${ROOF_PEAK.x} ${ROOF_PEAK.y} L ${EAR_REST.rx} ${EAR_REST.ry}`
 
-function ZoneShape({ active, showRoof }: { active: boolean; showRoof?: boolean }) {
+// All three zones share one shape and behavior: closed (roofed) at rest,
+// opening — roof fading away as the ears flare wider — as a drag nears them.
+function ZoneShape({ active }: { active: boolean }) {
   const strokeColor = active ? 'var(--accent)' : 'var(--ink)'
   return (
     <svg viewBox="0 0 100 90" className="absolute inset-0 h-full w-full overflow-visible" aria-hidden="true">
-      {showRoof && (
-        <path
-          d={ROOF_D}
-          fill="none"
-          stroke="var(--ink)"
-          strokeWidth={6}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          style={{ opacity: active ? 0 : 1, transition: 'opacity 200ms ease' }}
-        />
-      )}
+      <path
+        d={ROOF_D}
+        fill="none"
+        stroke="var(--ink)"
+        strokeWidth={6}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        style={{ opacity: active ? 0 : 1, transition: 'opacity 200ms ease' }}
+      />
       <path
         d={troughPath(active ? EAR_ACTIVE : EAR_REST)}
         fill="none"
@@ -87,7 +87,7 @@ export function ActionZones({ activeZone, disabled, registerRef }: ActionZonesPr
               ref={(el) => registerRef(key, el)}
               className={`relative aspect-square w-full transition-opacity ${disabled ? 'opacity-40' : ''}`}
             >
-              <ZoneShape active={active} showRoof={key === 'discard'} />
+              <ZoneShape active={active} />
               <div className="absolute inset-0 flex items-end justify-center pb-[16%]">
                 <Glyph className="h-7 w-7" style={{ color: active ? 'var(--accent-dark)' : 'var(--ink)' }} />
               </div>
