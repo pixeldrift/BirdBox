@@ -9,6 +9,20 @@ interface DirGlyphProps extends GlyphProps {
   dir?: 'left' | 'right'
 }
 
+export function VerticalDragGlyph({ className = '', style }: GlyphProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} style={style} aria-hidden="true">
+      <path
+        d="M12 2.6L8.8 6.2M12 2.6l3.2 3.6M12 2.6v18.8M12 21.4l-3.2-3.6M12 21.4l3.2-3.6"
+        stroke="currentColor"
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
 export function ChevronIcon({ dir = 'left', className = '', style }: DirGlyphProps) {
   return (
     <svg viewBox="0 0 24 24" fill="none" className={className} style={style} aria-hidden="true">
@@ -40,7 +54,14 @@ export function TriangleGlyph({ dir = 'left', className = '', style }: DirGlyphP
           <stop offset="100%" stopColor="var(--accent-dark)" />
         </linearGradient>
       </defs>
-      <path d={dir === 'left' ? 'M16 4L6 12l10 8V4Z' : 'M8 4l10 8-10 8V4Z'} fill={`url(#${gradientId})`} />
+      <path
+        d={dir === 'left' ? 'M20 3L3 12l17 9V3Z' : 'M4 3l17 9-17 9V3Z'}
+        fill={`url(#${gradientId})`}
+        stroke={`url(#${gradientId})`}
+        strokeWidth={2.5}
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      />
     </svg>
   )
 }

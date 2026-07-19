@@ -43,7 +43,7 @@ export function Header({
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-1">
+      <div className="-mx-4 grid grid-cols-2 gap-1 sm:-mx-5">
         <NumberNav
           label="Building"
           value={buildingId}
@@ -118,8 +118,15 @@ const TOGGLE_H = 50
 const TOGGLE_PAD = 3
 const THUMB_W = 64
 const ICON_BTN_W = 32
-const ICON_BTN_OFFSET = 8
 const ICON_SIZE = 28
+// Each icon button's own position is fixed regardless of which side is
+// active, but the (wider) orange thumb only ever docks fully left or fully
+// right — so centering each icon on *its own* docked-thumb position (rather
+// than a shared edge offset) keeps it centered under the thumb once active,
+// even though that leaves the two icons at slightly different insets in the
+// inactive/track state.
+const LEFT_ICON_LEFT = TOGGLE_PAD + THUMB_W / 2 - ICON_BTN_W / 2
+const RIGHT_ICON_LEFT = TOGGLE_W - TOGGLE_PAD - THUMB_W / 2 - ICON_BTN_W / 2
 const EMBOSS = { filter: 'drop-shadow(0 1px 1px rgba(64,30,0,0.4))' } as const
 
 function EditModeToggle({
@@ -152,7 +159,7 @@ function EditModeToggle({
         disabled={isTodaySelected}
         title="Revise"
         className="clay-interactive absolute flex items-center justify-center rounded-full disabled:cursor-default"
-        style={{ left: ICON_BTN_OFFSET, top: TOGGLE_PAD, bottom: TOGGLE_PAD, width: ICON_BTN_W }}
+        style={{ left: LEFT_ICON_LEFT, top: TOGGLE_PAD, bottom: TOGGLE_PAD, width: ICON_BTN_W }}
       >
         <RecordPencilGlyph
           style={{
@@ -170,7 +177,7 @@ function EditModeToggle({
         onClick={() => onSetEditMode(true)}
         title="Record"
         className="clay-interactive absolute flex items-center justify-center rounded-full"
-        style={{ right: ICON_BTN_OFFSET, top: TOGGLE_PAD, bottom: TOGGLE_PAD, width: ICON_BTN_W }}
+        style={{ left: RIGHT_ICON_LEFT, top: TOGGLE_PAD, bottom: TOGGLE_PAD, width: ICON_BTN_W }}
       >
         <RecordPencilGlyph
           style={{
@@ -242,16 +249,16 @@ function NumberNav({
           type="button"
           onClick={onDec}
           disabled={disableDec}
-          className="p-0 transition-transform active:scale-90 disabled:opacity-30"
+          className="-m-1.5 flex items-center justify-center rounded-full p-1.5 transition-transform active:scale-90 disabled:opacity-30"
           aria-label={`Previous ${label}`}
         >
-          <TriangleGlyph dir="left" className="h-7 w-7" />
+          <TriangleGlyph dir="left" className="h-9 w-9" />
         </button>
         <button
           type="button"
           onClick={(e) => onOpen(e.currentTarget)}
-          className="clay clay-interactive font-display rounded-2xl border-[3px] px-1 py-1 text-8xl leading-none font-extrabold tabular-nums"
-          style={{ borderColor: 'var(--accent)', color: 'var(--ink)' }}
+          className="clay clay-interactive font-display rounded-2xl border-[3px] px-1 py-1 leading-none font-extrabold tabular-nums"
+          style={{ borderColor: 'var(--accent)', color: 'var(--ink)', fontSize: 'clamp(2.2rem, calc(36vw - 73px), 4.2rem)' }}
         >
           {String(value).padStart(2, '0')}
         </button>
@@ -259,10 +266,10 @@ function NumberNav({
           type="button"
           onClick={onInc}
           disabled={disableInc}
-          className="p-0 transition-transform active:scale-90 disabled:opacity-30"
+          className="-m-1.5 flex items-center justify-center rounded-full p-1.5 transition-transform active:scale-90 disabled:opacity-30"
           aria-label={`Next ${label}`}
         >
-          <TriangleGlyph dir="right" className="h-7 w-7" />
+          <TriangleGlyph dir="right" className="h-9 w-9" />
         </button>
       </div>
     </div>
