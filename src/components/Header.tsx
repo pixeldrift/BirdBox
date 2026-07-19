@@ -18,6 +18,7 @@ interface HeaderProps {
   editMode: boolean
   onSetEditMode: (v: boolean) => void
   canEdit: boolean
+  dayHasRecord: boolean
   stats: { fertile: number; eggs: number; babies: number }
 }
 
@@ -37,6 +38,7 @@ export function Header({
   editMode,
   onSetEditMode,
   canEdit,
+  dayHasRecord,
   stats,
 }: HeaderProps) {
   const isTodaySelected = selectedDate === todayStr()
@@ -104,7 +106,13 @@ export function Header({
       </div>
 
       <div className="flex items-center justify-between gap-3">
-        <EditModeToggle editMode={editMode} isTodaySelected={isTodaySelected} canEdit={canEdit} onSetEditMode={onSetEditMode} />
+        <EditModeToggle
+          editMode={editMode}
+          isTodaySelected={isTodaySelected}
+          canEdit={canEdit}
+          dayHasRecord={dayHasRecord}
+          onSetEditMode={onSetEditMode}
+        />
 
         <StatsBox stats={stats} />
       </div>
@@ -135,13 +143,31 @@ function EditModeToggle({
   editMode,
   isTodaySelected,
   canEdit,
+  dayHasRecord,
   onSetEditMode,
 }: {
   editMode: boolean
   isTodaySelected: boolean
   canEdit: boolean
+  dayHasRecord: boolean
   onSetEditMode: (v: boolean) => void
 }) {
+  // A past day with nothing recorded on it has no "Revise" side worth
+  // offering — there's nothing to revise. Rather than show a toggle that
+  // silently does nothing useful on one side, drop the well and the Revise
+  // icon entirely and just show a plain, non-interactive Record glyph.
+  if (!isTodaySelected && !dayHasRecord) {
+    return (
+      <div
+        className="flex items-center justify-center"
+        style={{ width: TOGGLE_W, height: TOGGLE_H }}
+        title="Nothing recorded on this day yet"
+      >
+        <RecordPencilGlyph style={{ height: ICON_SIZE, width: ICON_SIZE, color: 'var(--ink)', opacity: 0.3 }} />
+      </div>
+    )
+  }
+
   // "Record" (today's default) docks the thumb right; "Revise" (unlock a past date) docks it left.
   const recordActive = canEdit && (editMode || isTodaySelected)
 

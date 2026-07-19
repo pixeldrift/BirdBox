@@ -1,19 +1,21 @@
 import type { PointerEvent as ReactPointerEvent } from 'react'
 import type { Egg } from '@/types'
-import { CheckGlyph, CrackGlyph, DeadGlyph, PlusGlyph, QuestionGlyph, XGlyph } from '@/components/icons'
+import { CheckGlyph, CrackGlyph, DeadGlyph, HatchedGlyph, InfertileGlyph, PlusGlyph, QuestionGlyph } from '@/components/icons'
 
 export function eggVisual(status: Egg['status']) {
   switch (status) {
     case 'fertile':
       return { Glyph: CheckGlyph, color: 'var(--accent)' }
     case 'infertile':
-      return { Glyph: XGlyph, color: 'var(--ink)' }
+      return { Glyph: InfertileGlyph, color: 'var(--ink)' }
     case 'missing':
       return { Glyph: QuestionGlyph, color: 'var(--accent)' }
     case 'broken':
       return { Glyph: CrackGlyph, color: 'var(--accent)' }
     case 'dead-in-shell':
       return { Glyph: DeadGlyph, color: 'var(--accent)' }
+    case 'hatched':
+      return { Glyph: HatchedGlyph, color: 'var(--accent)' }
     default:
       return { Glyph: QuestionGlyph, color: 'var(--ink)' }
   }
