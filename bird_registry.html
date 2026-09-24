@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="description" content="">
+        <meta name="author" content="">
+        <title>Bird Registry</title>
+        <link href="css/style.css" rel="stylesheet">
+    </head>
+    <body>
+        <ul id="main_nav">
+            <li><a href="#">Search the Registry</a></li>
+            <li><a href="#">Register My Bird</a></li>
+            <li><a href="#">Birds for Sale</a></li>
+            <li><a href="#">Bird Forums</a></li>
+            <li><a href="#">Lost &amp; Found</a></li>
+            <li>
+                <!--input type="text" class="search_box" value="Search"-->
+            </li>
+            <li><a href="">Sign In</a></li>
+        </ul>
+
+        <h2>Search Result</h2>
+        <div class="grouping_box">
+            <h3>Band: WBA1203LA18</h3>
+            <p>This band number is in the registry. Here is the public record:</p>
+            <table>
+                <img class="bird_thumnail" src="https://image.flaticon.com/icons/svg/47/47360.svg">
+                <tr>
+                    <td width="180" height="20" bgcolor="lightgray"></td>
+                    <td width="180" height="20" bgcolor="lightgray"></td>
+                </tr>
+                <tr>
+                    <td width="180" height="20" bgcolor="lightgray"></td>
+                    <td width="180" height="20" bgcolor="lightgray"></td>
+                </tr>
+                <tr>
+                    <td width="180" height="20" bgcolor="lightgray"></td>
+                    <td width="180" height="20" bgcolor="lightgray"></td>
+                </tr>
+                <tr>
+                    <td width="180" height="20" bgcolor="lightgray"></td>
+                    <td width="180" height="20" bgcolor="lightgray"></td>
+                </tr>
+                <tr>
+                    <td width="180" height="20" bgcolor="lightgray"></td>
+                    <td width="180" height="20" bgcolor="lightgray"></td>
+                </tr>
+            </table>
+            <hr>
+            <p>This is my bird, what can I do?</p>
+            <ol>
+                <li>Double check the number. Maybe someone misread a band?</li>
+                <li>
+                    <a href="#">Sign in</a>. Check to see if you have already registered this bird yourself.
+                </li>
+                <li>
+                    <a href="#">Contact the listed owner</a> and ask them to correct the record or assign it to you.
+                </li>
+                <li>
+                    <a href="#">Contact a registry administrator</a> for for help or arbitration. Be prepared to present 
+                    <a href="#">evidence of ownership</a>.
+                </li>
+            </ol>
+            
+            
+            <input class="nav_button" type="button" value="Contact an Admin">
+            <input class="nav_button" type="button" value="Message the Owner">
+            <input class="nav_button" type="button" value="< Back">
+        </div>
+
+
+        <div class="grouping_box">
+
+            <h3>Band not found</h3>
+            <p>
+              Band number <b>WBA1203LA18</b> has not been registered. You can: </p>
+            <ul>
+                <li>
+                    <a href="#">Add this band</a> to the registry.
+                </li>
+                <li>
+                    <a href="#">Post this bird as lost</a> on our <a href="#">Lost &amp; Found</a> listings.
+                </li>
+            </ul>
+           
+            
+            <input class="nav_button" type="button" value="Register this band">
+            <input class="nav_button" type="button" value="Post this bird as lost">
+            <input class="nav_button" type="button" value="< Back">
+        </div>
+
+        <hr>
+
+        <h2>Register Your Bird</h2>
+
+        <div class="grouping_box">
+            <h3>Basic Information</h3>
+
+            <p>In order to add a bird to the national registry, you need to have a band number. If you want to keep track of unbanded birds for your own records, you can <a href="#">create an account</a> or <a href="#">sign in</a> with your account.</p>
+            
+            <p class="indent">
+                <table>
+                     <tr>
+                        <td><label>Bird Band #: </label></td>
+                        <td><input type="text" autofocus> <span class="note">(Required)</span></td>
+                    </tr>
+                    <tr>
+                        <td><label>Your Email: </label></td>
+                        <td><input type="text" size="50"> <input type="checkbox" checked><label> (Keep Private)</label>
+                    </tr>
+                </table>
+            </p>
+
+            <p>At minimum, we need a contact email to associate with the bird. Don't worry, we will keep your email address private unless you choose to show it. Read more about our <a href="#">privacy controls</a>.</p>
+            <input class="nav_button" type="button" value="Next >">
+        </div>
+        
+
+        <div class="grouping_box">
+            <h3>Your Information </h3>
+            <p>
+                Your information is optional but strongly recommended. Please pay attention to the default privacy settings. You can change these options any time you want later on.</p>
+            <p>
+
+                <table class="privacy_table">
+                    <tr>
+                        <td>
+                            <label>First Name: </label>
+                        </td>
+                        <td>
+                            <input type="text" size="18"> <label>Last Name: </label><input type="text" size="20">
+                        </td>
+                        <td>
+                            <label><input type="checkbox"> (Keep Private)</label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label>Street: </label>
+                        </td>
+                        <td>
+                            <input type="text" size="55">
+                        </td>
+                        <td>
+                            <input type="checkbox" checked> <label>(Keep Private)</label>
+                        </td>
+                    <tr>
+                        <td>
+                            <label>City: </label>
+                        </td>
+                        <td>
+                            <input type="text" size="26"> <label>State: </label> <input type="text" size="2">
+                            <!--select>
+                                <option value="AL">Alabama</option>
+                                <option value="AK">Alaska</option>
+                                <option value="AZ">Arizona</option>
+                                <option value="AR">Arkansas</option>
+                                <option value="CA">California</option>
+                                <option value="CO">Colorado</option>
+                                <option value="CT">Connecticut</option>
+                                <option value="DE">Delaware</option>
+                                <option value="DC">District Of Columbia</option>
+                                <option value="FL">Florida</option>
+                                <option value="GA">Georgia</option>
+                                <option value="HI">Hawaii</option>
+                                <option value="ID">Idaho</option>
+                                <option value="IL">Illinois</option>
+                                <option value="IN">Indiana</option>
+                                <option value="IA">Iowa</option>
+                                <option value="KS">Kansas</option>
+                                <option value="KY">Kentucky</option>
+                                <option value="LA">Louisiana</option>
+                                <option value="ME">Maine</option>
+                                <option value="MD">Maryland</option>
+                                <option value="MA">Massachusetts</option>
+                                <option value="MI">Michigan</option>
+                                <option value="MN">Minnesota</option>
+                                <option value="MS">Mississippi</option>
+                                <option value="MO">Missouri</option>
+                                <option value="MT">Montana</option>
+                                <option value="NE">Nebraska</option>
+                                <option value="NV">Nevada</option>
+                                <option value="NH">New Hampshire</option>
+                                <option value="NJ">New Jersey</option>
+                                <option value="NM">New Mexico</option>
+                                <option value="NY">New York</option>
+                                <option value="NC">North Carolina</option>
+                                <option value="ND">North Dakota</option>
+                                <option value="OH">Ohio</option>
+                                <option value="OK">Oklahoma</option>
+                                <option value="OR">Oregon</option>
+                                <option value="PA">Pennsylvania</option>
+                                <option value="RI">Rhode Island</option>
+                                <option value="SC">South Carolina</option>
+                                <option value="SD">South Dakota</option>
+                                <option value="TN">Tennessee</option>
+                                <option value="TX">Texas</option>
+                                <option value="UT">Utah</option>
+                                <option value="VT">Vermont</option>
+                                <option value="VA">Virginia</option>
+                                <option value="WA">Washington</option>
+                                <option value="WV">West Virginia</option>
+                                <option value="WI">Wisconsin</option>
+                                <option value="WY">Wyoming</option>
+                            </select -->
+                            <label>ZIP: </label> <input type="text" size="6">
+                        </td>
+                        <td>
+                            <input type="checkbox"> <label>(Keep Private)</label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label>Phone: </label>
+                        </td>
+                        <td>
+                            <input type="text" size="10">
+                        </td>
+                        <td>
+                            <input type="checkbox" checked> <label>(Keep Private)</label>
+                        </td>
+                    </tr>
+                </table>
+
+            <input class="nav_button" type="button" value="Next >">
+            <input class="nav_button" type="button" value="< Back">
+        </div>
+
+
+        <div class="grouping_box">
+            <h3>More Bird Details</h3>
+            <p>
+                Fill in as much as you know about your bird.
+            </p>
+            
+                <table class="privacy_table">
+                    <tr>
+                        <td>
+                            <label>Bird Name: </label>
+                            <input type="text" size="18">
+
+                            <label>Age/Hatch Date: </label>
+                            <input type="text" size="10">
+
+                            <label>Sex: </label>
+                            <select>
+                                <option>Unknown</option>
+                                <option>Male</option>
+                                <option>Female</option>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="checkbox"> <label> (Keep Private)</label>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <label>Species: </label>
+                            <select>
+                                <option id='Unknown'>Unknown</option>
+                                <option id='African Grey'>African Grey</option>
+                                <option id='Amazon'>Amazon</option>
+                                <option id='Budgerigar'>Budgerigar</option>
+                                <option id='Canary'>Canary</option>
+                                <option id='Cockatiel'>Cockatiel</option>
+                                <option id='Cockatoo'>Cockatoo</option>
+                                <option id='Conure'>Conure</option>
+                                <option id='Eclectus'>Eclectus</option>
+                                <option id='Finch'>Finch</option>
+                                <option id='Kakapo'>Kakapo</option>
+                                <option id='Lorikeet'>Lorikeet</option>
+                                <option id='Lory'>Lory</option>
+                                <option id='Lovebird'>Lovebird</option>
+                                <option id='Macaw'>Macaw</option>
+                                <option id='Ostrich'>Ostrich</option>
+                                <option id='Parakeet'>Parakeet</option>
+                                <option id='Parrotlett'>Parrotlett</option>
+                                <option id='Tucan'>Tucan</option>
+                                <option id='Turaco'>Turaco</option>
+                                <option id='Quaker'>Quaker</option>
+                                <option id='Parrotlett'>Parrotlett</option>
+                                <option id='Caique'>Caique</option>
+                                <option id='Pionus'>Pionus</option>
+                            </select>
+                            
+                            <label>Subspecies: </label>
+ 
+                            <select>
+                                <option id='Unknown'>Unknown</option>
+                                <option id='Yellow-Naped'>Yellow-Naped</option>
+                                <option id='Blue-Fronted'>Blue-Fronted</option>
+                                <option id='Blue-Throated (Caninde)'>Blue-Throated (Caninde)</option>
+                                <option id='Congo'>Congo</option>
+                                <option id='Timneh'>Timneh</option>
+                                <option id='Red-Fronted'>Red-Fronted</option>
+                                <option id='Illiger's'>Illiger's</option>
+                                <option id='Spix'>Spix</option>
+                                <option id='Blue and Gold'>Blue and Gold</option>
+                                <option id='Green-Cheeked'>Green-Cheeked</option>
+                                <option id='White-Cheeked'>White-Cheeked</option>
+                                <option id='Sun'>Sun</option>
+                                <option id='Jenday'>Jenday</option>
+                                <option id='Dusky'>Dusky</option>
+                                <option id='Double Yellow-Headed'>Double Yellow-Headed</option>
+                                <option id='Scarlet'>Scarlet</option>
+                                <option id='Military'>Military</option>
+                                <option id='Green-Winged'>Green-Winged</option>
+                                <option id='Hahn's'>Hahn's</option>
+                                <option id='Blue-Headed'>Blue-Headed</option>
+                                <option id='Hyacinth'>Hyacinth</option>
+                                <option id='Buffon's'>Buffon's</option>
+                                <option id='Yellow-Collared'>Yellow-Collared</option>
+                                <option id='Orange-Winged'>Orange-Winged</option>
+                                <option id='Lilac-Crowned'>Lilac-Crowned</option>
+                                <option id='Panama'>Panama</option>
+                                <option id='Yellow-Headed'>Yellow-Headed</option>
+                                <option id='Mexican Red-Headed'>Mexican Red-Headed</option>
+                                <option id='Bodine's'>Bodine's</option>
+                                <option id='Tucuman'>Tucuman</option>
+                                <option id='Black-Capped'>Black-Capped</option>
+                                <option id='Cherry-Headed'>Cherry-Headed</option>
+                                <option id='Crimson-Bellied'>Crimson-Bellied</option>
+                                <option id='Gold-Capped'>Gold-Capped</option>
+                                <option id='Queen of Bavaria'>Queen of Bavaria</option>
+                                <option id='Half-Mooned'>Half-Mooned</option>
+                                <option id='Huffman's'>Huffman's</option>
+                                <option id='Nanday'>Nanday</option>
+                                <option id='Peach-Fronted'>Peach-Fronted</option>
+                                <option id='Rosiefron's'>Rosiefron's</option>
+                                <option id='Brown-Throated'>Brown-Throated</option>
+                                <option id='Black-Headed'>Black-Headed</option>
+                                <option id='White-Bellied'>White-Bellied</option>
+                                <option id='Bare-Eyed'>Bare-Eyed</option>
+                                <option id='Citron-Crested'>Citron-Crested</option>
+                                <option id='Goffin's'>Goffin's</option>
+                                <option id='Greater Sulfer-Crested'>Greater Sulfer-Crested</option>
+                                <option id='Moluccan'>Moluccan</option>
+                                <option id='Rose-Breasted (Galah)'>Rose-Breasted (Galah)</option>
+                                <option id='Slender-Billed Corella'>Slender-Billed Corella</option>
+                                <option id='Triton'>Triton</option>
+                                <option id='Lesser Sulfer-Crested'>Lesser Sulfer-Crested</option>
+                                <option id='Umbrella'>Umbrella</option>
+                                <option id='Solomon Island'>Solomon Island</option>
+                                <option id='Red-Sided'>Red-Sided</option>
+                                <option id='Vos Maer's'>Vos Maer's</option>
+                                <option id='Grand'>Grand</option>
+                                <option id='Aruensis'>Aruensis</option>
+                                <option id='Biak'>Biak</option>
+                                <option id='Chattering'>Chattering</option>
+                                <option id='Green-Naped'>Green-Naped</option>
+                                <option id='Rainbow'>Rainbow</option>
+                                <option id='Stella'>Stella</option>
+                                <option id='Swainson's'>Swainson's</option>
+                                <option id='Edwards''>Edwards'</option>
+                                <option id='Black-Masked'>Black-Masked</option>
+                                <option id='Fischer's'>Fischer's</option>
+                                <option id='Peach-Faced'>Peach-Faced</option>
+                                <option id='Quaker'>Quaker</option>
+                                <option id='Australian King'>Australian King</option>
+                                <option id='Baraband'>Baraband</option>
+                                <option id='Bourke's'>Bourke's</option>
+                                <option id='Canary-Winged'>Canary-Winged</option>
+                                <option id='Grass Elegant'>Grass Elegant</option>
+                                <option id='Grass Scarlet-Chested (Splendid)'>Grass Scarlet-Chested (Splendid)</option>
+                                <option id='Grass Turquoisine'>Grass Turquoisine</option>
+                                <option id='Linealated'>Linealated</option>
+                                <option id='Mustached'>Mustached</option>
+                                <option id='Mulga'>Mulga</option>
+                                <option id='Penant's'>Penant's</option>
+                                <option id='Plum-Headed'>Plum-Headed</option>
+                                <option id='Alexandrine'>Alexandrine</option>
+                                <option id='Indian Ringneck'>Indian Ringneck</option>
+                                <option id='Derbyan'>Derbyan</option>
+                                <option id='Princess of Wales'>Princess of Wales</option>
+                                <option id='Red-Rumped'>Red-Rumped</option>
+                                <option id='African Ringneck'>African Ringneck</option>
+                                <option id='Rock Pebbler'>Rock Pebbler</option>
+                                <option id='Rosella Crimson'>Rosella Crimson</option>
+                                <option id='Rosella Adelaide'>Rosella Adelaide</option>
+                                <option id='Rosella Golden-Mantled'>Rosella Golden-Mantled</option>
+                                <option id='Rosella Mealy'>Rosella Mealy</option>
+                                <option id='Rosella Yellow'>Rosella Yellow</option>
+                                <option id='Mealy'>Mealy</option>
+                                <option id='Celestial (Pacific)'>Celestial (Pacific)</option>
+                                <option id='Green-Rumped'>Green-Rumped</option>
+                                <option id='Spectacle'>Spectacle</option>
+                                <option id='Blue-Headed'>Blue-Headed</option>
+                                <option id='Bronze-Winged'>Bronze-Winged</option>
+                                <option id='White-Capped'>White-Capped</option>
+                                <option id='Brown-Headed'>Brown-Headed</option>
+                                <option id='Brown-Necked'>Brown-Necked</option>
+                                <option id='Meyer's'>Meyer's</option>
+                                <option id='Red-Bellied'>Red-Bellied</option>
+                                <option id='Senegal'>Senegal</option>
+                            </select>
+
+                            <label>Mutation: </label>
+                            <select>
+                                <option id='NA'>Not Applicable</option>
+                                <option id='Unknown'>Unknown</option>
+                                <option id='Cinnamon'>Cinnamon</option>
+                                <option id='Normal'>Normal</option>
+                                <option id='Pineapple'>Pineapple</option>
+                                <option id='Turquoise'>Turquoise</option>
+                                <option id='Opaline (Yellow-Sided)'>Opaline (Yellow-Sided)</option>
+                                <option id='Dilute'>Dilute</option>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="checkbox"> <label>(Keep Private)</label>
+                        </td>
+                    <tr>
+                        
+                        <td>
+                              <label>Mother Band #: </label> <input type="text" size="20">
+                              <label>Father Band #: </label> <input type="text" size="20">
+                           
+                        </td>
+                        <td>
+                            <input type="checkbox"> <label>(Keep Private)</label>
+                        </td>
+                    </tr>
+                    <tr>
+                        
+                        <td>
+                              <label>Progeny Band #s: </label> <input type="text" size="60">
+                        </td>
+                        <td>
+                            <input type="checkbox"> <label>(Keep Private)</label>
+                        </td>
+                    </tr>
+                </table>
+
+                <hr>
+
+            <p class="indent">
+                Want more options? Upgrade to an <a href="#">Advanced Account</a> for more:
+                <ul>
+                    <li>Easy Links - Autocomplete and pick from your existing band numbers</li>
+                    <li>Source - What breeder this bird came from</li>
+                    <li>Acquisition Date - When you first got this bird</li>
+                    <li>Cost - How much you paid for the bird</li>
+                    <li>For Sale - Mark if this bird is available for sale and post it</li>
+                    <li>Deposit - How much it costs to reserve this bird</li>
+                    <li>Price - The total sales price for the bird</li>
+                    <li>Client - The contact details of the buyer</li>
+                    <li>Transfer Date - When you changed ownership of the bird</li>
+                </ul>
+            </p>
+
+            <p class="indent">
+                With a <a href="#">Breeder Account</a> you can track all your clients, all payments, and send invoices.<a href="#">(Learn More...)</a>
+            </p>
+
+            <input class="nav_button" type="button" value="Next >">
+            <input class="nav_button" type="button" value="< Back">
+        </div>
+
+        <div class="grouping_box">
+            <h3>Link Existing Bird Records</h3>
+
+            <p>The following bands you entered were found in the registry. Would you like to link them to this record?</p>
+
+            <p><label>Mother:</label></p>
+            <table>
+                <img class="bird_thumnail" src="https://image.flaticon.com/icons/svg/47/47360.svg">
+                <tr>
+                    <td width="180" height="20" bgcolor="lightgray"></td>
+                    <td width="180" height="20" bgcolor="lightgray"></td>
+                </tr>
+                <tr>
+                    <td width="180" height="20" bgcolor="lightgray"></td>
+                    <td width="180" height="20" bgcolor="lightgray"></td>
+                </tr>
+                <tr>
+                    <td width="180" height="20" bgcolor="lightgray"></td>
+                    <td width="180" height="20" bgcolor="lightgray"></td>
+                </tr>
+                <tr>
+                    <td width="180" height="20" bgcolor="lightgray"></td>
+                    <td width="180" height="20" bgcolor="lightgray"></td>
+                </tr>
+                <tr>
+                    <td width="180" height="20" bgcolor="lightgray"></td>
+                    <td width="180" height="20" bgcolor="lightgray"></td>
+                </tr>
+            </table>
+
+            <p><label>Father:</label></p>
+            <table>
+                <img class="bird_thumnail" src="https://image.flaticon.com/icons/svg/47/47360.svg">
+                <tr>
+                    <td width="180" height="20" bgcolor="lightgray"></td>
+                    <td width="180" height="20" bgcolor="lightgray"></td>
+                </tr>
+                <tr>
+                    <td width="180" height="20" bgcolor="lightgray"></td>
+                    <td width="180" height="20" bgcolor="lightgray"></td>
+                </tr>
+                <tr>
+                    <td width="180" height="20" bgcolor="lightgray"></td>
+                    <td width="180" height="20" bgcolor="lightgray"></td>
+                </tr>
+                <tr>
+                    <td width="180" height="20" bgcolor="lightgray"></td>
+                    <td width="180" height="20" bgcolor="lightgray"></td>
+                </tr>
+                <tr>
+                    <td width="180" height="20" bgcolor="lightgray"></td>
+                    <td width="180" height="20" bgcolor="lightgray"></td>
+                </tr>
+            </table>
+
+            <input class="nav_button" type="button" value="&#10003; Link These Birds">
+            <input class="nav_button" type="button" value="&#8856; Do Not Link">
+
+        </div>
+
+        <hr>
+
+        <h2>Privacy</h2>
+
+        <div class="grouping_box">
+
+            <h3>Bird Record Details Privacy Options</h3>
+
+            <p>
+                What information should be publicly visible if someone searches for this band number?
+            </p>
+
+            <table class="privacy_table">
+                <tr>
+                    <td>
+                        <input type="checkbox" checked="" disabled="">
+                    </td>
+                    <td>
+                        <label>Band Status</label>
+                    </td>
+                    <td>
+                        Show that this band number has been registered
+                    </td>
+                </tr>
+                <tr>
+                    <td><input type="checkbox" checked="">
+                    </td>
+                    <td>
+                        <label>Basic Details</label>
+                    </td>
+                    <td>
+                        Band number, sex, species, subspecies, age, etc
+                    </td>
+                <tr>
+                    <td>
+                        <input type="checkbox" checked="">
+                    </td>
+                    <td>
+                        <label>My Contact</label>
+                    </td>
+                    <td>
+                        Your name and details based on your personal contact privacy settings
+                    </td>
+                <tr>
+                    <td>
+                       <input type="checkbox" checked="">
+                    </td>
+                    <td>
+                        <label>Photos</label>
+                    </td>
+                    <td>
+                        Photos of this bird based on the photo's privacy settings
+                    </td>
+                </tr>
+                <tr>                    
+                    <td>
+                        <input type="checkbox" checked="">
+                    </td>
+                    <td>
+                        <label>Ancestry</label>
+                    </td>
+                    <td>
+                        The known genetic history of this bird including parents and progeny
+                    </td>
+                </tr>
+                    <td>
+                        <input type="checkbox">
+                    </td>
+                    <td>
+                        <label>Health</label>
+                    </td>
+                    <td>
+                        Any vet records or health related notes
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="checkbox">
+                    </td>
+                    <td>
+                        <label>Business</label>
+                    </td>
+                    <td>
+                        Original breeder, previous owners, previous locations, transfer dates
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="checkbox">
+                    </td>
+                    <td>
+                        <label>Everything</label>
+                    </td>
+                    <td>
+                        The entire documented records for this bird including sales price history
+                    </td>
+                <tr>
+                    <td>
+                        <input type="checkbox">
+                    </td>
+                    <td>
+                        <label>Custom</lable>
+                    </td>
+                    <td>
+                        Let me choose individual records to share
+                    </td>
+                </tr>
+            </table>
+            
+            <hr>
+            
+            <p><input type="checkbox" checked><label> Remember these default choices for any new birds I register going forward</label></p>
+            <p><input type="checkbox"><label> Apply these choices to all my registered birds</label></p>
+
+
+            <input class="nav_button" type="button" value="Next >">
+            <input class="nav_button" type="button" value="< Back">
+        </div>
+
+        
+        <div class="grouping_box">
+            <h3>Bird Record Privacy Settings</h3>
+            <p>
+                Who should be able to view this information?
+            </p>
+
+            <table class="privacy_table">
+                <tr>
+                    <td>
+                        <input type="radio" name="record_privacy" checked>
+                    </td>
+                    <td>
+                        <label>Public</label>
+                    </td>
+                    <td>
+                        Anyone can see this record
+                    </td>
+                <tr>
+                    <td>
+                        <input type="radio" name="record_privacy">
+                    </td>
+                    <td>
+                        <label>Members</label>
+                    </td>
+                    <td>
+                        Only other signed-in members can view the information
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="radio" name="record_privacy">
+                    </td>
+                    <td>
+                        <label>Limited</label>
+                    </td>
+                    <td>
+                        Only visible to previous and future owners of this bird, its parents, or progeny
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="radio" name="record_privacy">
+                    </td>
+                    <td>
+                        <label>Specific</label>
+                    </td>
+                    <td>
+                        Let me choose specific users who can see this information
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="radio" name="record_privacy">
+                    </td>
+                    <td>
+                        <label>Private</label>
+                    </td>
+                    <td>
+                        For my records only, no one else can see it
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="radio" name="record_privacy">
+                    </td>
+                    <td>
+                        <label>Custom</label>
+                    </td>
+                    <td>
+                        Let me set custom options like other breeders only, people from my state, etc
+                    </td>
+                </tr>
+            </table>
+
+            <hr>
+
+            <p><input type="checkbox" checked><label> Remember these default choices for any new birds I register going forward</label></p>
+
+            <p><input type="checkbox"><label> Apply these choices to all my registered birds</label></p>
+
+            <input class="nav_button" type="button" value="Next >">
+            <input class="nav_button" type="button" value="< Back">
+        </div>
+
+
+        <div class="grouping_box">
+
+            <h3>Transfer of Records</h3>
+
+            <p>If you transfer a bird to a new owner, what records would you like for them to have access to?</p>
+
+            <table class="privacy_table">
+                <tr>
+                    <td>
+                        <input type="checkbox" checked disabled>
+                    </td>
+                    <td>
+                        <label>Band Stutus</label>
+                    </td>
+                    <td>
+                        Show that this band number has been registered
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="checkbox" checked disabled>
+                    </td>
+                    <td>
+                        <label>Basic Details</label>
+                    </td>
+                    <td>
+                        Band number, sex, species, subspecies, age, etc
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="checkbox" checked>
+                    </td>
+                    <td>
+                        <label>My Contact</label>
+                    </td>
+                    <td>
+                        Your name and details based on your personal contact privacy settings
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="checkbox" checked>
+                    </td>
+                    <td>
+                        <label>Photos</label>
+                    </td>
+                    <td>Photos of this bird based on the photo's privacy settings</td>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="checkbox">
+                    </td>
+                    <td>
+                        <label>Ancestry</label>
+                    </td>
+                    <td>
+                        The known genetic history of this bird including parents, and progeny
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="checkbox">
+                    </td>
+                    <td>
+                        <label>Health</label>
+                    </td>
+                    <td>
+                        Any vet records or health related notes
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="checkbox">
+                    </td>
+                    <td>
+                        <label>Business</label>
+                    </td>
+                    <td>
+                        Original breeder, previous owners, previous locations, transfer dates
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="checkbox">
+                    </td>
+                    <td>
+                        <label>Everything</label>
+                    </td>
+                    <td>
+                        The entire documented records for this bird including sales price history</td>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="checkbox">
+                    </td>
+                    <td>
+                        <label>Custom</label>
+                    </td>
+                    <td>
+                        Let me choose individual records to share
+                    </td>
+                </tr>
+            </table>
+
+            <hr>
+
+            <p><input type="checkbox" checked> <label>Remember these default choices for any birds I transfer in the future</label></p>
+
+            <p><input type="checkbox"> <label>Apply these choices to all my registered birds</label></p>
+            
+            <input class="nav_button" type="button" value="Next >">
+            <input class="nav_button" type="button" value="< Back">
+        </div>
+
+        <hr>
+
+        <h2>Sign Up</h2>
+        
+        <div class="grouping_box">
+
+            <h3>Account Features</h3>
+
+            <p>Browsing is nice, but creating an account gets you so much more! Choose the one that's the best fit for you.</b>
+
+            <p><table id="account_features">
+                <thead>
+                    <tr>
+                        <th>None</th>
+                        <th>Basic</th>
+                        <th>Advanced</th>
+                        <th>Breeder</th>
+                        <th>Features</th>
+                    </tr>
+                </thead>             
+                <tbody>
+                    <tr>
+                        <td>&#10003;</td>
+                        <td>&#10003;</td>
+                        <td>&#10003;</td>
+                        <td>&#10003;</td>
+                        <td>Search for registered band numbers</td>
+                    </tr>
+                    <tr>
+                        <td>&#10003;</td>
+                        <td>&#10003;</td>
+                        <td>&#10003;</td>
+                        <td>&#10003;</td>
+                        <td>View and search <a href="#">Birds for Sale</a></td>
+                    </tr>
+                    <tr>
+                        <td>&#10003;</td>
+                        <td>&#10003;</td>
+                        <td>&#10003;</td>
+                        <td>&#10003;</td>
+                        <td>View and search the <a href="#">Breeder Directory</a></td>
+                    </tr>
+                    <tr>
+                        <td>&#10003;</td>
+                        <td>&#10003;</td>
+                        <td>&#10003;</td>
+                        <td>&#10003;</td>
+                        <td>Read postings and comments on the <a href="#">Bird Forums</a></td>
+                    </tr>
+                    <tr style="border-top: 2px;">
+                        <td></td>
+                        <td>&#10003;</td>
+                        <td>&#10003;</td>
+                        <td>&#10003;</td>
+                        <td>Register and track basic details about your own birds</td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>&#10003;</td>
+                        <td>&#10003;</td>
+                        <td>&#10003;</td>
+                        <td>Post <a href="#">Lost &amp; Found</a> birds</td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>&#10003;</td>
+                        <td>&#10003;</td>
+                        <td>&#10003;</td>
+                        <td>Post to the <a href="#">Bird Forums</a></td>
+                    </tr>
+                    <tr style="border-top: 2px;">
+                        <td></td>
+                        <td></td>
+                        <td>&#10003;</td>
+                        <td>&#10003;</td>
+                        <td>Track more information with advanced records for your birds <a href="#">(Learn More...)</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td>&#10003;</td>
+                        <td>&#10003;</td>
+                        <td>Detailed privacy controls to choose exactly what you want to share <a href="#">(Learn More...)</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td>&#10003;</td>
+                        <td>&#10003;</td>
+                        <td>Post multiple <a href="#">Birds For Sale</a> at once with any number of listings</td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td>&#10003;</td>
+                        <td>&#10003;</td>
+                        <td>
+                            Import existing records</a> from other sources like Excel, Avimate, etc <a href="#">(Learn More...)</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td>&#10003;</td>
+                        <td>&#10003;</td>
+                        <td>
+                            Batch edit the details and privacy settings for multiple birds at once</a>
+                        </td>
+                    </tr>
+                    <tr style="border-top: 2px;">
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>&#10003;</td>
+                        <td>List your aviary in the <a href="#">breeder directory</a></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>&#10003;</td>
+                        <td>Track egg production and detailed bird genealogy <a href="#">(Learn More...)</a></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>&#10003;</td>
+                        <td>DNA tracking tools and mutation calculator <a href="#">(Learn More...)</a></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>&#10003;</td>
+                        <td>Accept online credit card payments and with escrow services <a href="#">(Learn More...)</a></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>&#10003;</td>
+                        <td>View and export graphical reports <a href="#">(Learn More...)</a></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>&#10003;</td>
+                        <td>Manage sales, transactions, and expenses with the full 
+                            <a href="#">Aviary Financial Acounting Suite</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table></p>
+
+            <p>Advanced and Breeder accounts can be billed monthly or yearly, with the option for automatic renewal. You can cancel at any time.</p>
+
+            <p>If you choose to cancel your Advanced or Breeder subscription, you can still keep all the records you have already entered. You just won't have access to those added features anymore. You can <a href="#">download your records</a> at any time.</p>
+
+            <input type="button" class="nav_button" value="Breeder ($19/month)">
+            <input type="button" class="nav_button" value="Advanced ($4/month)">
+            <input type="button" class="nav_button" value="Basic (Free)">
+        </div>
+
+    </body>
+</html>
