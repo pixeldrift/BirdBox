@@ -1,6 +1,7 @@
 (function () {
   var appTitle = document.getElementById('app-title');
   var backBtn = document.getElementById('back-btn');
+  var avatarBtn = document.getElementById('avatar-btn');
   var tabBar = document.getElementById('tab-bar');
   var main = document.getElementById('main-content');
 
@@ -26,7 +27,7 @@
     var grid = document.createElement('div');
     grid.className = 'home-grid';
 
-    NAV.forEach(function (group) {
+    NAV.filter(function (group) { return group.homeTile !== false; }).forEach(function (group) {
       var tile = document.createElement('button');
       tile.type = 'button';
       tile.className = 'home-tile';
@@ -130,6 +131,9 @@
 
   backBtn.addEventListener('click', function () {
     location.hash = '';
+  });
+  avatarBtn.addEventListener('click', function () {
+    location.hash = '#/account';
   });
   window.addEventListener('hashchange', route);
 

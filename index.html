@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>BirdBox</title>
   <meta name="description" content="BirdBox — pedigree registry and aviary management for bird breeders.">
-  <meta name="theme-color" content="#2f6f4f">
+  <meta name="theme-color" content="#C1694F">
 
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icons/app/icon-192.png">
@@ -14,6 +14,9 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="BirdBox">
 
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/app.css">
 </head>
 <body>
@@ -21,6 +24,10 @@
     <header id="app-bar">
       <button id="back-btn" class="icon-btn" hidden aria-label="Back">&#8592;</button>
       <h1 id="app-title">BirdBox</h1>
+      <div id="app-bar-spacer"></div>
+      <button id="avatar-btn" aria-label="Account">
+        <img src="icons/tinted/account/My_Profile.png" alt="">
+      </button>
     </header>
 
     <nav id="tab-bar" hidden></nav>

@@ -1,9 +1,10 @@
 :root {
-  --brand: #2f6f4f;
-  --bg: #f6f7f5;
-  --card-bg: #ffffff;
-  --text: #1c1c1c;
-  --muted: #6b6b6b;
+  --brand: #C1694F;
+  --brand-dark: #A6543D;
+  --bg: #FBF6EF;
+  --card-bg: #FFFDF9;
+  --text: #3A2E27;
+  --muted: #8A7A6C;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
@@ -17,7 +18,11 @@ html, body {
   padding: 0;
   background: var(--bg);
   color: var(--text);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: 'Nunito', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+h1, h2, h3 {
+  font-weight: 800;
 }
 
 #app {
@@ -29,8 +34,8 @@ html, body {
 #app-bar {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: calc(14px + var(--safe-top)) 16px 14px;
+  gap: 10px;
+  padding: calc(14px + var(--safe-top)) 14px 14px 16px;
   background: var(--brand);
   color: #fff;
   position: sticky;
@@ -39,9 +44,14 @@ html, body {
 }
 
 #app-title {
-  font-size: 1.15rem;
+  font-size: 1.2rem;
   margin: 0;
-  font-weight: 600;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+}
+
+#app-bar-spacer {
+  flex: 1;
 }
 
 .icon-btn {
@@ -55,16 +65,36 @@ html, body {
   cursor: pointer;
 }
 
+#avatar-btn {
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  cursor: pointer;
+}
+
+#avatar-btn img {
+  width: 20px;
+  height: 20px;
+  filter: brightness(0) invert(1);
+}
+
 #tab-bar {
   display: flex;
   gap: 6px;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   padding: 10px 12px;
-  background: #fff;
-  border-bottom: 1px solid #e5e5e5;
+  background: var(--card-bg);
+  border-bottom: 1px solid #EEE3D6;
   position: sticky;
-  top: calc(53px + var(--safe-top));
+  top: calc(58px + var(--safe-top));
   z-index: 9;
   scrollbar-width: none;
 }
@@ -75,11 +105,13 @@ html, body {
 
 .tab {
   flex: 0 0 auto;
-  padding: 8px 14px;
+  padding: 8px 16px;
   border-radius: 999px;
-  border: 1px solid #ddd;
-  background: #f2f2f2;
-  color: #333;
+  border: 1px solid #E9DCC9;
+  background: #F6EFE3;
+  color: var(--text);
+  font-family: inherit;
+  font-weight: 600;
   font-size: 0.9rem;
   white-space: nowrap;
   cursor: pointer;
@@ -93,7 +125,7 @@ html, body {
 
 #main-content {
   flex: 1;
-  padding: 16px 16px calc(24px + var(--safe-bottom));
+  padding: 18px 16px calc(28px + var(--safe-bottom));
   max-width: 960px;
   margin: 0 auto;
   width: 100%;
@@ -121,56 +153,57 @@ html, body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
-  padding: 22px 12px;
+  gap: 12px;
+  padding: 24px 12px;
   border: none;
-  border-radius: 18px;
+  border-radius: 22px;
   background: var(--card-bg);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(139, 94, 60, 0.08);
   cursor: pointer;
+  font-family: inherit;
 }
 
 .home-tile-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: 14px;
+  width: 60px;
+  height: 60px;
+  border-radius: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .home-tile-icon img {
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
 }
 
 .home-tile-label {
-  font-size: 0.95rem;
-  font-weight: 600;
+  font-size: 0.98rem;
+  font-weight: 700;
   text-align: center;
 }
 
 .screen-panel {
   background: var(--card-bg);
-  border-radius: 18px;
-  padding: 28px 20px;
+  border-radius: 22px;
+  padding: 30px 20px;
   text-align: center;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 8px rgba(139, 94, 60, 0.06);
 }
 
 .screen-icon {
-  width: 72px;
-  height: 72px;
+  width: 76px;
+  height: 76px;
   margin: 0 auto 16px;
-  border-radius: 18px;
+  border-radius: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .screen-icon img {
-  width: 40px;
-  height: 40px;
+  width: 42px;
+  height: 42px;
 }
 
 .screen-panel h2 {
@@ -185,6 +218,6 @@ html, body {
 .screen-placeholder-note {
   margin-top: 16px;
   font-size: 0.8rem;
-  color: #999;
+  color: #B3A594;
   font-style: italic;
 }
