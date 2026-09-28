@@ -76,13 +76,28 @@ User uploaded two image folders to `src/images/`: **TeraTiger** (named files, fe
   there's no conure art in this pack — a real gap since Conure is the most common species in the
   sample data.
 
-- **Birdorable — not started.** 109 `.webp` files at `src/images/Birdorable/Parrots-Parakeets/`,
-  confirmed genuine RGBA transparency and a consistent "chibi cute round bird" cartoon style, but
-  filenames are garbled CDN hashes (e.g. `01nc3s7f...@2x.webp`) with no species info — they're
-  named on birdorable.com's own site, not in the files. Building this pack means visually
-  identifying each image's species first (a contact-sheet-based triage pass was started but not
-  finished or acted on). Be transparent with the user about identification confidence per bird
-  when this gets built — there's no filename ground truth to fall back on, only visual judgment.
+- **Birdorable — species identified, pack not built yet.** 109 `.webp` files at
+  `src/images/Birdorable/Parrots-Parakeets/`, confirmed genuine RGBA transparency and a
+  consistent "chibi cute round bird" cartoon style, but filenames are garbled CDN hashes (e.g.
+  `01nc3s7f...@2x.webp`) with no species info in the filename itself. Solved by cross-referencing:
+  the user saved 18 pages of `birdorable.com/meet?page=N` as `.html` (now in
+  `src/images/Birdorable/`), whose markup embeds the *same* CDN hash per bird thumbnail next to
+  its species name/slug — so the hash is the join key, no visual guessing needed.
+  `src/images/Birdorable/species-map.json` is the durable result: 89 of 109 local files matched
+  (85 unique species — 4 files were plain duplicate downloads of the same hash), keyed by hash so
+  it's a lookup table, not a one-time note. **When more Birdorable images or `meet` page saves are
+  uploaded, re-run this matching (hash = filename minus `@2x`/`-N`/`.webp`, cross-referenced
+  against any new saved pages) rather than re-identifying by hand** — that's the whole point of
+  keeping the table. 20 files are still unresolved: every saved page was missing the same last
+  20-of-70 thumbnails (lazy-load hadn't scrolled them into view before the page was saved, so
+  their hash was never in the HTML) — re-saving those pages scrolled to the bottom, or fetching
+  `meet?page=N` directly now that `birdorable.com` is an allowed domain, would close the gap.
+  Building the actual `ICON_PACKS` entry from `species-map.json` is the next step, not yet done.
+  Per the user, the intent here is a **cross-promotional partnership** — credit + a link back to
+  Birdorable (the `meetUrl` already captured per species) so users can buy matching merch for
+  their own birds — not just using the art for free; worth confirming that relationship before
+  the pack ships broadly. The user also has more Birdorable categories beyond Parrots-Parakeets
+  not yet uploaded.
 
 The switching architecture (`ICON_PACKS`, picker at Account → Settings → Icon Style) needs no
 further changes for a third pack — same pattern as `teratiger`: a new entry with id/label/
