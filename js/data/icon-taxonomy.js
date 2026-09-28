@@ -41,8 +41,15 @@ const TAXONOMY_NODES = {
   'amazon': { label: 'Amazon', parent: 'medium-parrot' },
   'african-grey': { label: 'African Grey', parent: 'medium-parrot' },
   'eclectus': { label: 'Eclectus', parent: 'medium-parrot' },
+  'poicephalus': { label: 'Poicephalus', parent: 'medium-parrot' },
   'macaw': { label: 'Macaw', parent: 'large-parrot' },
   'cockatoo': { label: 'Cockatoo', parent: 'large-parrot' },
+  'budgie': { label: 'Budgie', parent: 'small-parrot' },
+  'parrotlet': { label: 'Parrotlet', parent: 'small-parrot' },
+  'quaker': { label: 'Quaker (Monk Parakeet)', parent: 'small-parrot' },
+  'linnie': { label: 'Linnie (Lineolated Parakeet)', parent: 'small-parrot' },
+  'kakariki': { label: 'Kakariki', parent: 'small-parrot' },
+  'bourkes-parakeet': { label: "Bourke's Parakeet", parent: 'small-parrot' },
 
   // Softbills (non-parrot tropical/ornamental)
   'softbill': { label: 'Softbill', parent: 'bird' },
@@ -83,8 +90,10 @@ const TAXONOMY_NODES = {
   'sea-bird': { label: 'Sea Bird', parent: 'water-bird' },
 };
 
-// Which node a Birds.species value starts its walk from. Only the species actually
-// used in js/data/birds-sample.js are mapped today — add more as new species show up.
+// Which node a Birds.species value starts its walk from. Covers every species-level
+// leaf node in TAXONOMY_NODES (not just the ones already in js/data/birds-sample.js)
+// so a pack's art shows up the moment a bird with that species is entered — add more
+// as new species/nodes show up.
 const SPECIES_NODE = {
   'Conure': 'conure',
   'Parakeet': 'parakeet',
@@ -92,6 +101,32 @@ const SPECIES_NODE = {
   'Macaw': 'macaw',
   'Amazon': 'amazon',
   'African Grey': 'african-grey',
+  'Eclectus': 'eclectus',
+  'Lovebird': 'lovebird',
+  'Cockatiel': 'cockatiel',
+  'Caique': 'caique',
+  'Toucan': 'toucan',
+  'Hornbill': 'hornbill',
+  'Turaco': 'turaco',
+  'Kingfisher': 'kingfisher',
+  'Finch': 'finch',
+  'Chicken': 'chicken',
+  'Turkey': 'turkey',
+  'Peafowl': 'peafowl',
+  'Quail': 'quail',
+  'Ostrich': 'ostrich',
+  'Emu': 'emu',
+  'Duck': 'duck',
+  'Goose': 'goose',
+  'Flamingo': 'flamingo',
+  'Budgie': 'budgie',
+  'Parrotlet': 'parrotlet',
+  'Quaker': 'quaker',
+  'Linnie': 'linnie',
+  'Kakariki': 'kakariki',
+  "Bourke's Parakeet": 'bourkes-parakeet',
+  'Senegal Parrot': 'poicephalus',
+  "Meyer's Parrot": 'poicephalus',
 };
 
 // Every pack must at minimum cover the 'bird' root — that's the guaranteed final
@@ -127,10 +162,52 @@ const ICON_PACKS = [
     subspeciesOverrides: {},
     mutationOverrides: {},
   },
+  {
+    id: 'teratiger',
+    label: 'Hand-Drawn',
+    description: 'Warm hand-drawn illustrations by TeraTigerStudio, one per species/subspecies.',
+    icons: {
+      'african-grey': 'src/images/TeraTiger/African Greys/Congo African Grey.png',
+      'amazon': 'src/images/TeraTiger/Amazons/Double Yellow-Headed Amazon.png',
+      'budgie': 'src/images/TeraTiger/Budgies/Green Budgie.png',
+      'caique': 'src/images/TeraTiger/Caiques/Black-headed Caique.png',
+      'cockatiel': 'src/images/TeraTiger/Cockatiels/Pearl Cockatiel.png',
+      'cockatoo': 'src/images/TeraTiger/Cockatoos/Umbrella Cockatoo.png',
+      'eclectus': 'src/images/TeraTiger/Eclectus/Male Eclectus.png',
+      'kakariki': 'src/images/TeraTiger/Misc/Kakariki.png',
+      'bourkes-parakeet': "src/images/TeraTiger/Misc/Rosey Bourke's.png",
+      'poicephalus': 'src/images/TeraTiger/Misc/Senegal Parrot.png',
+      'linnie': 'src/images/TeraTiger/Linnies/Green Linnie.png',
+      'lovebird': 'src/images/TeraTiger/Lovebirds/Peach-faced Lovebird.png',
+      'macaw': 'src/images/TeraTiger/Macaws/Blue and Gold Macaw.png',
+      'parakeet': 'src/images/TeraTiger/Indian Ringnecks/Green Indian Ringneck.png',
+      'parrotlet': 'src/images/TeraTiger/Parottlets/Green Parottlet.png',
+      'quaker': 'src/images/TeraTiger/Quakers/Green Quaker.png',
+      'toucan': 'src/images/TeraTiger/Toucans/Toco Toucan.png',
+    },
+    // Exact subspecies/mutation matches to our sample birds, so specific individuals
+    // (Coco the Umbrella Cockatoo, Rio the Blue & Gold Macaw, ...) get their precise
+    // portrait instead of the species-level generic above.
+    subspeciesOverrides: {
+      'Cockatoo|Umbrella': 'src/images/TeraTiger/Cockatoos/Umbrella Cockatoo.png',
+      'Macaw|Blue and Gold': 'src/images/TeraTiger/Macaws/Blue and Gold Macaw.png',
+      'Amazon|Yellow-Naped': 'src/images/TeraTiger/Amazons/Yellow-Naped Amazon.png',
+      'African Grey|Congo': 'src/images/TeraTiger/African Greys/Congo African Grey.png',
+    },
+    mutationOverrides: {
+      'Parakeet|Indian Ring-Necked|Blue': 'src/images/TeraTiger/Indian Ringnecks/Blue Indian Ringneck.png',
+    },
+  },
   // Add more packs here as they're illustrated — e.g. a "cartoon" or "realistic"
   // style. Each just needs an id/label/description and an `icons` map using the
   // same TAXONOMY_NODES keys; it doesn't need full coverage (it'll fall back to
   // whatever nodes it does have art for, same as "line" does).
+  //
+  // NOTE on the TeraTiger source folder: its "Conures" subfolder (src/images/
+  // TeraTiger/Conures/) was skipped entirely — it turned out to be an Etsy
+  // product-listing screenshot (stickers photographed on a wood background) and
+  // a couple of stray .textClipping/.webloc files, not individual transparent
+  // icons, so there's no usable conure art in this pack yet.
 ];
 
 const ICON_PACK_STORAGE_KEY = 'birdbox.iconPack';

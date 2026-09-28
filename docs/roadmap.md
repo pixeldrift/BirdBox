@@ -62,14 +62,32 @@ real file storage for attachments) or at least local persistence (IndexedDB) as 
 
 ## More icon packs / artwork
 
-**Waiting on the user**: they have a folder of sample icon sets (simplified, cartoon, realistic
-styles) and will upload it later. The switching architecture is already built (`ICON_PACKS` in
-`js/data/icon-taxonomy.js`, picker at Account → Settings → Icon Style, see docs/data-model.md) —
-adding a real pack once the files arrive is just a new `ICON_PACKS` entry (id/label/description
-+ a `TAXONOMY_NODES`-keyed `icons` map), no resolver or screen changes needed. When that folder
-arrives: figure out which node each image best represents (species, or a broader category if
-it's more generic), and don't feel obligated to cover every node — the pack falls back within
-itself the same way the taxonomy does.
+User uploaded two image folders to `src/images/`: **TeraTiger** (named files, fewer species) and
+**Birdorable** (many more images, but unreadable CDN hash filenames with no ground truth).
+
+- **TeraTiger — done.** Built as the `teratiger` ("Hand-Drawn") pack in `ICON_PACKS`
+  (`js/data/icon-taxonomy.js`), referencing files directly from `src/images/TeraTiger/` (no
+  copying needed, the repo is served statically). Covers 17 species-level nodes plus exact
+  subspecies/mutation portraits for 5 sample birds — see docs/data-model.md for the full list.
+  Seven new taxonomy leaf nodes were added to fit its coverage (`budgie`, `parrotlet`, `quaker`,
+  `linnie`, `kakariki`, `bourkes-parakeet`, `poicephalus`), and `SPECIES_NODE` was filled out to
+  cover every species-level node in the tree rather than just the sample data's six. Its
+  `Conures/` source folder turned out to be an Etsy marketing screenshot, not usable icons, so
+  there's no conure art in this pack — a real gap since Conure is the most common species in the
+  sample data.
+
+- **Birdorable — not started.** 109 `.webp` files at `src/images/Birdorable/Parrots-Parakeets/`,
+  confirmed genuine RGBA transparency and a consistent "chibi cute round bird" cartoon style, but
+  filenames are garbled CDN hashes (e.g. `01nc3s7f...@2x.webp`) with no species info — they're
+  named on birdorable.com's own site, not in the files. Building this pack means visually
+  identifying each image's species first (a contact-sheet-based triage pass was started but not
+  finished or acted on). Be transparent with the user about identification confidence per bird
+  when this gets built — there's no filename ground truth to fall back on, only visual judgment.
+
+The switching architecture (`ICON_PACKS`, picker at Account → Settings → Icon Style) needs no
+further changes for a third pack — same pattern as `teratiger`: a new entry with id/label/
+description + a `TAXONOMY_NODES`-keyed `icons` map, no resolver or screen changes, no obligation
+to cover every node.
 
 Separately, even the current `line` pack only covers the 17 species already drawn in
 `NestBox Icons.psd` — most nodes are intentionally `icon: null` there too. Worth illustrating

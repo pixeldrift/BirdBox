@@ -148,11 +148,34 @@ placeholders in the tree for when the app covers more than parrots, which is the
 is meant to feel like switching a color scheme — the hierarchy and every bird's place in it never
 change, only which image file each node resolves to. The active pack id persists in
 `localStorage` (`birdbox.iconPack`) and `resolveBirdIcon()` always reads the live active pack, so
-every screen updates immediately on switch with no per-screen wiring. Today there's exactly one
-real pack (`line`, the set extracted from `NestBox Icons.psd`) — per the user, more (simplified,
-cartoon, realistic) will be added once illustrated; adding one is purely additive (a new entry in
-`ICON_PACKS`, no resolver or screen changes), and a pack doesn't need full coverage — it falls
-back within itself the same way the taxonomy does.
+every screen updates immediately on switch with no per-screen wiring. There are now two real
+packs: `line` (extracted from `NestBox Icons.psd`) and `teratiger` ("Hand-Drawn" — user-supplied
+illustrations by TeraTigerStudio, referenced directly from `src/images/TeraTiger/`, no file
+copying needed since the whole repo is served statically). Adding a pack is purely additive (a
+new entry in `ICON_PACKS`, no resolver or screen changes), and a pack doesn't need full coverage —
+it falls back within itself the same way the taxonomy does; `teratiger` has no `bird`-node
+artwork at all, so any species it doesn't cover (e.g. Conure — see below) falls all the way
+through to `line`'s root bird icon, which is the intended final fallback
+(`pack.icons['bird'] || ICON_PACKS[0].icons['bird']`).
+
+Adding the `teratiger` pack also grew `TAXONOMY_NODES` (seven new leaf species it has art for and
+`line` didn't: `budgie`, `parrotlet`, `quaker`, `linnie`, `kakariki`, `bourkes-parakeet`, and a new
+`poicephalus` node for Senegal/Meyer's Parrot) and filled out `SPECIES_NODE` to cover every
+species-level node in the tree, not just the handful already in `js/data/birds-sample.js` — so a
+pack's art shows up the moment a bird with that species exists, rather than only for the six
+species the sample data happened to use. `teratiger`'s `subspeciesOverrides`/`mutationOverrides`
+give exact-match portraits to specific sample birds (Coco the Umbrella Cockatoo, Rio the Blue &
+Gold Macaw, Einstein the Congo African Grey, the Yellow-Naped Amazon, and the Blue Indian
+Ringneck) rather than just their species-level generic.
+
+**Known gap**: the source folder's `Conures/` subfolder was skipped — it turned out to be an Etsy
+product-listing screenshot (stickers photographed on a wood background) plus a couple of stray
+`.textClipping`/`.webloc` files, not individual transparent icons, so `teratiger` has no conure
+art despite Conures being the most common species in the sample data. A **third pack from the
+Birdorable.com folder** (`src/images/Birdorable/Parrots-Parakeets/`, 109 files) is planned but not
+yet built — those files have unreadable CDN hash filenames with no ground truth, so building that
+pack means visually identifying each image by species first; track this in roadmap.md rather than
+guessing IDs into the data model prematurely.
 
 To extend: add a node to `TAXONOMY_NODES` (with the right `parent`) for a new species/category
 not yet modeled at all, or add art for an existing node/subspecies/mutation to a pack's `icons`/
