@@ -60,17 +60,25 @@ Record and bird-photo uploads specifically use `URL.createObjectURL()`, which on
 current tab session. Before this app is used for real records, it needs either a backend (with
 real file storage for attachments) or at least local persistence (IndexedDB) as a stopgap.
 
-## More icon taxonomy artwork
+## More icon packs / artwork
 
-`js/data/icon-taxonomy.js` (see docs/data-model.md) defines a full tree of species/functional
-categories but only has icons for the 17 species already drawn in `NestBox Icons.psd` — most
-nodes are intentionally `icon: null` and fall back up the chain. Worth illustrating over time,
-roughly in priority order: (1) subspecies/mutation-level icons for whichever birds actually get
-photographed least often in real use (photos always win over the taxonomy icon, so this matters
-most for birds without photos), (2) missing species-level icons already referenced in the tree
-(Parakeet, Amazon, African Grey, Eclectus, Lovebird, Cockatiel, Caique all currently fall back to
-a size class), (3) the two acknowledged gaps with no icon at any level in their branch — Bird of
-Prey and Sea Bird.
+**Waiting on the user**: they have a folder of sample icon sets (simplified, cartoon, realistic
+styles) and will upload it later. The switching architecture is already built (`ICON_PACKS` in
+`js/data/icon-taxonomy.js`, picker at Account → Settings → Icon Style, see docs/data-model.md) —
+adding a real pack once the files arrive is just a new `ICON_PACKS` entry (id/label/description
++ a `TAXONOMY_NODES`-keyed `icons` map), no resolver or screen changes needed. When that folder
+arrives: figure out which node each image best represents (species, or a broader category if
+it's more generic), and don't feel obligated to cover every node — the pack falls back within
+itself the same way the taxonomy does.
+
+Separately, even the current `line` pack only covers the 17 species already drawn in
+`NestBox Icons.psd` — most nodes are intentionally `icon: null` there too. Worth illustrating
+over time within that pack, roughly in priority order: (1) subspecies/mutation-level icons for
+whichever birds actually get photographed least often in real use (photos always win over the
+taxonomy icon, so this matters most for birds without photos), (2) missing species-level icons
+already referenced in the tree (Parakeet, Amazon, African Grey, Eclectus, Lovebird, Cockatiel,
+Caique all currently fall back to a size class), (3) the two acknowledged gaps with no icon at
+any level in their branch in any pack — Bird of Prey and Sea Bird.
 
 ## Production (build last)
 

@@ -1,72 +1,86 @@
-// Hierarchical icon fallback system. A bird's thumbnail resolves from most specific
-// to least specific: mutation+subspecies -> subspecies -> species -> functional/size
-// category -> broader functional category -> ... -> the generic bird icon at the root.
-// Most nodes below intentionally have icon: null — that's not a bug, it's the normal
-// case (we have 17 species icons total; almost every leaf falls back). The tree blends
-// scientific-ish groupings (Conure, Macaw, Amazon) with the folk/functional categories
-// real bird keepers use (Poultry, Waterfowl, Ground Bird, Songbird, Bird of Prey, ...)
-// per the user's ask, even where a branch has no illustrated icon yet.
+// Hierarchical icon fallback system, split into two independent pieces:
 //
-// To add a more specific icon later: draw it, drop the file in icons/transparent/,
-// and either add a new node (with the right `parent`) or add an entry to
-// SUBSPECIES_ICON_OVERRIDES / MUTATION_ICON_OVERRIDES below — no resolver code changes.
+//   TAXONOMY_NODES  — the STRUCTURE. Which category is a parent of which
+//                      (Conure -> Small Parrot -> Parrot -> Hookbill -> Bird).
+//                      Pack-agnostic: this never changes when you switch styles.
+//
+//   ICON_PACKS      — the SKIN. Which actual image file represents each node, for
+//                      a given illustration style. Switching packs is meant to feel
+//                      like switching a color scheme: the hierarchy and every bird's
+//                      place in it stay identical, only the artwork changes. Per the
+//                      user: some people will want simple/minimal icons, others
+//                      cartoons, others realistic illustrations — this is the
+//                      architecture for that, built now against the one real pack
+//                      we have (the set extracted from NestBox Icons.psd). Adding a
+//                      pack later is just adding an entry to ICON_PACKS; nothing
+//                      else in the app changes, since every screen resolves a bird's
+//                      icon through resolveBirdIcon() rather than hardcoding a path.
+//
+// A bird's icon resolves from most specific to least specific: mutation+subspecies
+// -> subspecies -> species -> functional/size category -> broader functional
+// category -> ... -> the generic bird icon at the root. Most nodes intentionally
+// have no art in the "line" pack — that's the normal case (17 icons; almost every
+// leaf falls back), not a bug. The tree blends scientific-ish groupings (Conure,
+// Macaw, Amazon) with the folk/functional categories real bird keepers use
+// (Poultry, Waterfowl, Ground Bird, Songbird, Bird of Prey, ...) per the user's ask.
+
 const TAXONOMY_NODES = {
-  'bird': { label: 'Bird', icon: 'icons/transparent/Birds.png', parent: null },
+  'bird': { label: 'Bird', parent: null },
 
   // Hookbill / Parrots
-  'hookbill': { label: 'Hookbill', icon: null, parent: 'bird' },
-  'parrot': { label: 'Parrot', icon: null, parent: 'hookbill' },
-  'small-parrot': { label: 'Small Parrot', icon: 'icons/transparent/Bird01.png', parent: 'parrot' },
-  'medium-parrot': { label: 'Medium Parrot', icon: 'icons/transparent/Bird03.png', parent: 'parrot' },
-  'large-parrot': { label: 'Large Parrot', icon: null, parent: 'parrot' },
-  'conure': { label: 'Conure', icon: 'icons/transparent/Bird05.png', parent: 'small-parrot' },
-  'parakeet': { label: 'Parakeet', icon: null, parent: 'small-parrot' },
-  'lovebird': { label: 'Lovebird', icon: null, parent: 'small-parrot' },
-  'cockatiel': { label: 'Cockatiel', icon: null, parent: 'small-parrot' },
-  'caique': { label: 'Caique', icon: null, parent: 'small-parrot' },
-  'amazon': { label: 'Amazon', icon: null, parent: 'medium-parrot' },
-  'african-grey': { label: 'African Grey', icon: null, parent: 'medium-parrot' },
-  'eclectus': { label: 'Eclectus', icon: null, parent: 'medium-parrot' },
-  'macaw': { label: 'Macaw', icon: 'icons/transparent/Bird04.png', parent: 'large-parrot' },
-  'cockatoo': { label: 'Cockatoo', icon: 'icons/transparent/Bird02.png', parent: 'large-parrot' },
+  'hookbill': { label: 'Hookbill', parent: 'bird' },
+  'parrot': { label: 'Parrot', parent: 'hookbill' },
+  'small-parrot': { label: 'Small Parrot', parent: 'parrot' },
+  'medium-parrot': { label: 'Medium Parrot', parent: 'parrot' },
+  'large-parrot': { label: 'Large Parrot', parent: 'parrot' },
+  'conure': { label: 'Conure', parent: 'small-parrot' },
+  'parakeet': { label: 'Parakeet', parent: 'small-parrot' },
+  'lovebird': { label: 'Lovebird', parent: 'small-parrot' },
+  'cockatiel': { label: 'Cockatiel', parent: 'small-parrot' },
+  'caique': { label: 'Caique', parent: 'small-parrot' },
+  'amazon': { label: 'Amazon', parent: 'medium-parrot' },
+  'african-grey': { label: 'African Grey', parent: 'medium-parrot' },
+  'eclectus': { label: 'Eclectus', parent: 'medium-parrot' },
+  'macaw': { label: 'Macaw', parent: 'large-parrot' },
+  'cockatoo': { label: 'Cockatoo', parent: 'large-parrot' },
 
   // Softbills (non-parrot tropical/ornamental)
-  'softbill': { label: 'Softbill', icon: null, parent: 'bird' },
-  'toucan': { label: 'Toucan', icon: 'icons/transparent/Bird16.png', parent: 'softbill' },
-  'hornbill': { label: 'Hornbill', icon: 'icons/transparent/Bird14.png', parent: 'softbill' },
-  'turaco': { label: 'Turaco', icon: 'icons/transparent/Bird17.png', parent: 'softbill' },
-  'kingfisher': { label: 'Kingfisher', icon: 'icons/transparent/Bird15.png', parent: 'softbill' },
+  'softbill': { label: 'Softbill', parent: 'bird' },
+  'toucan': { label: 'Toucan', parent: 'softbill' },
+  'hornbill': { label: 'Hornbill', parent: 'softbill' },
+  'turaco': { label: 'Turaco', parent: 'softbill' },
+  'kingfisher': { label: 'Kingfisher', parent: 'softbill' },
 
   // Songbirds
-  'songbird': { label: 'Songbird', icon: 'icons/transparent/Bird13.png', parent: 'bird' },
-  'finch': { label: 'Finch', icon: null, parent: 'songbird' },
+  'songbird': { label: 'Songbird', parent: 'bird' },
+  'finch': { label: 'Finch', parent: 'songbird' },
 
-  // Birds of prey — real category, no icon yet (honest gap)
-  'bird-of-prey': { label: 'Bird of Prey', icon: null, parent: 'bird' },
+  // Birds of prey — real category, no icon yet in any pack (honest gap)
+  'bird-of-prey': { label: 'Bird of Prey', parent: 'bird' },
 
   // Poultry
-  'poultry': { label: 'Poultry', icon: 'icons/transparent/Bird06.png', parent: 'bird' },
-  'chicken': { label: 'Chicken', icon: 'icons/transparent/Bird06.png', parent: 'poultry' },
-  'turkey': { label: 'Turkey', icon: 'icons/transparent/Bird08.png', parent: 'poultry' },
-  'peafowl': { label: 'Peafowl', icon: 'icons/transparent/Bird11.png', parent: 'poultry' },
+  'poultry': { label: 'Poultry', parent: 'bird' },
+  'chicken': { label: 'Chicken', parent: 'poultry' },
+  'turkey': { label: 'Turkey', parent: 'poultry' },
+  'peafowl': { label: 'Peafowl', parent: 'poultry' },
 
   // Ground birds (wild/game, distinct from domestic poultry)
-  'ground-bird': { label: 'Ground Bird', icon: 'icons/transparent/Bird10.png', parent: 'bird' },
-  'quail': { label: 'Quail', icon: null, parent: 'ground-bird' },
+  'ground-bird': { label: 'Ground Bird', parent: 'bird' },
+  'quail': { label: 'Quail', parent: 'ground-bird' },
 
   // Ratites
-  'ratite': { label: 'Ratite', icon: 'icons/transparent/Bird12.png', parent: 'bird' },
-  'ostrich': { label: 'Ostrich', icon: null, parent: 'ratite' },
-  'emu': { label: 'Emu', icon: null, parent: 'ratite' },
+  'ratite': { label: 'Ratite', parent: 'bird' },
+  'ostrich': { label: 'Ostrich', parent: 'ratite' },
+  'emu': { label: 'Emu', parent: 'ratite' },
 
   // Water birds
-  'water-bird': { label: 'Water Bird', icon: null, parent: 'bird' },
-  'waterfowl': { label: 'Waterfowl', icon: 'icons/transparent/Bird07.png', parent: 'water-bird' },
-  'duck': { label: 'Duck', icon: null, parent: 'waterfowl' },
-  'goose': { label: 'Goose', icon: null, parent: 'waterfowl' },
-  'wading-bird': { label: 'Wading Bird', icon: 'icons/transparent/Bird09.png', parent: 'water-bird' },
-  'flamingo': { label: 'Flamingo', icon: null, parent: 'wading-bird' },
-  'sea-bird': { label: 'Sea Bird', icon: null, parent: 'water-bird' },
+  'water-bird': { label: 'Water Bird', parent: 'bird' },
+  'waterfowl': { label: 'Waterfowl', parent: 'water-bird' },
+  'duck': { label: 'Duck', parent: 'waterfowl' },
+  'goose': { label: 'Goose', parent: 'waterfowl' },
+  'wading-bird': { label: 'Wading Bird', parent: 'water-bird' },
+  'flamingo': { label: 'Flamingo', parent: 'wading-bird' },
+  'sea-bird': { label: 'Sea Bird', parent: 'water-bird' },
 };
 
 // Which node a Birds.species value starts its walk from. Only the species actually
@@ -80,25 +94,89 @@ const SPECIES_NODE = {
   'African Grey': 'african-grey',
 };
 
-// Hooks for illustrating a specific subspecies or mutation later — keyed by
-// "Species|Subspecies" / "Species|Subspecies|Mutation". Empty until something is
-// actually drawn; the resolver checks these before falling into the taxonomy tree.
-const SUBSPECIES_ICON_OVERRIDES = {};
-const MUTATION_ICON_OVERRIDES = {};
+// Every pack must at minimum cover the 'bird' root — that's the guaranteed final
+// fallback. subspeciesOverrides/mutationOverrides are keyed "Species|Subspecies" /
+// "Species|Subspecies|Mutation", for illustrating one specific bird without adding
+// a taxonomy node for it.
+const ICON_PACKS = [
+  {
+    id: 'line',
+    label: 'Line Art',
+    description: 'Simple black outline icons — the default set, extracted from NestBox Icons.psd.',
+    icons: {
+      'bird': 'icons/transparent/Birds.png',
+      'small-parrot': 'icons/transparent/Bird01.png',
+      'cockatoo': 'icons/transparent/Bird02.png',
+      'medium-parrot': 'icons/transparent/Bird03.png',
+      'macaw': 'icons/transparent/Bird04.png',
+      'conure': 'icons/transparent/Bird05.png',
+      'poultry': 'icons/transparent/Bird06.png',
+      'chicken': 'icons/transparent/Bird06.png',
+      'waterfowl': 'icons/transparent/Bird07.png',
+      'turkey': 'icons/transparent/Bird08.png',
+      'wading-bird': 'icons/transparent/Bird09.png',
+      'ground-bird': 'icons/transparent/Bird10.png',
+      'peafowl': 'icons/transparent/Bird11.png',
+      'ratite': 'icons/transparent/Bird12.png',
+      'songbird': 'icons/transparent/Bird13.png',
+      'hornbill': 'icons/transparent/Bird14.png',
+      'kingfisher': 'icons/transparent/Bird15.png',
+      'toucan': 'icons/transparent/Bird16.png',
+      'turaco': 'icons/transparent/Bird17.png',
+    },
+    subspeciesOverrides: {},
+    mutationOverrides: {},
+  },
+  // Add more packs here as they're illustrated — e.g. a "cartoon" or "realistic"
+  // style. Each just needs an id/label/description and an `icons` map using the
+  // same TAXONOMY_NODES keys; it doesn't need full coverage (it'll fall back to
+  // whatever nodes it does have art for, same as "line" does).
+];
+
+const ICON_PACK_STORAGE_KEY = 'birdbox.iconPack';
+
+function getIconPacks() {
+  return ICON_PACKS;
+}
+
+function getActiveIconPackId() {
+  try {
+    var stored = localStorage.getItem(ICON_PACK_STORAGE_KEY);
+    if (stored && ICON_PACKS.some(function (p) { return p.id === stored; })) return stored;
+  } catch (e) {
+    // localStorage unavailable (private browsing, storage blocked, etc.) — fall through.
+  }
+  return ICON_PACKS[0].id;
+}
+
+function setActiveIconPackId(id) {
+  try {
+    localStorage.setItem(ICON_PACK_STORAGE_KEY, id);
+  } catch (e) {
+    // Non-fatal — the pack just won't persist across reloads this session.
+  }
+}
+
+function getActiveIconPack() {
+  var id = getActiveIconPackId();
+  return ICON_PACKS.filter(function (p) { return p.id === id; })[0] || ICON_PACKS[0];
+}
 
 function resolveBirdIcon(bird) {
+  var pack = getActiveIconPack();
+
   var mutKey = bird.species + '|' + bird.subspecies + '|' + (bird.mutation || '');
-  if (bird.mutation && MUTATION_ICON_OVERRIDES[mutKey]) return MUTATION_ICON_OVERRIDES[mutKey];
+  if (bird.mutation && pack.mutationOverrides[mutKey]) return pack.mutationOverrides[mutKey];
 
   var subKey = bird.species + '|' + bird.subspecies;
-  if (bird.subspecies && SUBSPECIES_ICON_OVERRIDES[subKey]) return SUBSPECIES_ICON_OVERRIDES[subKey];
+  if (bird.subspecies && pack.subspeciesOverrides[subKey]) return pack.subspeciesOverrides[subKey];
 
   var key = SPECIES_NODE[bird.species] || null;
   while (key) {
+    if (pack.icons[key]) return pack.icons[key];
     var node = TAXONOMY_NODES[key];
     if (!node) break;
-    if (node.icon) return node.icon;
     key = node.parent;
   }
-  return TAXONOMY_NODES['bird'].icon;
+  return pack.icons['bird'] || ICON_PACKS[0].icons['bird'];
 }

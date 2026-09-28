@@ -899,3 +899,80 @@ textarea.form-input {
   text-align: center;
   cursor: pointer;
 }
+
+/* Icon pack picker (Settings) */
+
+.pack-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pack-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 16px;
+  border: 2px solid #E9DCC9;
+  background: var(--bg);
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+}
+
+.pack-card.active {
+  border-color: var(--brand);
+  background: var(--card-bg);
+  cursor: default;
+}
+
+.pack-preview {
+  flex: 0 0 auto;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2px;
+  width: 52px;
+  height: 52px;
+  border-radius: 10px;
+  background: #FBF6EF;
+  padding: 4px;
+}
+
+.pack-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.pack-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pack-label {
+  font-weight: 700;
+  font-size: 0.92rem;
+}
+
+.pack-description {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.pack-check {
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--brand);
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

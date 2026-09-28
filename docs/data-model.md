@@ -130,22 +130,33 @@ falls back through a hierarchy from most to least specific — mutation+subspeci
 species → size/functional group → broader functional group → the generic bird icon — per the
 user's worked example ("a Turquoise Green-Cheeked Conure falls back to Green-Cheek, then Conure,
 then Small Parrot, then Hookbill, then Bird"). `resolveBirdIcon(bird)` walks a tree of named
-nodes (`TAXONOMY_NODES`), each with an optional icon and a parent; most nodes have `icon: null`
-on purpose since only 17 species icons exist today (from `NestBox Icons.psd`) — the point of the
-system is that gaps degrade gracefully, not that every node needs art.
+nodes (`TAXONOMY_NODES`) and looks up each node's artwork in the *active icon pack* (below).
 
 The tree deliberately mixes scientific-ish groupings (Conure, Macaw, Amazon, African Grey) with
 the folk/functional categories real bird keepers use, per the user's ask: Hookbill → Parrot →
 Small/Medium/Large Parrot; Poultry (Chicken/Turkey/Peafowl); Ground Bird; Ratite; Water Bird →
 Waterfowl/Wading Bird/Sea Bird; Songbird; Softbill (Toucan/Hornbill/Turaco/Kingfisher); and Bird
 of Prey. Several of these (Bird of Prey, Sea Bird, and most individual species under Poultry/
-Waterfowl/Ratite) have no bird in the current sample data and no icon — they're placeholders in
-the tree for when the app covers more than parrots, which is the intent (see `snippets.md`'s
-original bird-icon list and the taxonomy reference files in the repo root).
+Waterfowl/Ratite) have no bird in the current sample data and no icon in any pack yet — they're
+placeholders in the tree for when the app covers more than parrots, which is the intent (see
+`snippets.md`'s original bird-icon list and the taxonomy reference files in the repo root).
 
-To extend: add a node to `TAXONOMY_NODES` (with the right `parent`) for a new species/category,
-or add an entry to `SUBSPECIES_ICON_OVERRIDES`/`MUTATION_ICON_OVERRIDES` to illustrate one
-specific subspecies or mutation without touching the resolver.
+**Icon packs** (`ICON_PACKS` in the same file): the taxonomy tree (`TAXONOMY_NODES`) is the
+*structure* — which category is a parent of which — and is pack-independent. A pack supplies the
+*artwork*: a map from node key to image file, plus its own `subspeciesOverrides`/
+`mutationOverrides`. Switching packs (Account → Settings → Icon Style, `js/screens/settings.js`)
+is meant to feel like switching a color scheme — the hierarchy and every bird's place in it never
+change, only which image file each node resolves to. The active pack id persists in
+`localStorage` (`birdbox.iconPack`) and `resolveBirdIcon()` always reads the live active pack, so
+every screen updates immediately on switch with no per-screen wiring. Today there's exactly one
+real pack (`line`, the set extracted from `NestBox Icons.psd`) — per the user, more (simplified,
+cartoon, realistic) will be added once illustrated; adding one is purely additive (a new entry in
+`ICON_PACKS`, no resolver or screen changes), and a pack doesn't need full coverage — it falls
+back within itself the same way the taxonomy does.
+
+To extend: add a node to `TAXONOMY_NODES` (with the right `parent`) for a new species/category
+not yet modeled at all, or add art for an existing node/subspecies/mutation to a pack's `icons`/
+`subspeciesOverrides`/`mutationOverrides` — neither touches the resolver.
 
 ## Registry (new in BirdBox)
 
@@ -200,6 +211,7 @@ was clearly seeded from the same kind of source.
 | Waybills + Cost (new field) | Business → Shipping | Built (list + detail, no full Airports lookup table) |
 | Transactions + Waybills | Business → Reports | Built (KPIs + charts, see below) |
 | Birds.registryPublic (new) | Registry → Search, Register | Built (search + manage-list toggle, see below); Lost & Found still a placeholder |
+| Birds.photos + ICON_PACKS (new) | My Birds → Birds (Photos section), Account → Settings | Built (photo upload/primary, icon-pack picker, see below) |
 | Cages.Feeding | Aviary → Feed/Water | Placeholder (deprioritized, see roadmap) |
 
 ## Open questions for when we build against this
