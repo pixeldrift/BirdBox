@@ -80,3 +80,21 @@ function makeToggle(checked, labelText, onChange) {
   row.appendChild(label);
   return row;
 }
+
+// Fills an avatar container (.list-row-avatar or .detail-avatar) with the bird's primary
+// photo if it has one (full-bleed, object-fit: cover), else the taxonomy-resolved species
+// icon (small, centered) — see js/data/icon-taxonomy.js. Depends on birdPrimaryPhoto()
+// and resolveBirdIcon(), both defined in js/data/*.js, loaded before this is ever called.
+function fillBirdAvatar(container, bird) {
+  clearEl(container);
+  var photo = birdPrimaryPhoto(bird);
+  var img = document.createElement('img');
+  img.alt = '';
+  if (photo) {
+    img.src = photo.url;
+    img.className = 'avatar-photo';
+  } else {
+    img.src = resolveBirdIcon(bird);
+  }
+  container.appendChild(img);
+}

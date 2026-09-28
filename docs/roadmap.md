@@ -54,11 +54,23 @@ Classifieds and Registry -> Lost & Found get built — reach for "link to the ex
 ## Persistent storage / backend
 
 Everything built so far (Birds, Contacts, Accounting, Health) lives in in-memory sample arrays
-(`js/data/*.js`) — edits made while using the app (e.g. adding a Health Record) work for real
-but reset on page reload since there's no backend or local persistence yet. Health Record file
-uploads specifically use `URL.createObjectURL()`, which only lives for the current tab session.
-Before this app is used for real records, it needs either a backend (with real file storage for
-attachments) or at least local persistence (IndexedDB) as a stopgap.
+(`js/data/*.js`) — edits made while using the app (e.g. adding a Health Record, or a bird photo)
+work for real but reset on page reload since there's no backend or local persistence yet. Health
+Record and bird-photo uploads specifically use `URL.createObjectURL()`, which only lives for the
+current tab session. Before this app is used for real records, it needs either a backend (with
+real file storage for attachments) or at least local persistence (IndexedDB) as a stopgap.
+
+## More icon taxonomy artwork
+
+`js/data/icon-taxonomy.js` (see docs/data-model.md) defines a full tree of species/functional
+categories but only has icons for the 17 species already drawn in `NestBox Icons.psd` — most
+nodes are intentionally `icon: null` and fall back up the chain. Worth illustrating over time,
+roughly in priority order: (1) subspecies/mutation-level icons for whichever birds actually get
+photographed least often in real use (photos always win over the taxonomy icon, so this matters
+most for birds without photos), (2) missing species-level icons already referenced in the tree
+(Parakeet, Amazon, African Grey, Eclectus, Lovebird, Cockatiel, Caique all currently fall back to
+a size class), (3) the two acknowledged gaps with no icon at any level in their branch — Bird of
+Prey and Sea Bird.
 
 ## Production (build last)
 

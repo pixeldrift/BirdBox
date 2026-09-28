@@ -34,10 +34,7 @@ const RegistrySearchScreen = (function () {
     header.className = 'detail-header';
     var avatar = document.createElement('div');
     avatar.className = 'detail-avatar';
-    var img = document.createElement('img');
-    img.src = 'icons/tinted/registry/Registry.png';
-    img.alt = '';
-    avatar.appendChild(img);
+    fillBirdAvatar(avatar, bird);
     var titleWrap = document.createElement('div');
     titleWrap.className = 'detail-title';
     var h2 = document.createElement('h2');

@@ -87,10 +87,7 @@ const BirdsScreen = (function () {
 
     var avatar = document.createElement('span');
     avatar.className = 'list-row-avatar';
-    var img = document.createElement('img');
-    img.src = 'icons/tinted/mybirds/Birds.png';
-    img.alt = '';
-    avatar.appendChild(img);
+    fillBirdAvatar(avatar, bird);
 
     var info = document.createElement('span');
     info.className = 'list-row-info';
@@ -119,6 +116,11 @@ const BirdsScreen = (function () {
   }
 
   function renderDetail(main, id, navigate, setTitle) {
+    // Cleared here (not just by the router) because this also gets called directly as a
+    // "refresh myself" callback (Registry toggle, photo upload/primary switch) — without
+    // this, a second call appends another copy instead of replacing the first.
+    clearEl(main);
+
     var bird = getBird(id);
     if (!bird) {
       var missing = document.createElement('p');
@@ -137,10 +139,7 @@ const BirdsScreen = (function () {
 
     var avatar = document.createElement('div');
     avatar.className = 'detail-avatar';
-    var img = document.createElement('img');
-    img.src = 'icons/tinted/mybirds/Birds.png';
-    img.alt = '';
-    avatar.appendChild(img);
+    fillBirdAvatar(avatar, bird);
 
     var titleWrap = document.createElement('div');
     titleWrap.className = 'detail-title';
@@ -258,6 +257,7 @@ const BirdsScreen = (function () {
     moneySection.appendChild(moneyGrid);
 
     wrap.appendChild(header);
+    wrap.appendChild(buildPhotosSection(bird, function () { renderDetail(main, id, navigate, setTitle); }));
     wrap.appendChild(factsGrid);
     wrap.appendChild(familySection);
     wrap.appendChild(registrySection);
@@ -289,6 +289,75 @@ const BirdsScreen = (function () {
       bird.registryPublic = checked;
       onToggle();
     });
+  }
+
+  function buildPhotosSection(bird, refresh) {
+    var section = document.createElement('div');
+    section.className = 'detail-section';
+    var title = document.createElement('h3');
+    title.textContent = 'Photos';
+    section.appendChild(title);
+
+    if (bird.photos.length === 0) {
+      var empty = document.createElement('p');
+      empty.className = 'notes-text';
+      empty.textContent = 'No photos yet — falling back to a generic icon for this species.';
+      section.appendChild(empty);
+    } else {
+      var grid = document.createElement('div');
+      grid.className = 'photo-grid';
+      bird.photos.forEach(function (photo) {
+        var tile = document.createElement('button');
+        tile.type = 'button';
+        tile.className = 'photo-tile' + (photo.isPrimary ? ' primary' : '');
+        var img = document.createElement('img');
+        img.src = photo.url;
+        img.alt = '';
+        tile.appendChild(img);
+        if (photo.isPrimary) {
+          var badge = document.createElement('span');
+          badge.className = 'photo-primary-badge';
+          badge.textContent = 'Primary';
+          tile.appendChild(badge);
+        }
+        tile.addEventListener('click', function () {
+          if (photo.isPrimary) return;
+          bird.photos.forEach(function (p) { p.isPrimary = (p === photo); });
+          refresh();
+        });
+        grid.appendChild(tile);
+      });
+      section.appendChild(grid);
+    }
+
+    var fileLabel = document.createElement('label');
+    fileLabel.className = 'add-record-btn photo-upload-btn';
+    fileLabel.textContent = '+ Add Photos';
+    var fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'image/*';
+    fileInput.multiple = true;
+    fileInput.hidden = true;
+    fileInput.addEventListener('change', function () {
+      var hadPhotos = bird.photos.length > 0;
+      Array.prototype.forEach.call(fileInput.files, function (file, i) {
+        bird.photos.push({
+          id: nextPhotoId(),
+          url: URL.createObjectURL(file),
+          isPrimary: !hadPhotos && i === 0,
+        });
+      });
+      refresh();
+    });
+    fileLabel.appendChild(fileInput);
+    section.appendChild(fileLabel);
+
+    var note = document.createElement('p');
+    note.className = 'form-note';
+    note.textContent = 'Tap a photo to make it the primary picture. Session-only for now — see docs/roadmap.md.';
+    section.appendChild(note);
+
+    return section;
   }
 
   return { renderList: renderList, renderDetail: renderDetail };

@@ -116,6 +116,37 @@ track shipping cost) and skips the full 389-row Airports lookup table — depart
 airport are plain text codes. Shown at Business → Shipping, cross-linked to Contacts and Birds
 the same way Accounting is.
 
+## Bird photos + icon taxonomy (new in BirdBox)
+
+Two related additions, both about what shows in a bird's avatar:
+
+**Photos**: `Birds.photos` (new field) is `[{ id, url, isPrimary }]`, empty by default. A
+bird's own detail page has a Photos section — upload (real `<input type="file">`, multiple,
+session-only via `URL.createObjectURL()` like Health Record attachments) and tap-to-set-primary.
+Exactly one photo is primary at a time; the first upload becomes primary automatically.
+
+**Icon taxonomy fallback** (`js/data/icon-taxonomy.js`): when a bird has no photo, its avatar
+falls back through a hierarchy from most to least specific — mutation+subspecies → subspecies →
+species → size/functional group → broader functional group → the generic bird icon — per the
+user's worked example ("a Turquoise Green-Cheeked Conure falls back to Green-Cheek, then Conure,
+then Small Parrot, then Hookbill, then Bird"). `resolveBirdIcon(bird)` walks a tree of named
+nodes (`TAXONOMY_NODES`), each with an optional icon and a parent; most nodes have `icon: null`
+on purpose since only 17 species icons exist today (from `NestBox Icons.psd`) — the point of the
+system is that gaps degrade gracefully, not that every node needs art.
+
+The tree deliberately mixes scientific-ish groupings (Conure, Macaw, Amazon, African Grey) with
+the folk/functional categories real bird keepers use, per the user's ask: Hookbill → Parrot →
+Small/Medium/Large Parrot; Poultry (Chicken/Turkey/Peafowl); Ground Bird; Ratite; Water Bird →
+Waterfowl/Wading Bird/Sea Bird; Songbird; Softbill (Toucan/Hornbill/Turaco/Kingfisher); and Bird
+of Prey. Several of these (Bird of Prey, Sea Bird, and most individual species under Poultry/
+Waterfowl/Ratite) have no bird in the current sample data and no icon — they're placeholders in
+the tree for when the app covers more than parrots, which is the intent (see `snippets.md`'s
+original bird-icon list and the taxonomy reference files in the repo root).
+
+To extend: add a node to `TAXONOMY_NODES` (with the right `parent`) for a new species/category,
+or add an entry to `SUBSPECIES_ICON_OVERRIDES`/`MUTATION_ICON_OVERRIDES` to illustrate one
+specific subspecies or mutation without touching the resolver.
+
 ## Registry (new in BirdBox)
 
 Not a separate entity — Registry -> Search reads directly off `Birds.registryPublic` (new
