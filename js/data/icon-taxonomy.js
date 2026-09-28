@@ -151,7 +151,7 @@ const ICON_PACKS = [
   {
     id: 'line',
     label: 'Line Art',
-    description: 'Simple black outline icons — the default set, extracted from NestBox Icons.psd.',
+    description: 'Simple black outline icons — clean and minimal.',
     icons: {
       'bird': 'icons/transparent/Birds.png',
       'small-parrot': 'icons/transparent/Bird01.png',
@@ -215,8 +215,7 @@ const ICON_PACKS = [
   {
     id: 'birdorable',
     label: 'Birdorable',
-    description: 'Cute round cartoon birds by Birdorable.com, one per species/subspecies. ' +
-      'Credit + a shop link back to Birdorable belongs wherever this pack is offered — see roadmap.md.',
+    description: 'Cute round cartoon birds by Birdorable.com — visit their shop for merch featuring your birds.',
     // Built from src/images/Birdorable/species-map.json (hash-matched against the user's saved
     // birdorable.com/meet pages, see that file's _comment). Species/subspecies keys below use
     // our own field convention (e.g. "Macaw|Scarlet"), not Birdorable's slugs — cross-referenced

@@ -138,7 +138,7 @@
 
     var note = document.createElement('p');
     note.className = 'screen-placeholder-note';
-    note.textContent = 'Screen not built yet — this is a navigation placeholder.';
+    note.textContent = 'Coming soon.';
 
     panel.appendChild(iconWrap);
     panel.appendChild(h2);

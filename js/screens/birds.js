@@ -354,7 +354,7 @@ const BirdsScreen = (function () {
 
     var note = document.createElement('p');
     note.className = 'form-note';
-    note.textContent = 'Tap a photo to make it the primary picture. Session-only for now — see docs/roadmap.md.';
+    note.textContent = 'Tap a photo to make it the main picture on this bird’s profile.';
     section.appendChild(note);
 
     return section;

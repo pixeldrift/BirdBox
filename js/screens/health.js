@@ -339,7 +339,7 @@ const HealthScreen = (function () {
 
     var fileNote = document.createElement('p');
     fileNote.className = 'form-note';
-    fileNote.textContent = 'Files are kept only for this browsing session — there’s no backend yet to store uploads permanently.';
+    fileNote.textContent = 'Photos, PDFs, and other documents for this record.';
 
     var saveBtn = document.createElement('button');
     saveBtn.type = 'submit';
