@@ -30,6 +30,21 @@ uploads specifically use `URL.createObjectURL()`, which only lives for the curre
 Before this app is used for real records, it needs either a backend (with real file storage for
 attachments) or at least local persistence (IndexedDB) as a stopgap.
 
+## Production (build last)
+
+Recordkeeping for the breeding side: clutches, egg collection, and hatching, plus graphs/
+reporting on top of that data (matches the product doc's example: "What DYH Amazon babies did
+we have in February two years ago?"). User wants this built **last** among the remaining My
+Birds/Aviary/Business screens — it's a bigger lift than the others (more interconnected
+record-keeping, plus charts) and everything else should land first.
+
+Likely shape, based on the pattern so far: a Clutch entity (pair/parents, date laid, egg count,
+expected hatch date) with Eggs or hatch outcomes recorded per clutch (fertile/clear/hatched/
+didn't hatch), rolling up into production stats per bird/pair/species/season. The reporting
+piece should follow the `dataviz` skill when it's built.
+
+Likely touches: My Birds → Production, Business → Reports.
+
 ## Genealogy tree, inbreeding calculator, genetics predictor
 
 User is building these as a **separate project** and may merge it into BirdBox later. Do **not**
