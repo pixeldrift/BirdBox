@@ -116,6 +116,18 @@ track shipping cost) and skips the full 389-row Airports lookup table — depart
 airport are plain text codes. Shown at Business → Shipping, cross-linked to Contacts and Birds
 the same way Accounting is.
 
+## Registry (new in BirdBox)
+
+Not a separate entity — Registry -> Search reads directly off `Birds.registryPublic` (new
+field, default `false`). There's nothing else to enter: turning a bird's registry toggle on
+(from the bird's own detail page, or from Registry -> Register's manage list — both write the
+same field, so either one is the whole action) makes it findable by exact band number, showing
+only band #, species/subspecies/mutation, sex, hatch date, and lineage to *other public* birds —
+never owner, notes, or money fields. A parent/child that isn't itself public shows as private
+rather than leaking through the link. This is the first working instance of the "linked data,
+not duplicated data" pattern the user wants the rest of the app (Classifieds, Lost & Found) to
+follow — see docs/roadmap.md.
+
 ## Reports (new in BirdBox)
 
 Business → Reports reads directly from Transactions and Waybills — no new entity, just a
@@ -156,6 +168,7 @@ was clearly seeded from the same kind of source.
 | Buildings, Cages (simplified) | Aviary → Caging | Built (cages grouped from Birds.cage, deliberately light — see roadmap) |
 | Waybills + Cost (new field) | Business → Shipping | Built (list + detail, no full Airports lookup table) |
 | Transactions + Waybills | Business → Reports | Built (KPIs + charts, see below) |
+| Birds.registryPublic (new) | Registry → Search, Register | Built (search + manage-list toggle, see below); Lost & Found still a placeholder |
 | Cages.Feeding | Aviary → Feed/Water | Placeholder (deprioritized, see roadmap) |
 
 ## Open questions for when we build against this

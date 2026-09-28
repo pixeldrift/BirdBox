@@ -195,6 +195,21 @@ const BirdsScreen = (function () {
       familySection.appendChild(kidsRow);
     }
 
+    var registrySection = document.createElement('div');
+    registrySection.className = 'detail-section';
+    var registryTitle = document.createElement('h3');
+    registryTitle.textContent = 'Registry';
+    registrySection.appendChild(registryTitle);
+    registrySection.appendChild(makeRegistryToggle(bird, function () {
+      renderDetail(main, id, navigate, setTitle);
+    }));
+    var registryNote = document.createElement('p');
+    registryNote.className = 'form-note';
+    registryNote.textContent = bird.registryPublic
+      ? 'Band #, species, sex, hatch date, and public parents/offspring are searchable in Registry → Search. Owner, notes, and money fields stay private.'
+      : 'Off by default — turn on to make this bird searchable in the public Registry.';
+    registrySection.appendChild(registryNote);
+
     var healthSection = document.createElement('div');
     healthSection.className = 'detail-section';
     var healthTitle = document.createElement('h3');
@@ -245,6 +260,7 @@ const BirdsScreen = (function () {
     wrap.appendChild(header);
     wrap.appendChild(factsGrid);
     wrap.appendChild(familySection);
+    wrap.appendChild(registrySection);
     wrap.appendChild(healthSection);
     wrap.appendChild(moneySection);
 
@@ -266,6 +282,13 @@ const BirdsScreen = (function () {
 
   function makeRelChip(label, relBird, navigate) {
     return makeChip(label, relBird ? birdShortLabel(relBird) : 'Unknown', relBird ? function () { navigate(relBird.id); } : null);
+  }
+
+  function makeRegistryToggle(bird, onToggle) {
+    return makeToggle(bird.registryPublic, 'Public in Registry', function (checked) {
+      bird.registryPublic = checked;
+      onToggle();
+    });
   }
 
   return { renderList: renderList, renderDetail: renderDetail };

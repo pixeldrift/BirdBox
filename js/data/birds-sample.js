@@ -2,13 +2,21 @@
 // Airtable base). Mother/Father are self-referential links by id, same pattern as the
 // source data, so the genealogy links below are real parent/child relationships you can
 // tap through.
+//
+// registryPublic: opt-in flag (default false — privacy-first, matches the product doc's
+// "breeders are notoriously suspicious of online recordkeeping") controlling whether this
+// bird's basic info is searchable in Registry -> Search. There's no separate registry
+// entity: the public record is generated live from this same object, so toggling it (from
+// the bird's own detail page, or from Registry -> Register's manage list) is the whole
+// story — "automatic" inclusion, per the user's ask. See docs/roadmap.md for the planned
+// granular (field-level) privacy this will grow into.
 const BIRDS_SAMPLE = [
   {
     id: 'AR10001CA', band: 'AR 10001 CA', name: 'Sunny', sex: 'Male',
     species: 'Conure', subspecies: 'Sun', mutation: null,
     hatchDate: '2019-05-01', status: 'Available', cage: 'F2-001',
     motherId: null, fatherId: null, pairedId: 'AR10002CA',
-    cost: 300, price: 800,
+    cost: 300, price: 800, registryPublic: true,
     notes: 'Founding pair — proven breeder male.',
   },
   {
@@ -16,7 +24,7 @@ const BIRDS_SAMPLE = [
     species: 'Conure', subspecies: 'Sun', mutation: null,
     hatchDate: '2019-06-15', status: 'Available', cage: 'F2-001',
     motherId: null, fatherId: null, pairedId: 'AR10001CA',
-    cost: 300, price: 800,
+    cost: 300, price: 800, registryPublic: true,
     notes: 'Founding pair — proven breeder female.',
   },
   {
@@ -24,7 +32,7 @@ const BIRDS_SAMPLE = [
     species: 'Conure', subspecies: 'Sun', mutation: null,
     hatchDate: '2021-02-24', status: 'Sold', cage: null,
     motherId: 'AR10002CA', fatherId: 'AR10001CA',
-    cost: 0, price: 600,
+    cost: 0, price: 600, registryPublic: false,
     notes: '',
   },
   {
@@ -32,7 +40,7 @@ const BIRDS_SAMPLE = [
     species: 'Conure', subspecies: 'Sun', mutation: null,
     hatchDate: '2021-02-24', status: 'Available', cage: 'F2-002',
     motherId: 'AR10002CA', fatherId: 'AR10001CA',
-    cost: 0, price: 600,
+    cost: 0, price: 600, registryPublic: true,
     notes: '',
   },
   {
@@ -40,7 +48,7 @@ const BIRDS_SAMPLE = [
     species: 'Conure', subspecies: 'Sun', mutation: 'Red Factor',
     hatchDate: '2022-04-05', status: 'Reserved', cage: 'F2-003',
     motherId: 'AR10002CA', fatherId: 'AR10001CA',
-    cost: 0, price: 1500,
+    cost: 0, price: 1500, registryPublic: false,
     notes: 'Reserved for Brock Stone.',
   },
   {
@@ -48,7 +56,7 @@ const BIRDS_SAMPLE = [
     species: 'Conure', subspecies: 'Sun', mutation: null,
     hatchDate: '2022-04-05', status: 'Deceased', cage: null,
     motherId: 'AR10002CA', fatherId: 'AR10001CA',
-    cost: 0, price: null,
+    cost: 0, price: null, registryPublic: false,
     notes: 'Passed shortly after fledging.',
   },
   {
@@ -56,7 +64,7 @@ const BIRDS_SAMPLE = [
     species: 'Conure', subspecies: 'Green-Cheeked', mutation: 'Mooncheek',
     hatchDate: '2020-03-11', status: 'Available', cage: 'F1-012',
     motherId: null, fatherId: null, pairedId: 'AR12002CA',
-    cost: 250, price: 600,
+    cost: 250, price: 600, registryPublic: false,
     notes: '',
   },
   {
@@ -64,7 +72,7 @@ const BIRDS_SAMPLE = [
     species: 'Conure', subspecies: 'Green-Cheeked', mutation: 'Pineapple',
     hatchDate: '2020-04-02', status: 'Reserved', cage: 'F1-012',
     motherId: null, fatherId: null, pairedId: 'AR12001CA',
-    cost: 225, price: 600,
+    cost: 225, price: 600, registryPublic: false,
     notes: '',
   },
   {
@@ -72,7 +80,7 @@ const BIRDS_SAMPLE = [
     species: 'Conure', subspecies: 'Green-Cheeked', mutation: 'Mooncheek, Pineapple',
     hatchDate: '2023-01-20', status: 'Available', cage: 'F1-013',
     motherId: 'AR12002CA', fatherId: 'AR12001CA',
-    cost: 0, price: 900,
+    cost: 0, price: 900, registryPublic: false,
     notes: '',
   },
   {
@@ -80,7 +88,7 @@ const BIRDS_SAMPLE = [
     species: 'Parakeet', subspecies: 'Indian Ring-Necked', mutation: 'Blue',
     hatchDate: '2021-07-19', status: 'Available', cage: 'FLN',
     motherId: null, fatherId: null,
-    cost: 150, price: 400,
+    cost: 150, price: 400, registryPublic: false,
     notes: '',
   },
   {
@@ -88,7 +96,7 @@ const BIRDS_SAMPLE = [
     species: 'Parakeet', subspecies: 'Indian Ring-Necked', mutation: 'Albino',
     hatchDate: '2021-08-02', status: 'Sold', cage: null,
     motherId: null, fatherId: null,
-    cost: 150, price: 450,
+    cost: 150, price: 450, registryPublic: false,
     notes: '',
   },
   {
@@ -96,7 +104,7 @@ const BIRDS_SAMPLE = [
     species: 'Cockatoo', subspecies: 'Umbrella', mutation: null,
     hatchDate: '2018-02-14', status: 'Available', cage: 'F5-001',
     motherId: null, fatherId: null,
-    cost: 1800, price: 2500,
+    cost: 1800, price: 2500, registryPublic: true,
     notes: 'Hand-tame, does well with visitors.',
   },
   {
@@ -104,7 +112,7 @@ const BIRDS_SAMPLE = [
     species: 'Macaw', subspecies: 'Blue and Gold', mutation: null,
     hatchDate: '2017-11-30', status: 'Reserved', cage: 'F6-002',
     motherId: null, fatherId: null,
-    cost: 2200, price: 3200,
+    cost: 2200, price: 3200, registryPublic: false,
     notes: 'Reserved — deposit received.',
   },
   {
@@ -112,7 +120,7 @@ const BIRDS_SAMPLE = [
     species: 'Amazon', subspecies: 'Yellow-Naped', mutation: null,
     hatchDate: '2015-01-01', status: 'Deceased', cage: null,
     motherId: null, fatherId: null,
-    cost: 900, price: null,
+    cost: 900, price: null, registryPublic: false,
     notes: '',
   },
   {
@@ -120,7 +128,7 @@ const BIRDS_SAMPLE = [
     species: 'African Grey', subspecies: 'Congo', mutation: null,
     hatchDate: '2016-09-09', status: 'Available', cage: 'F3-002',
     motherId: null, fatherId: null,
-    cost: 1200, price: 2000,
+    cost: 1200, price: 2000, registryPublic: true,
     notes: 'Excellent talker.',
   },
 ];

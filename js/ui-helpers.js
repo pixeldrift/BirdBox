@@ -54,3 +54,29 @@ function makeChip(labelText, valueText, onClick) {
   }
   return chip;
 }
+
+// A labeled on/off switch. onChange receives the new boolean value; the caller owns
+// persisting it (mutate the underlying record) and re-rendering if needed.
+function makeToggle(checked, labelText, onChange) {
+  var row = document.createElement('label');
+  row.className = 'toggle-row';
+
+  var input = document.createElement('input');
+  input.type = 'checkbox';
+  input.checked = !!checked;
+  input.className = 'toggle-input';
+
+  var track = document.createElement('span');
+  track.className = 'toggle-track';
+
+  var label = document.createElement('span');
+  label.className = 'toggle-label';
+  label.textContent = labelText;
+
+  input.addEventListener('change', function () { onChange(input.checked); });
+
+  row.appendChild(input);
+  row.appendChild(track);
+  row.appendChild(label);
+  return row;
+}

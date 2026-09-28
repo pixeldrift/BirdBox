@@ -29,6 +29,28 @@ for now — pushed further down the list than originally scoped. Caging itself s
 light, grouped from `Birds.cage` — see docs/data-model.md) but these four stay nav placeholders
 until there's real demand for them.
 
+## Granular (field-level) privacy
+
+Registry -> Search currently uses one coarse flag (`Birds.registryPublic`) that exposes a fixed
+set of fields (band #, species/subspecies/mutation, sex, hatch date, public lineage) and always
+hides another fixed set (owner, notes, cost/price). Per user, this needs to grow into **granular
+permissions** — choosing *which* fields are public, member-only, or private per bird (or per
+field), echoing the privacy tiers already sketched in `bird_registry.html` (Public/Members/
+Limited/Specific/Private/Custom). The current boolean is the on/off case of that spectrum, not a
+different feature — extend it rather than replacing it.
+
+## Linked data / modular architecture (vision)
+
+Per user: "everything will be modular and aware of everything else... everything is linked
+data." The Registry toggle is the first concrete instance of the pattern this points toward — a
+bird's public registry entry isn't separately maintained data, it's the *same* Bird record with
+a visibility flag, read live by whatever screen needs it. The vision is for **Classifieds**
+listings and **Lost & Found** alerts to work the same way: posting a bird for sale or reporting
+it lost should link to its existing Bird record (and inherit/extend its privacy settings) rather
+than duplicating band #, species, photos, etc. into a separate listing. Keep this in mind as
+Classifieds and Registry -> Lost & Found get built — reach for "link to the existing record" over
+"re-enter the data" by default.
+
 ## Persistent storage / backend
 
 Everything built so far (Birds, Contacts, Accounting, Health) lives in in-memory sample arrays

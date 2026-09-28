@@ -18,6 +18,8 @@
     'mybirds/birds': typeof BirdsScreen !== 'undefined' ? BirdsScreen : null,
     'mybirds/health': typeof HealthScreen !== 'undefined' ? HealthScreen : null,
     'aviary/caging': typeof CagingScreen !== 'undefined' ? CagingScreen : null,
+    'registry/search': typeof RegistrySearchScreen !== 'undefined' ? RegistrySearchScreen : null,
+    'registry/register': typeof RegistryManageScreen !== 'undefined' ? RegistryManageScreen : null,
     'business/contacts': typeof ContactsScreen !== 'undefined' ? ContactsScreen : null,
     'business/accounting': typeof AccountingScreen !== 'undefined' ? AccountingScreen : null,
     'business/shipping': typeof ShippingScreen !== 'undefined' ? ShippingScreen : null,
