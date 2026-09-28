@@ -12,6 +12,12 @@
     return null;
   }
 
+  // Routes with a real screen (list/detail UI) instead of the generic
+  // nav placeholder, keyed by "groupId/screenId".
+  var CUSTOM_SCREENS = {
+    'mybirds/birds': typeof BirdsScreen !== 'undefined' ? BirdsScreen : null,
+  };
+
   function clear(el) {
     while (el.firstChild) el.removeChild(el.firstChild);
   }
@@ -56,7 +62,7 @@
     main.appendChild(grid);
   }
 
-  function renderGroup(group, screenId) {
+  function renderGroup(group, screenId, recordId) {
     backBtn.hidden = false;
     appTitle.textContent = group.label;
     document.title = 'BirdBox — ' + group.label;
@@ -81,6 +87,29 @@
     });
 
     clear(main);
+
+    var custom = CUSTOM_SCREENS[group.id + '/' + activeScreen.id];
+    if (custom) {
+      var navigateToRecord = function (recId) {
+        location.hash = '#/' + group.id + '/' + activeScreen.id + '/' + recId;
+      };
+      var setTitle = function (text) {
+        appTitle.textContent = text;
+        document.title = 'BirdBox — ' + text;
+      };
+      if (recordId) {
+        custom.renderDetail(main, recordId, navigateToRecord, setTitle);
+      } else {
+        custom.renderList(main, navigateToRecord);
+      }
+
+      var activeCustomTab = tabBar.querySelector('.tab.active');
+      if (activeCustomTab && activeCustomTab.scrollIntoView) {
+        activeCustomTab.scrollIntoView({ inline: 'center', block: 'nearest' });
+      }
+      return;
+    }
+
     var panel = document.createElement('div');
     panel.className = 'screen-panel';
 
@@ -126,11 +155,17 @@
       renderHome();
       return;
     }
-    renderGroup(group, parts[1]);
+    renderGroup(group, parts[1], parts[2]);
   }
 
   backBtn.addEventListener('click', function () {
-    location.hash = '';
+    var hash = location.hash.replace(/^#\/?/, '');
+    var parts = hash.split('/').filter(Boolean);
+    if (parts.length >= 3) {
+      location.hash = '#/' + parts[0] + '/' + parts[1];
+    } else {
+      location.hash = '';
+    }
   });
   avatarBtn.addEventListener('click', function () {
     location.hash = '#/account';
