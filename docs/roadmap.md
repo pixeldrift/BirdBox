@@ -21,6 +21,14 @@ on building until those arrive.
 
 Likely touches: My Birds → Labels, Aviary → Caging, Business → Shipping.
 
+## Feed/Water, Supplies, Cleaning, Tasks (deprioritized)
+
+Per user: full inventory/feeding-schedule tracking, supply management, and multi-user/employee
+caretaking workflows are for a much larger multi-person operation and are a less common scenario
+for now — pushed further down the list than originally scoped. Caging itself stayed in (built
+light, grouped from `Birds.cage` — see docs/data-model.md) but these four stay nav placeholders
+until there's real demand for them.
+
 ## Persistent storage / backend
 
 Everything built so far (Birds, Contacts, Accounting, Health) lives in in-memory sample arrays
@@ -40,8 +48,12 @@ record-keeping, plus charts) and everything else should land first.
 
 Likely shape, based on the pattern so far: a Clutch entity (pair/parents, date laid, egg count,
 expected hatch date) with Eggs or hatch outcomes recorded per clutch (fertile/clear/hatched/
-didn't hatch), rolling up into production stats per bird/pair/species/season. The reporting
-piece should follow the `dataviz` skill when it's built.
+didn't hatch), rolling up into production stats per bird/pair/species/season.
+
+Business → Reports now exists (KPIs + income/expense/category charts, built per the `dataviz`
+skill — see `js/screens/reports.js`) so Production's reporting is an extension of that same
+screen/method, not a new one: add production charts alongside the financial ones rather than
+building a separate reports surface.
 
 Likely touches: My Birds → Production, Business → Reports.
 

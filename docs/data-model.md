@@ -63,6 +63,12 @@ hill", "Steve's Garage"), linked Cages (many), linked Birds, Photo.
 **Cages**: Name (`F1-001`, `FD-A`, …), Nickname, Description, Notes, Feeding (per-cage feeding
 instructions), Photo, Status, linked Building (one), linked Birds (currently housed, many).
 
+BirdBox's Caging screen deliberately doesn't build this out as two full entities yet — per user,
+that level of tracking (feeding schedules, supplies, multi-user caretaking) is for a much larger
+multi-employee operation and is a less common case for now (see roadmap). Instead
+`js/data/buildings-sample.js` is just a building-code → nickname lookup, and the Caging screen
+groups `Birds.cage` directly into "cages in use."
+
 ## Health Records (new in BirdBox, not in the source Airtable base)
 
 The source base only had a free-text `Medical Notes` field plus a `Med Attachments` file field
@@ -105,6 +111,21 @@ Waybill # (carrier tracking number), Date, Client (link), Attachments, **In/Out*
 Outgoing/Incoming), Notes, linked Birds (one waybill can cover multiple birds), Departing
 Airport / Arriving Airport (link → Airports).
 
+BirdBox's version (`js/data/waybills-sample.js`) adds a **Cost** field (the source base didn't
+track shipping cost) and skips the full 389-row Airports lookup table — departing/arriving
+airport are plain text codes. Shown at Business → Shipping, cross-linked to Contacts and Birds
+the same way Accounting is.
+
+## Reports (new in BirdBox)
+
+Business → Reports reads directly from Transactions and Waybills — no new entity, just a
+dashboard: a KPI row (Income/Expense/Profit/Margin), an "Income vs Expense by Month" diverging
+bar chart, a "Spending & Income by Category" horizontal bar chart, and a shipping-cost-to-date
+tile linking to Shipping. Built per the `dataviz` skill's method against this app's own warm
+palette rather than the skill's generic default — see the comment at the top of
+`js/screens/reports.js` for the exact validated hex values and the command used to check them.
+No dark-mode chart variant yet since the app has no dark theme at all (see roadmap).
+
 ## Taxonomy: Species → Subspecies → Mutations
 
 Matches the reference files already in this repo (`Bird Species Master List.txt`,
@@ -132,9 +153,10 @@ was clearly seeded from the same kind of source.
 | Health Records (new) | My Birds → Health, and a section on Birds detail | Built (list + detail + add form with file upload) |
 | Contacts | Business → Contacts | Built (list + detail) |
 | Invoices, Transactions, Funding Sources | Business → Accounting | Built (ledger list + detail, no separate Invoices grouping yet) |
-| Buildings, Cages | Aviary → Caging | Placeholder |
-| Cages.Feeding | Aviary → Feed/Water | Placeholder |
-| Waybills, Airports, States | Business → Shipping | Placeholder |
+| Buildings, Cages (simplified) | Aviary → Caging | Built (cages grouped from Birds.cage, deliberately light — see roadmap) |
+| Waybills + Cost (new field) | Business → Shipping | Built (list + detail, no full Airports lookup table) |
+| Transactions + Waybills | Business → Reports | Built (KPIs + charts, see below) |
+| Cages.Feeding | Aviary → Feed/Water | Placeholder (deprioritized, see roadmap) |
 
 ## Open questions for when we build against this
 
