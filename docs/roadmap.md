@@ -20,3 +20,11 @@ User has real-world examples to share (from prior tooling) before this gets desi
 on building until those arrive.
 
 Likely touches: My Birds → Labels, Aviary → Caging, Business → Shipping.
+
+## Genealogy tree, inbreeding calculator, genetics predictor
+
+User is building these as a **separate project** and may merge it into BirdBox later. Do **not**
+build these out here — leave `My Birds → Genealogy` and `My Birds → Genetics` as nav
+placeholders (per `js/nav-data.js`) until that merge happens or the user says otherwise. The
+`Birds` screen's Mother/Father/Paired/Offspring links (see `js/screens/birds.js`) already cover
+basic genealogy navigation and are the data these features would eventually build on.
