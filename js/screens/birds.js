@@ -195,6 +195,42 @@ const BirdsScreen = (function () {
       familySection.appendChild(kidsRow);
     }
 
+    var healthSection = document.createElement('div');
+    healthSection.className = 'detail-section';
+    var healthTitle = document.createElement('h3');
+    healthTitle.textContent = 'Health Records';
+    healthSection.appendChild(healthTitle);
+
+    var healthRecords = healthRecordsForBird(bird.id);
+    if (healthRecords.length) {
+      var healthRow = document.createElement('div');
+      healthRow.className = 'chip-row';
+      healthRecords
+        .slice()
+        .sort(function (a, b) { return b.date.localeCompare(a.date); })
+        .forEach(function (r) {
+          healthRow.appendChild(makeChip(r.type, formatDate(r.date), function () {
+            location.hash = '#/mybirds/health/' + r.id;
+          }));
+        });
+      healthSection.appendChild(healthRow);
+    } else {
+      var noHealth = document.createElement('p');
+      noHealth.className = 'notes-text';
+      noHealth.textContent = 'No health records yet.';
+      healthSection.appendChild(noHealth);
+    }
+
+    var addHealthBtn = document.createElement('button');
+    addHealthBtn.type = 'button';
+    addHealthBtn.className = 'add-record-btn';
+    addHealthBtn.textContent = '+ Add Health Record';
+    addHealthBtn.addEventListener('click', function () {
+      HealthScreen.pendingBirdId = bird.id;
+      location.hash = '#/mybirds/health/new';
+    });
+    healthSection.appendChild(addHealthBtn);
+
     var moneySection = document.createElement('div');
     moneySection.className = 'detail-section';
     var moneyTitle = document.createElement('h3');
@@ -209,6 +245,7 @@ const BirdsScreen = (function () {
     wrap.appendChild(header);
     wrap.appendChild(factsGrid);
     wrap.appendChild(familySection);
+    wrap.appendChild(healthSection);
     wrap.appendChild(moneySection);
 
     if (bird.notes) {

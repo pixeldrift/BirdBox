@@ -63,6 +63,18 @@ hill", "Steve's Garage"), linked Cages (many), linked Birds, Photo.
 **Cages**: Name (`F1-001`, `FD-A`, …), Nickname, Description, Notes, Feeding (per-cage feeding
 instructions), Photo, Status, linked Building (one), linked Birds (currently housed, many).
 
+## Health Records (new in BirdBox, not in the source Airtable base)
+
+The source base only had a free-text `Medical Notes` field plus a `Med Attachments` file field
+on Birds. BirdBox instead gives health records their own entity (`js/data/health-sample.js`),
+one row per document/visit, linked to a bird:
+
+Type (select: DNA Certificate / Immunization / Surgical Sexing / Vet Visit / Other), Date,
+Provider, Notes, Bird (link), Attachments (files, see the roadmap note on persistence below).
+Shown both from `My Birds → Health` (browse/search/filter across every bird) and as a "Health
+Records" section directly on a bird's own detail page, per the user's ask that this be
+reachable from the master bird record.
+
 ## Contacts (190 records)
 
 Full Name, First/Last Name, **Type** (select: Pet Owner / Breeder / Vendor / Store), Company
@@ -113,15 +125,16 @@ was clearly seeded from the same kind of source.
 
 ## How this maps onto the current app IA (`js/nav-data.js`)
 
-| Airtable table(s) | BirdBox group / screen |
-|---|---|
-| Birds, Species/Subspecies/Mutations | My Birds → Birds, Genetics |
-| Birds.Mother/Father/Paired | My Birds → Genealogy |
-| Buildings, Cages | Aviary → Caging |
-| Invoices, Transactions, Funding Sources | Business → Accounting |
-| Waybills, Airports, States | Business → Shipping |
-| Contacts | Account → Messages / a future Contacts screen (currently only reachable via Business → Contacts) |
-| Cages.Feeding | Aviary → Feed/Water |
+| Airtable table(s) / new entity | BirdBox group / screen | Status |
+|---|---|---|
+| Birds, Species/Subspecies/Mutations | My Birds → Birds | Built (list + detail) |
+| Birds.Mother/Father/Paired | My Birds → Birds (Family section) / Genealogy | Built on Birds; dedicated Genealogy tree deferred, see roadmap |
+| Health Records (new) | My Birds → Health, and a section on Birds detail | Built (list + detail + add form with file upload) |
+| Contacts | Business → Contacts | Built (list + detail) |
+| Invoices, Transactions, Funding Sources | Business → Accounting | Built (ledger list + detail, no separate Invoices grouping yet) |
+| Buildings, Cages | Aviary → Caging | Placeholder |
+| Cages.Feeding | Aviary → Feed/Water | Placeholder |
+| Waybills, Airports, States | Business → Shipping | Placeholder |
 
 ## Open questions for when we build against this
 

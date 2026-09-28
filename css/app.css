@@ -563,3 +563,131 @@ h1, h2, h3 {
   font-size: 1.05rem;
   font-weight: 800;
 }
+
+/* Health screen */
+
+.health-type-dna-certificate { background: #F6ECD6; color: #96712B; }
+.health-type-immunization { background: #E7EDE2; color: #4C6B45; }
+.health-type-surgical-sexing { background: #E4EDF3; color: #4C6E85; }
+.health-type-vet-visit { background: #F5E1DD; color: #A6543D; }
+.health-type-other { background: #EDE8E2; color: #7A6552; }
+
+.add-record-btn {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 12px;
+  border-radius: 14px;
+  border: 1px dashed #D9C4A8;
+  background: transparent;
+  color: var(--brand);
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.attachment-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.attachment-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 6px;
+  border-radius: 14px;
+  border: 1px solid #E9DCC9;
+  background: #FBF6EF;
+  text-decoration: none;
+  color: var(--text);
+}
+
+.attachment-tile img {
+  width: 100%;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.attachment-file-icon {
+  width: 100%;
+  height: 64px;
+  border-radius: 8px;
+  background: var(--brand);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+}
+
+.attachment-name {
+  font-size: 0.7rem;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+/* Add-record form */
+
+.record-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-label {
+  font-size: 0.78rem;
+  color: var(--muted);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.form-input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid #E9DCC9;
+  background: var(--bg);
+  font-family: inherit;
+  font-size: 0.92rem;
+  color: var(--text);
+}
+
+textarea.form-input {
+  resize: vertical;
+}
+
+.form-note {
+  margin: -4px 0 0;
+  font-size: 0.78rem;
+  color: var(--muted);
+  font-style: italic;
+}
+
+.save-btn {
+  padding: 13px;
+  border-radius: 14px;
+  border: none;
+  background: var(--brand);
+  color: #fff;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+}

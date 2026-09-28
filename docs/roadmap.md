@@ -21,6 +21,15 @@ on building until those arrive.
 
 Likely touches: My Birds → Labels, Aviary → Caging, Business → Shipping.
 
+## Persistent storage / backend
+
+Everything built so far (Birds, Contacts, Accounting, Health) lives in in-memory sample arrays
+(`js/data/*.js`) — edits made while using the app (e.g. adding a Health Record) work for real
+but reset on page reload since there's no backend or local persistence yet. Health Record file
+uploads specifically use `URL.createObjectURL()`, which only lives for the current tab session.
+Before this app is used for real records, it needs either a backend (with real file storage for
+attachments) or at least local persistence (IndexedDB) as a stopgap.
+
 ## Genealogy tree, inbreeding calculator, genetics predictor
 
 User is building these as a **separate project** and may merge it into BirdBox later. Do **not**
