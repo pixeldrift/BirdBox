@@ -76,28 +76,38 @@ User uploaded two image folders to `src/images/`: **TeraTiger** (named files, fe
   there's no conure art in this pack — a real gap since Conure is the most common species in the
   sample data.
 
-- **Birdorable — species identified, pack not built yet.** 109 `.webp` files at
-  `src/images/Birdorable/Parrots-Parakeets/`, confirmed genuine RGBA transparency and a
-  consistent "chibi cute round bird" cartoon style, but filenames are garbled CDN hashes (e.g.
-  `01nc3s7f...@2x.webp`) with no species info in the filename itself. Solved by cross-referencing:
-  the user saved 18 pages of `birdorable.com/meet?page=N` as `.html` (now in
-  `src/images/Birdorable/`), whose markup embeds the *same* CDN hash per bird thumbnail next to
-  its species name/slug — so the hash is the join key, no visual guessing needed.
-  `src/images/Birdorable/species-map.json` is the durable result: 89 of 109 local files matched
-  (85 unique species — 4 files were plain duplicate downloads of the same hash), keyed by hash so
-  it's a lookup table, not a one-time note. **When more Birdorable images or `meet` page saves are
-  uploaded, re-run this matching (hash = filename minus `@2x`/`-N`/`.webp`, cross-referenced
-  against any new saved pages) rather than re-identifying by hand** — that's the whole point of
-  keeping the table. 20 files are still unresolved: every saved page was missing the same last
-  20-of-70 thumbnails (lazy-load hadn't scrolled them into view before the page was saved, so
-  their hash was never in the HTML) — re-saving those pages scrolled to the bottom, or fetching
-  `meet?page=N` directly now that `birdorable.com` is an allowed domain, would close the gap.
-  Building the actual `ICON_PACKS` entry from `species-map.json` is the next step, not yet done.
-  Per the user, the intent here is a **cross-promotional partnership** — credit + a link back to
-  Birdorable (the `meetUrl` already captured per species) so users can buy matching merch for
-  their own birds — not just using the art for free; worth confirming that relationship before
-  the pack ships broadly. The user also has more Birdorable categories beyond Parrots-Parakeets
-  not yet uploaded.
+- **Birdorable — done for the species identified so far.** Built as the `birdorable`
+  ("Birdorable") pack in `ICON_PACKS`, referencing `src/images/Birdorable/Parrots-Parakeets/`
+  directly. Filenames there are garbled CDN hashes (e.g. `01nc3s7f...@2x.webp`) with no species
+  info in the filename itself — solved by cross-referencing: the user saved 18 pages of
+  `birdorable.com/meet?page=N` as `.html` (now in `src/images/Birdorable/`), whose markup embeds
+  the *same* CDN hash per bird thumbnail next to its species name/slug, so the hash is the join
+  key, no visual guessing needed. `src/images/Birdorable/species-map.json` is the durable result
+  of that match (hash → species/slug/meetUrl) — 85 unique species identified from 89 of 109 local
+  files (4 more were duplicate downloads of an already-matched hash). The pack itself uses 79 of
+  those 85: 21 node-level generic icons plus 68 `subspeciesOverrides` mapping Birdorable's species
+  names onto our Species|Subspecies convention (far richer than `teratiger` per node, since
+  Birdorable draws many species per genus — e.g. all 12 macaw species, not just one generic
+  macaw). Six new taxonomy nodes came with it: `lory`, `rosella`, `pionus-parrot`, `vasa-parrot`,
+  `kea`, `pesquets-parrot`, plus standalone `kakapo`. See docs/data-model.md and the comment above
+  the `birdorable` entry in `js/data/icon-taxonomy.js` for the 6 matched-but-unused species and
+  why (real taxonomic edge cases, not oversights).
+
+  **Still open**: 20 of the 109 local files are unresolved — every saved page was missing the
+  same last 20-of-70 thumbnails (lazy-load hadn't scrolled them into view before the page was
+  saved, so their hash never made it into the HTML). Re-saving those pages scrolled to the
+  bottom, or fetching `meet?page=N` directly, would close the gap — direct fetches to
+  `birdorable.com` were still blocked by the environment's egress proxy as of this writing even
+  after the user set network access to allow all domains (worth retrying; may need a fresh
+  session for the setting to take effect, per `read_documentation`'s `environment.network` page).
+  **When more Birdorable images or `meet`/`families` page saves are uploaded — the user has more
+  categories beyond Parrots-Parakeets not yet uploaded — re-run the same hash-matching script
+  (hash = filename minus `@2x`/`-N`/`.webp`) rather than re-identifying by hand**, then extend the
+  `birdorable` pack's `icons`/`subspeciesOverrides` the same way. Per the user, the intent here is
+  a **cross-promotional partnership** — credit + a shop link back to Birdorable (the `meetUrl`
+  already captured per species) so users can buy real merch matching their own birds, not just
+  using the art for free — worth confirming/formalizing that relationship before this pack ships
+  to real users.
 
 The switching architecture (`ICON_PACKS`, picker at Account → Settings → Icon Style) needs no
 further changes for a third pack — same pattern as `teratiger`: a new entry with id/label/
