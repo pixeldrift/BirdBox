@@ -144,3 +144,8 @@ function birdIdentifier(bird) {
   var mutationPart = bird.mutation ? bird.mutation + ' ' : '';
   return bird.band + ' - (' + sexPart + ') ' + namePart + mutationPart + bird.subspecies + ' ' + bird.species;
 }
+
+// Shorter label for chips/rows elsewhere (no band #, no sex letter).
+function birdShortLabel(bird) {
+  return (bird.name ? '"' + bird.name + '" ' : '') + bird.subspecies + ' ' + bird.species;
+}

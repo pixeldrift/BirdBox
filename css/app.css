@@ -222,9 +222,9 @@ h1, h2, h3 {
   font-style: italic;
 }
 
-/* Birds screen: list */
+/* Shared list screen components (Birds, Contacts, Accounting, ...) */
 
-.birds-search-input {
+.search-input {
   width: 100%;
   padding: 12px 16px;
   border-radius: 999px;
@@ -236,12 +236,12 @@ h1, h2, h3 {
   margin-bottom: 12px;
 }
 
-.birds-search-input:focus {
+.search-input:focus {
   outline: 2px solid var(--brand);
   outline-offset: 1px;
 }
 
-.birds-filter-chips {
+.filter-chips {
   display: flex;
   gap: 6px;
   overflow-x: auto;
@@ -250,7 +250,7 @@ h1, h2, h3 {
   scrollbar-width: none;
 }
 
-.birds-filter-chips::-webkit-scrollbar {
+.filter-chips::-webkit-scrollbar {
   display: none;
 }
 
@@ -274,25 +274,25 @@ h1, h2, h3 {
   color: #fff;
 }
 
-.birds-count {
+.list-count {
   margin: 12px 2px 8px;
   font-size: 0.8rem;
   color: var(--muted);
 }
 
-.birds-list {
+.list-rows {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.birds-empty {
+.list-empty {
   color: var(--muted);
   text-align: center;
   padding: 32px 0;
 }
 
-.bird-row {
+.list-row {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -306,7 +306,7 @@ h1, h2, h3 {
   font-family: inherit;
 }
 
-.bird-row-avatar {
+.list-row-avatar {
   flex: 0 0 auto;
   width: 44px;
   height: 44px;
@@ -317,12 +317,12 @@ h1, h2, h3 {
   justify-content: center;
 }
 
-.bird-row-avatar img {
+.list-row-avatar img {
   width: 26px;
   height: 26px;
 }
 
-.bird-row-info {
+.list-row-info {
   flex: 1;
   min-width: 0;
   display: flex;
@@ -330,7 +330,7 @@ h1, h2, h3 {
   gap: 2px;
 }
 
-.bird-row-title {
+.list-row-title {
   font-weight: 700;
   font-size: 0.92rem;
   overflow: hidden;
@@ -338,7 +338,7 @@ h1, h2, h3 {
   white-space: nowrap;
 }
 
-.bird-row-sub {
+.list-row-sub {
   font-size: 0.78rem;
   color: var(--muted);
   overflow: hidden;
@@ -359,9 +359,9 @@ h1, h2, h3 {
 .status-sold { background: #E4EDF3; color: #4C6E85; }
 .status-deceased { background: #EDE4DC; color: #7A6552; }
 
-/* Birds screen: detail */
+/* Shared detail screen components */
 
-.bird-detail-header {
+.detail-header {
   display: flex;
   align-items: center;
   gap: 14px;
@@ -372,7 +372,7 @@ h1, h2, h3 {
   margin-bottom: 14px;
 }
 
-.bird-detail-avatar {
+.detail-avatar {
   flex: 0 0 auto;
   width: 60px;
   height: 60px;
@@ -383,24 +383,24 @@ h1, h2, h3 {
   justify-content: center;
 }
 
-.bird-detail-avatar img {
+.detail-avatar img {
   width: 34px;
   height: 34px;
 }
 
-.bird-detail-title {
+.detail-title {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 6px;
 }
 
-.bird-detail-title h2 {
+.detail-title h2 {
   margin: 0;
   font-size: 1.05rem;
 }
 
-.bird-facts-grid {
+.fact-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 10px;
@@ -411,25 +411,25 @@ h1, h2, h3 {
   margin-bottom: 14px;
 }
 
-.bird-fact {
+.fact {
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
-.bird-fact-label {
+.fact-label {
   font-size: 0.72rem;
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.03em;
 }
 
-.bird-fact-value {
+.fact-value {
   font-size: 0.92rem;
   font-weight: 600;
 }
 
-.bird-section {
+.detail-section {
   background: var(--card-bg);
   border-radius: 20px;
   padding: 16px;
@@ -437,12 +437,12 @@ h1, h2, h3 {
   margin-bottom: 14px;
 }
 
-.bird-section h3 {
+.detail-section h3 {
   margin: 0 0 10px;
   font-size: 0.95rem;
 }
 
-.bird-subsection-label {
+.subsection-label {
   margin: 12px 0 8px;
   font-size: 0.78rem;
   color: var(--muted);
@@ -451,13 +451,13 @@ h1, h2, h3 {
   letter-spacing: 0.03em;
 }
 
-.bird-chip-row {
+.chip-row {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
 }
 
-.bird-chip {
+.chip {
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -471,25 +471,95 @@ h1, h2, h3 {
   text-align: left;
 }
 
-.bird-chip.disabled {
+.chip.disabled {
   cursor: default;
   opacity: 0.6;
 }
 
-.bird-chip-label {
+.chip-label {
   font-size: 0.68rem;
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.03em;
 }
 
-.bird-chip-value {
+.chip-value {
   font-size: 0.85rem;
   font-weight: 600;
 }
 
-.bird-notes {
+.notes-text {
   margin: 0;
   color: var(--text);
   line-height: 1.5;
+}
+
+/* Contacts screen */
+
+.type-badge {
+  flex: 0 0 auto;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.type-breeder { background: #E7EDE2; color: #4C6B45; }
+.type-pet-owner { background: #E4EDF3; color: #4C6E85; }
+.type-vendor { background: #F6ECD6; color: #96712B; }
+.type-store { background: #F0E6F3; color: #7A4F8A; }
+
+.contact-link-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 0;
+  color: var(--text);
+  font-size: 0.9rem;
+  text-decoration: none;
+}
+
+.contact-link-row .fact-label {
+  min-width: 60px;
+}
+
+/* Accounting screen */
+
+.list-row-amount {
+  flex: 0 0 auto;
+  font-weight: 700;
+  font-size: 0.92rem;
+}
+
+.amount-income { color: #4C6B45; }
+.amount-expense { color: #A6543D; }
+
+.summary-strip {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.summary-tile {
+  background: var(--card-bg);
+  border-radius: 16px;
+  padding: 12px;
+  box-shadow: 0 1px 4px rgba(139, 94, 60, 0.06);
+  text-align: center;
+}
+
+.summary-tile-label {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 4px;
+}
+
+.summary-tile-value {
+  display: block;
+  font-size: 1.05rem;
+  font-weight: 800;
 }

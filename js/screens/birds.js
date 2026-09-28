@@ -1,54 +1,36 @@
 // Real Birds list/detail screen, replacing the generic placeholder for the
 // mybirds/birds route. Data comes from js/data/birds-sample.js.
+// Shared row/fact/chip helpers come from js/ui-helpers.js.
 const BirdsScreen = (function () {
   var STATUSES = ['All', 'Available', 'Reserved', 'Sold', 'Deceased'];
 
-  function clear(el) {
-    while (el.firstChild) el.removeChild(el.firstChild);
-  }
-
   function statusClass(status) {
     return 'status-' + status.toLowerCase();
-  }
-
-  function formatDate(iso) {
-    if (!iso) return '—';
-    var d = new Date(iso + 'T00:00:00');
-    return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
-  }
-
-  function formatMoney(n) {
-    if (n === null || n === undefined) return '—';
-    return '$' + n.toLocaleString();
-  }
-
-  function birdShortLabel(b) {
-    return (b.name ? '"' + b.name + '" ' : '') + b.subspecies + ' ' + b.species;
   }
 
   function renderList(main, navigate) {
     var state = { query: '', status: 'All' };
 
     var wrap = document.createElement('div');
-    wrap.className = 'birds-screen';
+    wrap.className = 'list-screen';
 
     var searchInput = document.createElement('input');
     searchInput.type = 'search';
     searchInput.placeholder = 'Search band #, name, species…';
-    searchInput.className = 'birds-search-input';
+    searchInput.className = 'search-input';
     searchInput.setAttribute('aria-label', 'Search birds');
 
     var chipsWrap = document.createElement('div');
-    chipsWrap.className = 'birds-filter-chips';
+    chipsWrap.className = 'filter-chips';
 
     var countLabel = document.createElement('p');
-    countLabel.className = 'birds-count';
+    countLabel.className = 'list-count';
 
     var listWrap = document.createElement('div');
-    listWrap.className = 'birds-list';
+    listWrap.className = 'list-rows';
 
     function draw() {
-      clear(chipsWrap);
+      clearEl(chipsWrap);
       STATUSES.forEach(function (s) {
         var chip = document.createElement('button');
         chip.type = 'button';
@@ -71,10 +53,10 @@ const BirdsScreen = (function () {
 
       countLabel.textContent = results.length + (results.length === 1 ? ' bird' : ' birds');
 
-      clear(listWrap);
+      clearEl(listWrap);
       if (results.length === 0) {
         var empty = document.createElement('p');
-        empty.className = 'birds-empty';
+        empty.className = 'list-empty';
         empty.textContent = 'No birds match that search.';
         listWrap.appendChild(empty);
       } else {
@@ -101,24 +83,24 @@ const BirdsScreen = (function () {
   function renderRow(bird, navigate) {
     var row = document.createElement('button');
     row.type = 'button';
-    row.className = 'bird-row';
+    row.className = 'list-row';
 
     var avatar = document.createElement('span');
-    avatar.className = 'bird-row-avatar';
+    avatar.className = 'list-row-avatar';
     var img = document.createElement('img');
     img.src = 'icons/tinted/mybirds/Birds.png';
     img.alt = '';
     avatar.appendChild(img);
 
     var info = document.createElement('span');
-    info.className = 'bird-row-info';
+    info.className = 'list-row-info';
 
     var title = document.createElement('span');
-    title.className = 'bird-row-title';
+    title.className = 'list-row-title';
     title.textContent = birdShortLabel(bird);
 
     var sub = document.createElement('span');
-    sub.className = 'bird-row-sub';
+    sub.className = 'list-row-sub';
     sub.textContent = bird.band + ' · ' + bird.sex + (bird.mutation ? ' · ' + bird.mutation : '');
 
     info.appendChild(title);
@@ -136,40 +118,6 @@ const BirdsScreen = (function () {
     return row;
   }
 
-  function factRow(label, value) {
-    var item = document.createElement('div');
-    item.className = 'bird-fact';
-    var l = document.createElement('span');
-    l.className = 'bird-fact-label';
-    l.textContent = label;
-    var v = document.createElement('span');
-    v.className = 'bird-fact-value';
-    v.textContent = value;
-    item.appendChild(l);
-    item.appendChild(v);
-    return item;
-  }
-
-  function relChip(label, relBird, navigate) {
-    var chip = document.createElement('button');
-    chip.type = 'button';
-    chip.className = 'bird-chip' + (relBird ? '' : ' disabled');
-    var l = document.createElement('span');
-    l.className = 'bird-chip-label';
-    l.textContent = label;
-    var v = document.createElement('span');
-    v.className = 'bird-chip-value';
-    v.textContent = relBird ? birdShortLabel(relBird) : 'Unknown';
-    chip.appendChild(l);
-    chip.appendChild(v);
-    if (relBird) {
-      chip.addEventListener('click', function () { navigate(relBird.id); });
-    } else {
-      chip.disabled = true;
-    }
-    return chip;
-  }
-
   function renderDetail(main, id, navigate, setTitle) {
     var bird = getBird(id);
     if (!bird) {
@@ -182,20 +130,20 @@ const BirdsScreen = (function () {
     setTitle(bird.name || bird.band);
 
     var wrap = document.createElement('div');
-    wrap.className = 'bird-detail';
+    wrap.className = 'detail-screen';
 
     var header = document.createElement('div');
-    header.className = 'bird-detail-header';
+    header.className = 'detail-header';
 
     var avatar = document.createElement('div');
-    avatar.className = 'bird-detail-avatar';
+    avatar.className = 'detail-avatar';
     var img = document.createElement('img');
     img.src = 'icons/tinted/mybirds/Birds.png';
     img.alt = '';
     avatar.appendChild(img);
 
     var titleWrap = document.createElement('div');
-    titleWrap.className = 'bird-detail-title';
+    titleWrap.className = 'detail-title';
     var h2 = document.createElement('h2');
     h2.textContent = birdIdentifier(bird);
     var statusBadge = document.createElement('span');
@@ -208,7 +156,7 @@ const BirdsScreen = (function () {
     header.appendChild(titleWrap);
 
     var factsGrid = document.createElement('div');
-    factsGrid.className = 'bird-facts-grid';
+    factsGrid.className = 'fact-grid';
     [
       ['Band #', bird.band],
       ['Sex', bird.sex],
@@ -220,48 +168,40 @@ const BirdsScreen = (function () {
     ].forEach(function (f) { factsGrid.appendChild(factRow(f[0], f[1])); });
 
     var familySection = document.createElement('div');
-    familySection.className = 'bird-section';
+    familySection.className = 'detail-section';
     var familyTitle = document.createElement('h3');
     familyTitle.textContent = 'Family';
     familySection.appendChild(familyTitle);
 
     var familyChips = document.createElement('div');
-    familyChips.className = 'bird-chip-row';
-    familyChips.appendChild(relChip('Mother', bird.motherId ? getBird(bird.motherId) : null, navigate));
-    familyChips.appendChild(relChip('Father', bird.fatherId ? getBird(bird.fatherId) : null, navigate));
-    if (bird.pairedId) familyChips.appendChild(relChip('Paired With', getBird(bird.pairedId), navigate));
+    familyChips.className = 'chip-row';
+    familyChips.appendChild(makeRelChip('Mother', bird.motherId ? getBird(bird.motherId) : null, navigate));
+    familyChips.appendChild(makeRelChip('Father', bird.fatherId ? getBird(bird.fatherId) : null, navigate));
+    if (bird.pairedId) familyChips.appendChild(makeRelChip('Paired With', getBird(bird.pairedId), navigate));
     familySection.appendChild(familyChips);
 
     var kids = birdChildren(bird.id);
     if (kids.length) {
       var kidsLabel = document.createElement('p');
-      kidsLabel.className = 'bird-subsection-label';
+      kidsLabel.className = 'subsection-label';
       kidsLabel.textContent = 'Offspring (' + kids.length + ')';
       familySection.appendChild(kidsLabel);
 
       var kidsRow = document.createElement('div');
-      kidsRow.className = 'bird-chip-row';
+      kidsRow.className = 'chip-row';
       kids.forEach(function (k) {
-        var chip = document.createElement('button');
-        chip.type = 'button';
-        chip.className = 'bird-chip';
-        var v = document.createElement('span');
-        v.className = 'bird-chip-value';
-        v.textContent = birdShortLabel(k);
-        chip.appendChild(v);
-        chip.addEventListener('click', function () { navigate(k.id); });
-        kidsRow.appendChild(chip);
+        kidsRow.appendChild(makeChip(null, birdShortLabel(k), function () { navigate(k.id); }));
       });
       familySection.appendChild(kidsRow);
     }
 
     var moneySection = document.createElement('div');
-    moneySection.className = 'bird-section';
+    moneySection.className = 'detail-section';
     var moneyTitle = document.createElement('h3');
     moneyTitle.textContent = 'Sale';
     moneySection.appendChild(moneyTitle);
     var moneyGrid = document.createElement('div');
-    moneyGrid.className = 'bird-facts-grid';
+    moneyGrid.className = 'fact-grid';
     moneyGrid.appendChild(factRow('Cost', formatMoney(bird.cost)));
     moneyGrid.appendChild(factRow('Price', formatMoney(bird.price)));
     moneySection.appendChild(moneyGrid);
@@ -273,11 +213,11 @@ const BirdsScreen = (function () {
 
     if (bird.notes) {
       var notesSection = document.createElement('div');
-      notesSection.className = 'bird-section';
+      notesSection.className = 'detail-section';
       var notesTitle = document.createElement('h3');
       notesTitle.textContent = 'Notes';
       var notesP = document.createElement('p');
-      notesP.className = 'bird-notes';
+      notesP.className = 'notes-text';
       notesP.textContent = bird.notes;
       notesSection.appendChild(notesTitle);
       notesSection.appendChild(notesP);
@@ -285,6 +225,10 @@ const BirdsScreen = (function () {
     }
 
     main.appendChild(wrap);
+  }
+
+  function makeRelChip(label, relBird, navigate) {
+    return makeChip(label, relBird ? birdShortLabel(relBird) : 'Unknown', relBird ? function () { navigate(relBird.id); } : null);
   }
 
   return { renderList: renderList, renderDetail: renderDetail };
