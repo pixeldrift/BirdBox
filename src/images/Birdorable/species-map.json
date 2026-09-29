@@ -1,0 +1,716 @@
+{
+  "_comment": "Maps a Birdorable CDN image hash (filename minus @2x/-N/.webp) to the species it depicts. Built by cross-referencing local src/images/Birdorable files against saved copies of birdorable.com/meet pages. Re-run the matching script (see scratchpad, or ask Claude) rather than re-typing this by hand when more images or pages are added.",
+  "_source": "src/images/Birdorable/Meet the Birds at Birdorable{1..18}.html, saved by the user from https://www.birdorable.com/meet?page=N",
+  "_resolvedFileCount": 89,
+  "_resolvedHashCount": 85,
+  "_unresolvedCount": 20,
+  "_unresolvedReason": "These thumbnails were still lazy-load placeholders (not yet scrolled into view) when the source .html pages were saved, so no image URL/hash was ever recorded for them on the page -- each of the 18 pages was missing the same last 20 of 70 cards. Re-saving those pages after scrolling to the bottom, or fetching the pages directly, would resolve them.",
+  "species": {
+    "zm2tdkwunuiwc2wob49oxkoh0vyh6icfsq3lc35e02bmp1ux": {
+      "files": [
+        "Parrots-Parakeets/zm2tdkwunuiwc2wob49oxkoh0vyh6icfsq3lc35e02bmp1ux@2x.webp"
+      ],
+      "species": "Alexandrine Parakeet",
+      "slug": "alexandrine-parakeet",
+      "meetUrl": "https://www.birdorable.com/meet/alexandrine-parakeet"
+    },
+    "5tviV46qiUDs5fGY4Ig8AzY2Mz663lPksRTgR6Hg2aXpypPp": {
+      "files": [
+        "Parrots-Parakeets/5tviV46qiUDs5fGY4Ig8AzY2Mz663lPksRTgR6Hg2aXpypPp@2x.webp"
+      ],
+      "species": "Australian King-Parrot",
+      "slug": "australian-king-parrot",
+      "meetUrl": "https://www.birdorable.com/meet/australian-king-parrot"
+    },
+    "jilyjq7wmq1nilp1hek3b3xuf9pavm7pjc6y1xix6mgauqxd": {
+      "files": [
+        "Parrots-Parakeets/jilyjq7wmq1nilp1hek3b3xuf9pavm7pjc6y1xix6mgauqxd@2x.webp"
+      ],
+      "species": "Black-collared Lovebird",
+      "slug": "black-collared-lovebird",
+      "meetUrl": "https://www.birdorable.com/meet/black-collared-lovebird"
+    },
+    "4dbqm689jcn7mxeqsdhe2snwr68m0p2ejzsf8ajdvcvjk9n1": {
+      "files": [
+        "Parrots-Parakeets/4dbqm689jcn7mxeqsdhe2snwr68m0p2ejzsf8ajdvcvjk9n1@2x.webp"
+      ],
+      "species": "Black-headed Parrot",
+      "slug": "black-headed-parrot",
+      "meetUrl": "https://www.birdorable.com/meet/black-headed-parrot"
+    },
+    "nu7i4a77wolkvwy7usn5whgvd08afgev2b0ee8nii1vzt7im": {
+      "files": [
+        "Parrots-Parakeets/nu7i4a77wolkvwy7usn5whgvd08afgev2b0ee8nii1vzt7im@2x.webp"
+      ],
+      "species": "Black-winged Lovebird",
+      "slug": "black-winged-lovebird",
+      "meetUrl": "https://www.birdorable.com/meet/black-winged-lovebird"
+    },
+    "9s8zqjbcyx1bl4d2rbiprkv03plokojio799h9jrz9y1o6j3": {
+      "files": [
+        "Parrots-Parakeets/9s8zqjbcyx1bl4d2rbiprkv03plokojio799h9jrz9y1o6j3@2x.webp"
+      ],
+      "species": "Blossom-headed Parakeet",
+      "slug": "blossom-headed-parakeet",
+      "meetUrl": "https://www.birdorable.com/meet/blossom-headed-parakeet"
+    },
+    "kv6z3vmtuw52edvlmp2ssvmjrwwbcxssb0balbu39eed7pyo": {
+      "files": [
+        "Parrots-Parakeets/kv6z3vmtuw52edvlmp2ssvmjrwwbcxssb0balbu39eed7pyo@2x.webp"
+      ],
+      "species": "Blue-and-yellow Macaw",
+      "slug": "blue-and-yellow-macaw",
+      "meetUrl": "https://www.birdorable.com/meet/blue-and-yellow-macaw"
+    },
+    "zl3n7gpupr9qs2fiykyg1ct3zu10t065mpb31ohtcknijl3g": {
+      "files": [
+        "Parrots-Parakeets/zl3n7gpupr9qs2fiykyg1ct3zu10t065mpb31ohtcknijl3g@2x.webp"
+      ],
+      "species": "Blue-crowned Conure",
+      "slug": "blue-crowned-conure",
+      "meetUrl": "https://www.birdorable.com/meet/blue-crowned-conure"
+    },
+    "w7sjutmv7e3rt3qhq82d8e265iczbpa0xlg9jq9elo0700co": {
+      "files": [
+        "Parrots-Parakeets/w7sjutmv7e3rt3qhq82d8e265iczbpa0xlg9jq9elo0700co@2x.webp"
+      ],
+      "species": "Blue-fronted Parrot",
+      "slug": "blue-fronted-parrot",
+      "meetUrl": "https://www.birdorable.com/meet/blue-fronted-parrot"
+    },
+    "x7imbiyuciutrdomtoe907dtwnvtsvt4q3363u6plswhy026": {
+      "files": [
+        "Parrots-Parakeets/x7imbiyuciutrdomtoe907dtwnvtsvt4q3363u6plswhy026@2x.webp"
+      ],
+      "species": "Blue-headed Macaw",
+      "slug": "blue-headed-macaw",
+      "meetUrl": "https://www.birdorable.com/meet/blue-headed-macaw"
+    },
+    "97Wll0G9CENTM75bYZv61ARM7kh7KgWJEP09l7U7mK6gfp0i": {
+      "files": [
+        "Parrots-Parakeets/97Wll0G9CENTM75bYZv61ARM7kh7KgWJEP09l7U7mK6gfp0i@2x.webp"
+      ],
+      "species": "Blue-headed Parrot",
+      "slug": "blue-headed-parrot",
+      "meetUrl": "https://www.birdorable.com/meet/blue-headed-parrot"
+    },
+    "6yjictpb71awup3mxdxiqi8xu63tmrllw8rluugla5ytv4pq": {
+      "files": [
+        "Parrots-Parakeets/6yjictpb71awup3mxdxiqi8xu63tmrllw8rluugla5ytv4pq@2x.webp"
+      ],
+      "species": "Blue-naped Parrot",
+      "slug": "blue-naped-parrot",
+      "meetUrl": "https://www.birdorable.com/meet/blue-naped-parrot"
+    },
+    "bu0rcv3dself1u102q4zjvbafx121yfdavggus4qaftgp3rs": {
+      "files": [
+        "Parrots-Parakeets/bu0rcv3dself1u102q4zjvbafx121yfdavggus4qaftgp3rs@2x.webp"
+      ],
+      "species": "Blue-throated Macaw",
+      "slug": "blue-throated-macaw",
+      "meetUrl": "https://www.birdorable.com/meet/blue-throated-macaw"
+    },
+    "n5pT63I17s4jM020kWmgaASjF5iIlwlMzxeY20963HnUS9L6": {
+      "files": [
+        "Parrots-Parakeets/n5pT63I17s4jM020kWmgaASjF5iIlwlMzxeY20963HnUS9L6@2x.webp"
+      ],
+      "species": "Blue-winged Macaw",
+      "slug": "blue-winged-macaw",
+      "meetUrl": "https://www.birdorable.com/meet/blue-winged-macaw"
+    },
+    "awxz4jvwmsq3yd0m2gv895hdr3yme25zbhjuunp8g63b3r1i": {
+      "files": [
+        "Parrots-Parakeets/awxz4jvwmsq3yd0m2gv895hdr3yme25zbhjuunp8g63b3r1i@2x.webp"
+      ],
+      "species": "Bourke's Parrot",
+      "slug": "bourkes-parrot",
+      "meetUrl": "https://www.birdorable.com/meet/bourkes-parrot"
+    },
+    "gwx0jnrg57pix8gy0ce47q4sflqf7ogt9onz8nr777lvjxh6": {
+      "files": [
+        "Parrots-Parakeets/gwx0jnrg57pix8gy0ce47q4sflqf7ogt9onz8nr777lvjxh6@2x.webp"
+      ],
+      "species": "Brown-headed Parrot",
+      "slug": "brown-headed-parrot",
+      "meetUrl": "https://www.birdorable.com/meet/brown-headed-parrot"
+    },
+    "u0wpk52sy8hhpjenfkmlheeult4o5ml2mi7b6k0imwku90f6": {
+      "files": [
+        "Parrots-Parakeets/u0wpk52sy8hhpjenfkmlheeult4o5ml2mi7b6k0imwku90f6@2x.webp"
+      ],
+      "species": "Budgerigar",
+      "slug": "budgerigar",
+      "meetUrl": "https://www.birdorable.com/meet/budgerigar"
+    },
+    "nc9r5v8e25jkyxp1ln4pvdvmff5amp6898350lanuxerev23": {
+      "files": [
+        "Parrots-Parakeets/nc9r5v8e25jkyxp1ln4pvdvmff5amp6898350lanuxerev23@2x.webp"
+      ],
+      "species": "Burrowing Parakeet",
+      "slug": "burrowing-parakeet",
+      "meetUrl": "https://www.birdorable.com/meet/burrowing-parakeet"
+    },
+    "phe9lsp4kwd12fvinowq404ob18yybgedr4u79wkaq8pshju": {
+      "files": [
+        "Parrots-Parakeets/phe9lsp4kwd12fvinowq404ob18yybgedr4u79wkaq8pshju@2x.webp"
+      ],
+      "species": "Cape Parrot",
+      "slug": "cape-parrot",
+      "meetUrl": "https://www.birdorable.com/meet/cape-parrot"
+    },
+    "bev9stxrqen00q9us2l6a3thugdwn8g4fd3yi2kms5ippff": {
+      "files": [
+        "Parrots-Parakeets/bev9stxrqen00q9us2l6a3thugdwn8g4fd3yi2kms5ippff@2x.webp"
+      ],
+      "species": "Carolina Parakeet",
+      "slug": "carolina-parakeet",
+      "meetUrl": "https://www.birdorable.com/meet/carolina-parakeet"
+    },
+    "xmyx170ps188dy3nktfa531hag71phtavzc0ahvpge9v3t2s": {
+      "files": [
+        "Parrots-Parakeets/xmyx170ps188dy3nktfa531hag71phtavzc0ahvpge9v3t2s@2x.webp"
+      ],
+      "species": "Chattering Lory",
+      "slug": "chattering-lory",
+      "meetUrl": "https://www.birdorable.com/meet/chattering-lory"
+    },
+    "fjkmgnmjecwhgd159tt59sxnzd0tno9odsuaepdn6fxnm13l": {
+      "files": [
+        "Parrots-Parakeets/fjkmgnmjecwhgd159tt59sxnzd0tno9odsuaepdn6fxnm13l@2x.webp"
+      ],
+      "species": "Chestnut-fronted Macaw",
+      "slug": "chestnut-fronted-macaw",
+      "meetUrl": "https://www.birdorable.com/meet/chestnut-fronted-macaw"
+    },
+    "717nag48lu5cb1gir0kqns3gigh90hw2yysh8fkpxer84d3c": {
+      "files": [
+        "Parrots-Parakeets/717nag48lu5cb1gir0kqns3gigh90hw2yysh8fkpxer84d3c@2x.webp"
+      ],
+      "species": "Cockatiel",
+      "slug": "cockatiel",
+      "meetUrl": "https://www.birdorable.com/meet/cockatiel"
+    },
+    "bsuiawcm6rc6gbka1u2eaovei6ow78wi86akb9y9f329eaqm": {
+      "files": [
+        "Parrots-Parakeets/bsuiawcm6rc6gbka1u2eaovei6ow78wi86akb9y9f329eaqm@2x.webp"
+      ],
+      "species": "Crimson Rosella",
+      "slug": "crimson-rosella",
+      "meetUrl": "https://www.birdorable.com/meet/crimson-rosella"
+    },
+    "521b1pqfvrnh4r34u5t3dspq8ulg3gi9g5lc6zqrdhmunjbs": {
+      "files": [
+        "Parrots-Parakeets/521b1pqfvrnh4r34u5t3dspq8ulg3gi9g5lc6zqrdhmunjbs@2x.webp"
+      ],
+      "species": "Crimson-bellied Parakeet",
+      "slug": "crimson-bellied-parakeet",
+      "meetUrl": "https://www.birdorable.com/meet/crimson-bellied-parakeet"
+    },
+    "j8wd42l8476htymrn3k5hfut6o5jmfqw43bw2fw0sujy9yaw": {
+      "files": [
+        "Parrots-Parakeets/j8wd42l8476htymrn3k5hfut6o5jmfqw43bw2fw0sujy9yaw@2x-1.webp",
+        "Parrots-Parakeets/j8wd42l8476htymrn3k5hfut6o5jmfqw43bw2fw0sujy9yaw@2x.webp"
+      ],
+      "species": "Dusky Lory",
+      "slug": "dusky-lory",
+      "meetUrl": "https://www.birdorable.com/meet/dusky-lory"
+    },
+    "m7nor777hqmbmbl96qdpx6mudcgf09p4bkmosvyb75199mtk": {
+      "files": [
+        "Parrots-Parakeets/m7nor777hqmbmbl96qdpx6mudcgf09p4bkmosvyb75199mtk@2x.webp"
+      ],
+      "species": "Dusky-headed Parakeet",
+      "slug": "dusky-headed-parakeet",
+      "meetUrl": "https://www.birdorable.com/meet/dusky-headed-parakeet"
+    },
+    "xfbdey2926z8pwxlq36fxkfj3joxcjq6fqbvi9jruw2wu7n5": {
+      "files": [
+        "Parrots-Parakeets/xfbdey2926z8pwxlq36fxkfj3joxcjq6fqbvi9jruw2wu7n5@2x.webp"
+      ],
+      "species": "Eastern Rosella",
+      "slug": "eastern-rosella",
+      "meetUrl": "https://www.birdorable.com/meet/eastern-rosella"
+    },
+    "8zofuo3u3poc9lm17t9gpqpjehugsnrk95j0hybj8vxu5cat": {
+      "files": [
+        "Parrots-Parakeets/8zofuo3u3poc9lm17t9gpqpjehugsnrk95j0hybj8vxu5cat@2x.webp"
+      ],
+      "species": "Eclectus Parrot",
+      "slug": "eclectus-parrot",
+      "meetUrl": "https://www.birdorable.com/meet/eclectus-parrot"
+    },
+    "dfjz8apfreqpt3r6f7z8l00kvvqxo4fr2fqihe9788k111od": {
+      "files": [
+        "Parrots-Parakeets/dfjz8apfreqpt3r6f7z8l00kvvqxo4fr2fqihe9788k111od@2x.webp"
+      ],
+      "species": "Fischer's Lovebird",
+      "slug": "fischers-lovebird",
+      "meetUrl": "https://www.birdorable.com/meet/fischers-lovebird"
+    },
+    "01nc3s7f7ouuehv0o6k05zcykqd1ps6itk0yqqye6nc6kwvz": {
+      "files": [
+        "Parrots-Parakeets/01nc3s7f7ouuehv0o6k05zcykqd1ps6itk0yqqye6nc6kwvz@2x.webp"
+      ],
+      "species": "Galah",
+      "slug": "galah",
+      "meetUrl": "https://www.birdorable.com/meet/galah"
+    },
+    "ag7zk34v5fil0gds5hmesmujg1kjnzikmhjq5svq6r4vwxh3": {
+      "files": [
+        "Parrots-Parakeets/ag7zk34v5fil0gds5hmesmujg1kjnzikmhjq5svq6r4vwxh3@2x.webp"
+      ],
+      "species": "Golden Parakeet",
+      "slug": "golden-parakeet",
+      "meetUrl": "https://www.birdorable.com/meet/golden-parakeet"
+    },
+    "qn7xssqjal0bgrhts2h1chldfgodlixigyynf520ein3dk8": {
+      "files": [
+        "Parrots-Parakeets/qn7xssqjal0bgrhts2h1chldfgodlixigyynf520ein3dk8@2x.webp"
+      ],
+      "species": "Golden-capped Parakeet",
+      "slug": "golden-capped-parakeet",
+      "meetUrl": "https://www.birdorable.com/meet/golden-capped-parakeet"
+    },
+    "u8ctemsrpaesz6279kfw34emdazjauazngmvzejb2glqwavc": {
+      "files": [
+        "Parrots-Parakeets/u8ctemsrpaesz6279kfw34emdazjauazngmvzejb2glqwavc@2x.webp"
+      ],
+      "species": "Golden-collared Macaw",
+      "slug": "golden-collared-macaw",
+      "meetUrl": "https://www.birdorable.com/meet/golden-collared-macaw"
+    },
+    "1ypgg488ghlx1lxr6q0u2cajtdmsg0zmkg1ny8ejnpx5qcq6": {
+      "files": [
+        "Parrots-Parakeets/1ypgg488ghlx1lxr6q0u2cajtdmsg0zmkg1ny8ejnpx5qcq6@2x.webp"
+      ],
+      "species": "Golden-winged Parakeet",
+      "slug": "golden-winged-parakeet",
+      "meetUrl": "https://www.birdorable.com/meet/golden-winged-parakeet"
+    },
+    "rlapttanpf8qed60wuhrntijbaug5feui63vko2lp38r706g": {
+      "files": [
+        "Parrots-Parakeets/rlapttanpf8qed60wuhrntijbaug5feui63vko2lp38r706g@2x.webp"
+      ],
+      "species": "Gray-headed Lovebird",
+      "slug": "gray-headed-lovebird",
+      "meetUrl": "https://www.birdorable.com/meet/gray-headed-lovebird"
+    },
+    "xm892wexshu40nbm9bn7okxy02jrr0y76pqsv8or0jq4vi89": {
+      "files": [
+        "Parrots-Parakeets/xm892wexshu40nbm9bn7okxy02jrr0y76pqsv8or0jq4vi89@2x-1.webp",
+        "Parrots-Parakeets/xm892wexshu40nbm9bn7okxy02jrr0y76pqsv8or0jq4vi89@2x.webp"
+      ],
+      "species": "Hyacinth Macaw",
+      "slug": "hyacinth-macaw",
+      "meetUrl": "https://www.birdorable.com/meet/hyacinth-macaw"
+    },
+    "9eWsTAV5RCsVprFIm62pMnvR3aroxRBGcqOneNnffe2szsk9": {
+      "files": [
+        "Parrots-Parakeets/9eWsTAV5RCsVprFIm62pMnvR3aroxRBGcqOneNnffe2szsk9@2x.webp"
+      ],
+      "species": "Indigo Macaw",
+      "slug": "indigo-macaw",
+      "meetUrl": "https://www.birdorable.com/meet/indigo-macaw"
+    },
+    "a21813d65bo7y5d2lf0aeddqul38bcg5p9lvlm531uwjigxz": {
+      "files": [
+        "Parrots-Parakeets/a21813d65bo7y5d2lf0aeddqul38bcg5p9lvlm531uwjigxz@2x.webp"
+      ],
+      "species": "Jandaya Conure",
+      "slug": "jandaya-conure",
+      "meetUrl": "https://www.birdorable.com/meet/jandaya-conure"
+    },
+    "clni2noiefiskevlvjk8227vx33r8khtwm4h1aethf3kw3l5": {
+      "files": [
+        "Parrots-Parakeets/clni2noiefiskevlvjk8227vx33r8khtwm4h1aethf3kw3l5@2x.webp"
+      ],
+      "species": "Kakapo",
+      "slug": "kakapo",
+      "meetUrl": "https://www.birdorable.com/meet/kakapo"
+    },
+    "phqhbydeynlh2tk2dlqd6m5tybstk45gc2oc107wp4ug8msx": {
+      "files": [
+        "Parrots-Parakeets/phqhbydeynlh2tk2dlqd6m5tybstk45gc2oc107wp4ug8msx@2x.webp"
+      ],
+      "species": "Kea",
+      "slug": "kea",
+      "meetUrl": "https://www.birdorable.com/meet/kea"
+    },
+    "jo1beksqh3q69re5mirobqi4nisj4sbtflast3lz1lup04i7": {
+      "files": [
+        "Parrots-Parakeets/jo1beksqh3q69re5mirobqi4nisj4sbtflast3lz1lup04i7@2x.webp"
+      ],
+      "species": "Lesser Vasa-Parrot",
+      "slug": "lesser-vasa-parrot",
+      "meetUrl": "https://www.birdorable.com/meet/lesser-vasa-parrot"
+    },
+    "mn6wsxhz5g1u1f9ezsamxuxojslabb2jenidtsmor3iibby5": {
+      "files": [
+        "Parrots-Parakeets/mn6wsxhz5g1u1f9ezsamxuxojslabb2jenidtsmor3iibby5@2x.webp"
+      ],
+      "species": "Lilian's Lovebird",
+      "slug": "lilians-lovebird",
+      "meetUrl": "https://www.birdorable.com/meet/lilians-lovebird"
+    },
+    "0b89hgoemq2q5s4byiansn677vu0p5c81iyd36o88cskego3": {
+      "files": [
+        "Parrots-Parakeets/0b89hgoemq2q5s4byiansn677vu0p5c81iyd36o88cskego3@2x.webp"
+      ],
+      "species": "Lord Derby's Parakeet",
+      "slug": "lord-derbys-parakeet",
+      "meetUrl": "https://www.birdorable.com/meet/lord-derbys-parakeet"
+    },
+    "6wavd7t1bavt38tgtiy1z5x3ukv5dw19qflq522bo6k71pp6": {
+      "files": [
+        "Parrots-Parakeets/6wavd7t1bavt38tgtiy1z5x3ukv5dw19qflq522bo6k71pp6@2x.webp"
+      ],
+      "species": "Maroon-bellied Parakeet",
+      "slug": "maroon-bellied-parakeet",
+      "meetUrl": "https://www.birdorable.com/meet/maroon-bellied-parakeet"
+    },
+    "xdlcngpl7dlnr9633y6d0y16ot276ardcv8uzlmkx9hijtuo": {
+      "files": [
+        "Parrots-Parakeets/xdlcngpl7dlnr9633y6d0y16ot276ardcv8uzlmkx9hijtuo@2x.webp"
+      ],
+      "species": "Mealy Parrot",
+      "slug": "mealy-parrot",
+      "meetUrl": "https://www.birdorable.com/meet/mealy-parrot"
+    },
+    "sf26cdgl2dse52984dj1cbem77tm5z35dy00rj9xlunoo26s": {
+      "files": [
+        "Parrots-Parakeets/sf26cdgl2dse52984dj1cbem77tm5z35dy00rj9xlunoo26s@2x.webp"
+      ],
+      "species": "Meyer's Parrot",
+      "slug": "meyers-parrot",
+      "meetUrl": "https://www.birdorable.com/meet/meyers-parrot"
+    },
+    "o6cialgnjcemj49sife5i3e4ktc9wl495qugfmj1y7kimps3": {
+      "files": [
+        "Parrots-Parakeets/o6cialgnjcemj49sife5i3e4ktc9wl495qugfmj1y7kimps3@2x.webp"
+      ],
+      "species": "Military Macaw",
+      "slug": "military-macaw",
+      "meetUrl": "https://www.birdorable.com/meet/military-macaw"
+    },
+    "89wrqxzmu1pvyfitpswau58u0vazh73h5twm1f98z3rxrn9w": {
+      "files": [
+        "Parrots-Parakeets/89wrqxzmu1pvyfitpswau58u0vazh73h5twm1f98z3rxrn9w@2x.webp"
+      ],
+      "species": "Monk Parakeet",
+      "slug": "monk-parakeet",
+      "meetUrl": "https://www.birdorable.com/meet/monk-parakeet"
+    },
+    "a14zh0umpzlf37nbjo3hykbcl7sk14rikfrrrr6qwfkkzfnt": {
+      "files": [
+        "Parrots-Parakeets/a14zh0umpzlf37nbjo3hykbcl7sk14rikfrrrr6qwfkkzfnt@2x.webp"
+      ],
+      "species": "Nanday Parakeet",
+      "slug": "nanday-parakeet",
+      "meetUrl": "https://www.birdorable.com/meet/nanday-parakeet"
+    },
+    "khv7x2rxhrbg1ie1u348qytfimzbaz4ubob4k3pu9l303mn": {
+      "files": [
+        "Parrots-Parakeets/khv7x2rxhrbg1ie1u348qytfimzbaz4ubob4k3pu9l303mn@2x.webp"
+      ],
+      "species": "Northern Rosella",
+      "slug": "northern-rosella",
+      "meetUrl": "https://www.birdorable.com/meet/northern-rosella"
+    },
+    "v9nukr09la5opafu9hsulzr3qmzdq92wc3e34g32c7sc3vk": {
+      "files": [
+        "Parrots-Parakeets/v9nukr09la5opafu9hsulzr3qmzdq92wc3e34g32c7sc3vk@2x.webp"
+      ],
+      "species": "Orange-fronted Parakeet",
+      "slug": "orange-fronted-parakeet",
+      "meetUrl": "https://www.birdorable.com/meet/orange-fronted-parakeet"
+    },
+    "qobe2abznqi1awcts6vzyi4b0em2m7av5p99k22hpi1fzjvn": {
+      "files": [
+        "Parrots-Parakeets/qobe2abznqi1awcts6vzyi4b0em2m7av5p99k22hpi1fzjvn@2x.webp"
+      ],
+      "species": "Orange-winged Parrot",
+      "slug": "orange-winged-parrot",
+      "meetUrl": "https://www.birdorable.com/meet/orange-winged-parrot"
+    },
+    "8dqrr75abq8iu6la1j99atmgvaipqu6txcbce5ndpcqpi0n6": {
+      "files": [
+        "Parrots-Parakeets/8dqrr75abq8iu6la1j99atmgvaipqu6txcbce5ndpcqpi0n6@2x.webp"
+      ],
+      "species": "Pacific Parrotlet",
+      "slug": "pacific-parrotlet",
+      "meetUrl": "https://www.birdorable.com/meet/pacific-parrotlet"
+    },
+    "we224k9nex54g1rs217jhr97poautf29jy8s9bv1urc5qpad": {
+      "files": [
+        "Parrots-Parakeets/we224k9nex54g1rs217jhr97poautf29jy8s9bv1urc5qpad@2x.webp"
+      ],
+      "species": "Palm Cockatoo",
+      "slug": "palm-cockatoo",
+      "meetUrl": "https://www.birdorable.com/meet/palm-cockatoo"
+    },
+    "2nfdcpe9zj68gmgns7ji2ot00kby1hvou4y9z4ibkeyg9xcs": {
+      "files": [
+        "Parrots-Parakeets/2nfdcpe9zj68gmgns7ji2ot00kby1hvou4y9z4ibkeyg9xcs@2x.webp"
+      ],
+      "species": "Peach-fronted Parakeet",
+      "slug": "peach-fronted-parakeet",
+      "meetUrl": "https://www.birdorable.com/meet/peach-fronted-parakeet"
+    },
+    "W0dj89zniPk2a107Kzu5p2LYBb5K0uDmfSyrlamz28qMSI1j": {
+      "files": [
+        "Parrots-Parakeets/W0dj89zniPk2a107Kzu5p2LYBb5K0uDmfSyrlamz28qMSI1j@2x.webp"
+      ],
+      "species": "Pesquet's Parrot",
+      "slug": "pesquets-parrot",
+      "meetUrl": "https://www.birdorable.com/meet/pesquets-parrot"
+    },
+    "bghrgtuaczspa4b7isdzw05hniluhtwb3mcmuvh554ujp96": {
+      "files": [
+        "Parrots-Parakeets/bghrgtuaczspa4b7isdzw05hniluhtwb3mcmuvh554ujp96@2x.webp"
+      ],
+      "species": "Pink Cockatoo",
+      "slug": "pink-cockatoo",
+      "meetUrl": "https://www.birdorable.com/meet/pink-cockatoo"
+    },
+    "kbnwv4mvwr52omnr7c7rqrgbfwt04sbxm4kf2q1lct5ydaq6": {
+      "files": [
+        "Parrots-Parakeets/kbnwv4mvwr52omnr7c7rqrgbfwt04sbxm4kf2q1lct5ydaq6@2x.webp"
+      ],
+      "species": "Plum-headed Parakeet",
+      "slug": "plum-headed-parakeet",
+      "meetUrl": "https://www.birdorable.com/meet/plum-headed-parakeet"
+    },
+    "5ugs3nrmsozv4ofsacz0dnd9tjdcj32fkw06t28vafvimheq": {
+      "files": [
+        "Parrots-Parakeets/5ugs3nrmsozv4ofsacz0dnd9tjdcj32fkw06t28vafvimheq@2x.webp"
+      ],
+      "species": "Red-shouldered Macaw",
+      "slug": "red-shouldered-macaw",
+      "meetUrl": "https://www.birdorable.com/meet/red-shouldered-macaw"
+    },
+    "vtou9ge6px5femzc1nc2nnfqqstu2m61wnxgdf7cba56c4za": {
+      "files": [
+        "Parrots-Parakeets/vtou9ge6px5femzc1nc2nnfqqstu2m61wnxgdf7cba56c4za@2x.webp"
+      ],
+      "species": "Red-tailed Black Cockatoo",
+      "slug": "red-tailed-black-cockatoo",
+      "meetUrl": "https://www.birdorable.com/meet/red-tailed-black-cockatoo"
+    },
+    "94v8099sloibntymb8emgzrrbbm2608dgdz8wqlv909lpod3": {
+      "files": [
+        "Parrots-Parakeets/94v8099sloibntymb8emgzrrbbm2608dgdz8wqlv909lpod3@2x.webp"
+      ],
+      "species": "Rose-ringed Parakeet",
+      "slug": "rose-ringed-parakeet",
+      "meetUrl": "https://www.birdorable.com/meet/rose-ringed-parakeet"
+    },
+    "c34qgo0ie4yzq51v85t82wo9ykzmmetp8zdfbf84yhcjavro": {
+      "files": [
+        "Parrots-Parakeets/c34qgo0ie4yzq51v85t82wo9ykzmmetp8zdfbf84yhcjavro@2x.webp"
+      ],
+      "species": "Rosy-faced Lovebird",
+      "slug": "rosy-faced-lovebird",
+      "meetUrl": "https://www.birdorable.com/meet/rosy-faced-lovebird"
+    },
+    "ce7aoukdfzqtih9z7xflrtdu3o8vm4qfpdmq22l1i2in0b98": {
+      "files": [
+        "Parrots-Parakeets/ce7aoukdfzqtih9z7xflrtdu3o8vm4qfpdmq22l1i2in0b98@2x.webp"
+      ],
+      "species": "Saint Lucia Parrot",
+      "slug": "saint-lucia-parrot",
+      "meetUrl": "https://www.birdorable.com/meet/saint-lucia-parrot"
+    },
+    "dhpweyfealcwf76imay4b4i5kuzulprswutz8l6atals24qw": {
+      "files": [
+        "Parrots-Parakeets/dhpweyfealcwf76imay4b4i5kuzulprswutz8l6atals24qw@2x.webp"
+      ],
+      "species": "Salmon-crested Cockatoo",
+      "slug": "salmon-crested-cockatoo",
+      "meetUrl": "https://www.birdorable.com/meet/salmon-crested-cockatoo"
+    },
+    "hg616s5toglzrtu9aasxq4tuczmfnstkbsh3t8rh4x346ipu": {
+      "files": [
+        "Parrots-Parakeets/hg616s5toglzrtu9aasxq4tuczmfnstkbsh3t8rh4x346ipu@2x.webp"
+      ],
+      "species": "Scaly-headed Parrot",
+      "slug": "scaly-headed-parrot",
+      "meetUrl": "https://www.birdorable.com/meet/scaly-headed-parrot"
+    },
+    "3jrjl3llel4rm1xpfaai7emtpllq3v3r8qnn60mto49utjrn": {
+      "files": [
+        "Parrots-Parakeets/3jrjl3llel4rm1xpfaai7emtpllq3v3r8qnn60mto49utjrn@2x.webp"
+      ],
+      "species": "Scarlet Macaw",
+      "slug": "scarlet-macaw",
+      "meetUrl": "https://www.birdorable.com/meet/scarlet-macaw"
+    },
+    "bikveo3x8kolrxzpv8s8q3vsmyb2ffp2zmud8iwyc4sz17n2": {
+      "files": [
+        "Parrots-Parakeets/bikveo3x8kolrxzpv8s8q3vsmyb2ffp2zmud8iwyc4sz17n2@2x.webp"
+      ],
+      "species": "Senegal Parrot",
+      "slug": "senegal-parrot",
+      "meetUrl": "https://www.birdorable.com/meet/senegal-parrot"
+    },
+    "3aclycg2p018nmgtuu13nr01sbrtfqmw2dazvvjir6vyuctb": {
+      "files": [
+        "Parrots-Parakeets/3aclycg2p018nmgtuu13nr01sbrtfqmw2dazvvjir6vyuctb@2x.webp"
+      ],
+      "species": "Spix's Macaw",
+      "slug": "spixs-macaw",
+      "meetUrl": "https://www.birdorable.com/meet/spixs-macaw"
+    },
+    "llpomrzw380a4m4nwz0rc00x2reiavblujcesgxd4o406gka": {
+      "files": [
+        "Parrots-Parakeets/llpomrzw380a4m4nwz0rc00x2reiavblujcesgxd4o406gka@2x.webp"
+      ],
+      "species": "Sulphur-crested Cockatoo",
+      "slug": "sulphur-crested-cockatoo",
+      "meetUrl": "https://www.birdorable.com/meet/sulphur-crested-cockatoo"
+    },
+    "xmdg8hbtb7e34n0b8k0xqngsct1g73eik6y9ld5l1czc0fyd": {
+      "files": [
+        "Parrots-Parakeets/xmdg8hbtb7e34n0b8k0xqngsct1g73eik6y9ld5l1czc0fyd@2x.webp"
+      ],
+      "species": "Sun Parakeet",
+      "slug": "sun-parakeet",
+      "meetUrl": "https://www.birdorable.com/meet/sun-parakeet"
+    },
+    "n5jgupmn5nl5r8vqf0t4ogsq232l5vglj5y4a4h88lxydb9": {
+      "files": [
+        "Parrots-Parakeets/n5jgupmn5nl5r8vqf0t4ogsq232l5vglj5y4a4h88lxydb9@2x.webp"
+      ],
+      "species": "Superb Parrot",
+      "slug": "superb-parrot",
+      "meetUrl": "https://www.birdorable.com/meet/superb-parrot"
+    },
+    "h33ntgys2jjgy0ran6i06bl9xpr1bx6kfq4l88ucfcthimsn": {
+      "files": [
+        "Parrots-Parakeets/h33ntgys2jjgy0ran6i06bl9xpr1bx6kfq4l88ucfcthimsn@2x.webp"
+      ],
+      "species": "Tanimbar Corella",
+      "slug": "tanimbar-corella",
+      "meetUrl": "https://www.birdorable.com/meet/tanimbar-corella"
+    },
+    "v9ntt8cp9qibxeao9jq98znn1p4i1hnab0lfuq8hkbzdv2hb": {
+      "files": [
+        "Parrots-Parakeets/v9ntt8cp9qibxeao9jq98znn1p4i1hnab0lfuq8hkbzdv2hb@2x.webp"
+      ],
+      "species": "Umbrella Cockatoo",
+      "slug": "umbrella-cockatoo",
+      "meetUrl": "https://www.birdorable.com/meet/umbrella-cockatoo"
+    },
+    "d8xn0nmwovryfcq7jd6t8iiybu5b09h9wwh62b1tquq2sdd8": {
+      "files": [
+        "Parrots-Parakeets/d8xn0nmwovryfcq7jd6t8iiybu5b09h9wwh62b1tquq2sdd8@2x.webp"
+      ],
+      "species": "Uncape Parrot",
+      "slug": "uncape-parrot",
+      "meetUrl": "https://www.birdorable.com/meet/uncape-parrot"
+    },
+    "qvjvcpja7z9q0lcnwuyamrm5dyoyz11n804vj74vmv35k9": {
+      "files": [
+        "Parrots-Parakeets/qvjvcpja7z9q0lcnwuyamrm5dyoyz11n804vj74vmv35k9@2x.webp"
+      ],
+      "species": "Vinaceous Parrot",
+      "slug": "vinaceous-parrot",
+      "meetUrl": "https://www.birdorable.com/meet/vinaceous-parrot"
+    },
+    "4ff9182bgtrmufoaqsjnanjc9ybrot91lacebeok4vxx5iym": {
+      "files": [
+        "Parrots-Parakeets/4ff9182bgtrmufoaqsjnanjc9ybrot91lacebeok4vxx5iym@2x.webp"
+      ],
+      "species": "White-bellied Parrot",
+      "slug": "white-bellied-parrot",
+      "meetUrl": "https://www.birdorable.com/meet/white-bellied-parrot"
+    },
+    "v1k16uz6dddhcaxw0fsg57l3jlheeijgbrblvkfh3gjd6hn": {
+      "files": [
+        "Parrots-Parakeets/v1k16uz6dddhcaxw0fsg57l3jlheeijgbrblvkfh3gjd6hn@2x-1.webp",
+        "Parrots-Parakeets/v1k16uz6dddhcaxw0fsg57l3jlheeijgbrblvkfh3gjd6hn@2x.webp"
+      ],
+      "species": "White-crowned Parrot",
+      "slug": "white-crowned-parrot",
+      "meetUrl": "https://www.birdorable.com/meet/white-crowned-parrot"
+    },
+    "i3246a0a9oh2ppjybdduchy3e86no4qpwkivagcst5lnwgg5": {
+      "files": [
+        "Parrots-Parakeets/i3246a0a9oh2ppjybdduchy3e86no4qpwkivagcst5lnwgg5@2x.webp"
+      ],
+      "species": "White-fronted Parrot",
+      "slug": "white-fronted-parrot",
+      "meetUrl": "https://www.birdorable.com/meet/white-fronted-parrot"
+    },
+    "0xiisrv5sbqf01x6lam86yowk0kg2x5juzqgrwof6y9cqucr": {
+      "files": [
+        "Parrots-Parakeets/0xiisrv5sbqf01x6lam86yowk0kg2x5juzqgrwof6y9cqucr@2x.webp"
+      ],
+      "species": "White-tailed Black Cockatoo",
+      "slug": "white-tailed-black-cockatoo",
+      "meetUrl": "https://www.birdorable.com/meet/white-tailed-black-cockatoo"
+    },
+    "09rxix4sytw9fegot1rqu97cj3u0lyz24k6w4hq69u3e1d86": {
+      "files": [
+        "Parrots-Parakeets/09rxix4sytw9fegot1rqu97cj3u0lyz24k6w4hq69u3e1d86@2x-1.webp",
+        "Parrots-Parakeets/09rxix4sytw9fegot1rqu97cj3u0lyz24k6w4hq69u3e1d86@2x.webp"
+      ],
+      "species": "Yellow-bibbed Lory",
+      "slug": "yellow-bibbed-lory",
+      "meetUrl": "https://www.birdorable.com/meet/yellow-bibbed-lory"
+    },
+    "q2h3s2zyeot00plnr4ejegf15u1s3c1dlu8zu3fsljl1dpq4": {
+      "files": [
+        "Parrots-Parakeets/q2h3s2zyeot00plnr4ejegf15u1s3c1dlu8zu3fsljl1dpq4@2x.webp"
+      ],
+      "species": "Yellow-collared Lovebird",
+      "slug": "yellow-collared-lovebird",
+      "meetUrl": "https://www.birdorable.com/meet/yellow-collared-lovebird"
+    },
+    "r735910ts4is0jt6ukkjfefuo84pfv9x2v30oo40b767llhq": {
+      "files": [
+        "Parrots-Parakeets/r735910ts4is0jt6ukkjfefuo84pfv9x2v30oo40b767llhq@2x.webp"
+      ],
+      "species": "Yellow-crested Cockatoo",
+      "slug": "yellow-crested-cockatoo",
+      "meetUrl": "https://www.birdorable.com/meet/yellow-crested-cockatoo"
+    },
+    "zvwazello6pzmlmkzcdhft3cgoaws44j1sxp3vlj2bf75n7d": {
+      "files": [
+        "Parrots-Parakeets/zvwazello6pzmlmkzcdhft3cgoaws44j1sxp3vlj2bf75n7d@2x.webp"
+      ],
+      "species": "Yellow-headed Amazon",
+      "slug": "yellow-headed-amazon",
+      "meetUrl": "https://www.birdorable.com/meet/yellow-headed-amazon"
+    },
+    "07lny1iel0bzyfh8iruhjy7mp8g6s8ceu8nuib7069m63ul8": {
+      "files": [
+        "Parrots-Parakeets/07lny1iel0bzyfh8iruhjy7mp8g6s8ceu8nuib7069m63ul8@2x.webp"
+      ],
+      "species": "Yellow-naped Parrot",
+      "slug": "yellow-naped-parrot",
+      "meetUrl": "https://www.birdorable.com/meet/yellow-naped-parrot"
+    }
+  },
+  "unresolvedFiles": [
+    "Parrots-Parakeets/32wquncnhtfj2xfk1zrg1frixvs4quusc635gm5vx396pkwa@2x.webp",
+    "Parrots-Parakeets/4da5p9ww5ebbgtszkxtehfyfkkonyfgcfq0s186jehxdr6ay@2x.webp",
+    "Parrots-Parakeets/4eekxqguarp6g7gqlyh960aj1um11t1con01q4l4memuwmwb@2x.webp",
+    "Parrots-Parakeets/6d7a2yshts2di85sdffnstq5m9nceukcva3lqsva35tji8f6@2x.webp",
+    "Parrots-Parakeets/7tjcja9e5wt9zlquescycg0vt498mfue9zfdo8w01z8cpwwb@2x.webp",
+    "Parrots-Parakeets/8uh8hz1f430jbp1v8prcu83iilgni37c28h3pyipqz4ji58z@2x.webp",
+    "Parrots-Parakeets/Zxj0G1a5XKxVdgbWTRccjjyHar319wEJR9cVvaBce4c27nZP@2x.webp",
+    "Parrots-Parakeets/acf6a289be36414da937bc637e22e812397648f98a4ee290@2x.webp",
+    "Parrots-Parakeets/d931gcbnhxdk5xekz6h233j2g88qyowm3wxn1e5g20z5gi5f@2x.webp",
+    "Parrots-Parakeets/eN0xqmNZug0AgFm5Rfovh1VcUj0G05EEi8MqwdC2vcpxeLoA@2x.webp",
+    "Parrots-Parakeets/faf2cn2sxpx76qxgxdmssly9cbw5gkd2cvee9hq1kmp08c9g@2x.webp",
+    "Parrots-Parakeets/gzbvi0dqjttnsgu5wyoo0fkvtcf1rqzxzzatogepe1cjaxeg@2x.webp",
+    "Parrots-Parakeets/iofnc87kz3ni9ms1645q7kmmwsjn9dllb8bljbsbpl1i75wk@2x.webp",
+    "Parrots-Parakeets/l1rw5dgatwfncxgi7m7mjqq4n2yzf2souyna5ksj11gzeloe@2x.webp",
+    "Parrots-Parakeets/lv380khtlh30pr6ucvfcbfyqqbemrf9pdtojszo1ju55udl3@2x.webp",
+    "Parrots-Parakeets/mrk1g79jrj1yl2y0pkfff6uhrss7wsxtymbmce6kjhw2vdtz@2x.webp",
+    "Parrots-Parakeets/redx0rzzooftac3ik2wi99f5e5agkww7zzcinqjkmy56vara@2x.webp",
+    "Parrots-Parakeets/tpt0qp5e0yGkNodZdmQZRtUSIZ911Leut8HXpiuGJLVLhLSS@2x.webp",
+    "Parrots-Parakeets/vma7trdnj7zwcm8b6r7as1v1zlxv4hwu5g0911ecqs0d322m@2x.webp",
+    "Parrots-Parakeets/wfttou6wtahd6f72e4fuwvwk6wjklih7qvd0q2jpiyvui18s@2x.webp"
+  ]
+}
