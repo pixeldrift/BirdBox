@@ -377,8 +377,15 @@ const HealthScreen = (function () {
         notes: notesInput.value.trim(),
         attachments: attachments,
       };
-      HEALTH_RECORDS_SAMPLE.push(record);
-      navigate(record.id);
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Saving…';
+      addHealthRecord(record).then(function () {
+        navigate(record.id);
+      }).catch(function () {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Save Record';
+        alert('Could not save this record — please try again.');
+      });
     });
 
     wrap.appendChild(form);
