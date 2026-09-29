@@ -1,6 +1,12 @@
+/* Palette sampled directly from the user's macaw-feather thread-color reference
+   (pine/moss green, fern, autumn gold, wedgwood blue, pewter gray) — replaces the
+   earlier rust/terracotta brand, which stays only as --accent-gold for small warm
+   highlights rather than as the primary color. */
 :root {
-  --brand: #C1694F;
-  --brand-dark: #A6543D;
+  --brand: #515936;
+  --brand-dark: #3E4529;
+  --accent-gold: #D47629;
+  --accent-blue: #3A7996;
   --bg: #FBF6EF;
   --card-bg: #FFFDF9;
   --text: #3A2E27;
@@ -16,13 +22,21 @@
 html, body {
   margin: 0;
   padding: 0;
-  background: var(--bg);
+  background: var(--bg) url('../icons/textures/paper-speckle.jpg') repeat;
   color: var(--text);
-  font-family: 'Nunito', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: 'Roboto Slab', 'Nunito', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 h1, h2, h3 {
-  font-weight: 800;
+  font-family: 'Bree Serif', 'Nunito', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-weight: 400;
+}
+
+.home-tile-label,
+.list-row-title,
+.pack-label {
+  font-family: 'Bree Serif', 'Nunito', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-weight: 400;
 }
 
 #app {
@@ -105,6 +119,9 @@ h1, h2, h3 {
 
 .tab {
   flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
   padding: 8px 16px;
   border-radius: 999px;
   border: 1px solid #E9DCC9;
@@ -115,6 +132,16 @@ h1, h2, h3 {
   font-size: 0.9rem;
   white-space: nowrap;
   cursor: pointer;
+}
+
+.tab-icon {
+  width: 24px;
+  height: 24px;
+  flex: 0 0 auto;
+}
+
+.tab.active .tab-icon {
+  filter: brightness(0) invert(1);
 }
 
 .tab.active {
@@ -164,17 +191,16 @@ h1, h2, h3 {
 }
 
 .home-tile-icon {
-  width: 60px;
-  height: 60px;
-  border-radius: 18px;
+  width: 64px;
+  height: 64px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .home-tile-icon img {
-  width: 34px;
-  height: 34px;
+  width: 64px;
+  height: 64px;
 }
 
 .home-tile-label {
