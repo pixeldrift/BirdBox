@@ -50,7 +50,6 @@
 
       var iconWrap = document.createElement('span');
       iconWrap.className = 'home-tile-icon';
-      iconWrap.style.background = group.tint;
       var img = document.createElement('img');
       img.src = group.icon;
       img.alt = '';

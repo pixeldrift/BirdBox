@@ -127,8 +127,8 @@ h1, h2, h3 {
 }
 
 .tab-icon {
-  width: 16px;
-  height: 16px;
+  width: 24px;
+  height: 24px;
   flex: 0 0 auto;
 }
 
@@ -183,17 +183,16 @@ h1, h2, h3 {
 }
 
 .home-tile-icon {
-  width: 76px;
-  height: 76px;
-  border-radius: 20px;
+  width: 64px;
+  height: 64px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .home-tile-icon img {
-  width: 46px;
-  height: 46px;
+  width: 64px;
+  height: 64px;
 }
 
 .home-tile-label {
