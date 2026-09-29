@@ -192,7 +192,7 @@ const RegistryManageScreen = (function () {
       info.addEventListener('click', function () { location.hash = '#/mybirds/birds/' + bird.id; });
 
       var toggle = makeToggle(bird.registryPublic, '', function (checked) {
-        bird.registryPublic = checked;
+        updateBird(bird.id, { registryPublic: checked }).catch(function () {});
       });
 
       row.appendChild(avatar);

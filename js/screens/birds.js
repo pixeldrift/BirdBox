@@ -286,7 +286,7 @@ const BirdsScreen = (function () {
 
   function makeRegistryToggle(bird, onToggle) {
     return makeToggle(bird.registryPublic, 'Public in Registry', function (checked) {
-      bird.registryPublic = checked;
+      updateBird(bird.id, { registryPublic: checked }).catch(function () {});
       onToggle();
     });
   }

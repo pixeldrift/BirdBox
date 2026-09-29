@@ -181,7 +181,8 @@
   });
   window.addEventListener('hashchange', route);
 
-  route();
+  main.textContent = 'Loading…';
+  birdsLoaded.then(route);
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {
