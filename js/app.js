@@ -88,7 +88,17 @@
       var tab = document.createElement('button');
       tab.type = 'button';
       tab.className = 'tab' + (screen.id === activeScreen.id ? ' active' : '');
-      tab.textContent = screen.label;
+
+      var tabIcon = document.createElement('img');
+      tabIcon.className = 'tab-icon';
+      tabIcon.src = screen.icon;
+      tabIcon.alt = '';
+      tab.appendChild(tabIcon);
+
+      var tabLabel = document.createElement('span');
+      tabLabel.textContent = screen.label;
+      tab.appendChild(tabLabel);
+
       tab.addEventListener('click', function () {
         location.hash = '#/' + group.id + '/' + screen.id;
       });
