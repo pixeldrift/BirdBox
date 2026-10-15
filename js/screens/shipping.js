@@ -1,7 +1,12 @@
 // Shipping (sales shipping records: waybills, costs, dates) for business/shipping.
 // Shared row/fact/chip helpers come from js/ui-helpers.js.
 const ShippingScreen = (function () {
-  var FILTERS = ['All', 'Outgoing', 'Incoming'];
+  var FILTERS = ['All', 'Shipped', 'Received', 'Pending'];
+
+  function matchesFilter(w, f) {
+    if (f === 'All') return true;
+    return waybillStateLabel(w) === f;
+  }
 
   function goToBird(birdId) {
     location.hash = '#/mybirds/birds/' + birdId;
@@ -11,36 +16,29 @@ const ShippingScreen = (function () {
     location.hash = '#/business/contacts/' + contactId;
   }
 
-  function directionClass(direction) {
-    return 'type-' + direction.toLowerCase();
+  function stateClass(wb) {
+    return 'type-' + waybillStateLabel(wb).toLowerCase();
+  }
+
+  function routeLabel(wb) {
+    if (wb.departingAirport && wb.arrivingAirport) return wb.departingAirport + ' → ' + wb.arrivingAirport;
+    return wb.departingAirport || wb.arrivingAirport || '';
   }
 
   function renderList(main, navigate) {
-    var state = { query: '', direction: 'All' };
+    var state = { query: '', filter: 'All' };
 
     var wrap = document.createElement('div');
     wrap.className = 'list-screen';
 
-    var totalCost = WAYBILLS_SAMPLE.reduce(function (sum, w) { return sum + w.cost; }, 0);
-    var summary = document.createElement('div');
-    summary.className = 'summary-strip';
-    [
-      ['Shipments', String(WAYBILLS_SAMPLE.length)],
-      ['Total Cost', formatMoney(totalCost)],
-      ['Outgoing', String(WAYBILLS_SAMPLE.filter(function (w) { return w.direction === 'Outgoing'; }).length)],
-    ].forEach(function (s) {
-      var tile = document.createElement('div');
-      tile.className = 'summary-tile';
-      var l = document.createElement('span');
-      l.className = 'summary-tile-label';
-      l.textContent = s[0];
-      var v = document.createElement('span');
-      v.className = 'summary-tile-value';
-      v.textContent = s[1];
-      tile.appendChild(l);
-      tile.appendChild(v);
-      summary.appendChild(tile);
-    });
+    var actions = document.createElement('div');
+    actions.className = 'list-actions';
+    var addBtn = document.createElement('button');
+    addBtn.type = 'button';
+    addBtn.className = 'add-record-btn';
+    addBtn.textContent = '+ Add Shipment';
+    addBtn.addEventListener('click', function () { ShippingAddScreen.reset(); navigate('new'); });
+    actions.appendChild(addBtn);
 
     var searchInput = document.createElement('input');
     searchInput.type = 'search';
@@ -62,10 +60,10 @@ const ShippingScreen = (function () {
       FILTERS.forEach(function (f) {
         var chip = document.createElement('button');
         chip.type = 'button';
-        chip.className = 'filter-chip' + (state.direction === f ? ' active' : '');
+        chip.className = 'filter-chip' + (state.filter === f ? ' active' : '');
         chip.textContent = f;
         chip.addEventListener('click', function () {
-          state.direction = f;
+          state.filter = f;
           draw();
         });
         chipsWrap.appendChild(chip);
@@ -73,7 +71,7 @@ const ShippingScreen = (function () {
 
       var q = state.query.trim().toLowerCase();
       var results = WAYBILLS_SAMPLE.filter(function (w) {
-        if (state.direction !== 'All' && w.direction !== state.direction) return false;
+        if (!matchesFilter(w, state.filter)) return false;
         if (!q) return true;
         var client = waybillClient(w);
         var birds = waybillBirds(w);
@@ -83,7 +81,14 @@ const ShippingScreen = (function () {
         return hay.indexOf(q) !== -1;
       }).slice().sort(function (a, b) { return b.date.localeCompare(a.date); });
 
-      countLabel.textContent = results.length + (results.length === 1 ? ' shipment' : ' shipments');
+      var n = results.length;
+      var noun = n === 1 ? ' shipment' : ' shipments';
+      var tail = { All: '', Shipped: ' sent', Received: ' received', Pending: ' pending' }[state.filter];
+      clearEl(countLabel);
+      var strong = document.createElement('strong');
+      strong.textContent = String(n);
+      countLabel.appendChild(strong);
+      countLabel.appendChild(document.createTextNode(noun + tail));
 
       clearEl(listWrap);
       if (results.length === 0) {
@@ -103,7 +108,7 @@ const ShippingScreen = (function () {
 
     draw();
 
-    wrap.appendChild(summary);
+    wrap.appendChild(actions);
     wrap.appendChild(searchInput);
     wrap.appendChild(chipsWrap);
     wrap.appendChild(countLabel);
@@ -134,25 +139,29 @@ const ShippingScreen = (function () {
     var client = waybillClient(wb);
     var sub = document.createElement('span');
     sub.className = 'list-row-sub';
-    sub.textContent = formatDate(wb.date) + ' · ' + wb.departingAirport + ' → ' + wb.arrivingAirport +
-      (client ? ' · ' + client.name : '');
+    sub.textContent = [formatDate(wb.date), routeLabel(wb), client ? client.name : '']
+      .filter(Boolean).join(' · ');
 
     info.appendChild(title);
     info.appendChild(sub);
 
-    var cost = document.createElement('span');
-    cost.className = 'list-row-amount amount-expense';
-    cost.textContent = formatMoney(wb.cost);
+    var side = document.createElement('span');
+    side.className = 'list-row-amount';
+    var badge = document.createElement('span');
+    badge.className = 'type-badge ' + stateClass(wb);
+    badge.textContent = waybillStateLabel(wb);
+    side.appendChild(badge);
 
     row.appendChild(avatar);
     row.appendChild(info);
-    row.appendChild(cost);
+    row.appendChild(side);
 
     row.addEventListener('click', function () { navigate(wb.id); });
     return row;
   }
 
   function renderDetail(main, id, navigate, setTitle) {
+    if (id === 'new') return ShippingAddScreen.renderForm(main, navigate, setTitle);
     var wb = WAYBILLS_SAMPLE.filter(function (w) { return w.id === id; })[0];
     if (!wb) {
       var missing = document.createElement('p');
@@ -180,10 +189,10 @@ const ShippingScreen = (function () {
     var titleWrap = document.createElement('div');
     titleWrap.className = 'detail-title';
     var h2 = document.createElement('h2');
-    h2.textContent = wb.departingAirport + ' → ' + wb.arrivingAirport;
+    h2.textContent = routeLabel(wb) || 'Shipment';
     var dirBadge = document.createElement('span');
-    dirBadge.className = 'type-badge ' + directionClass(wb.direction);
-    dirBadge.textContent = wb.direction;
+    dirBadge.className = 'type-badge ' + stateClass(wb);
+    dirBadge.textContent = waybillStateLabel(wb);
     titleWrap.appendChild(h2);
     titleWrap.appendChild(dirBadge);
 
@@ -193,8 +202,8 @@ const ShippingScreen = (function () {
 
     var factsGrid = document.createElement('div');
     factsGrid.className = 'fact-grid';
-    factsGrid.appendChild(factRow('Date', formatDate(wb.date)));
-    factsGrid.appendChild(factRow('Cost', formatMoney(wb.cost)));
+    factsGrid.appendChild(factRow(wb.status === 'Pending' ? 'Planned date' : 'Date', formatDate(wb.date)));
+    if (wb.cost !== null && wb.cost !== undefined) factsGrid.appendChild(factRow('Cost', formatMoney(wb.cost)));
     factsGrid.appendChild(factRow('Waybill #', wb.waybillNumber || '—'));
     wrap.appendChild(factsGrid);
 

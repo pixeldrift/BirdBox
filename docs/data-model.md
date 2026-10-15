@@ -348,3 +348,11 @@ To add one: edit the file (the GitHub web editor works from a phone), add a line
 It goes live with the next deploy. `npm run check:dictionary` checks the file for mistakes. A broken
 file is ignored (search still works, just without the dictionary). For a nickname that belongs to one
 species (e.g. "Goffin" for Goffin's Cockatoo), `scripts/species-aliases.js` is still the place.
+
+## Shipments
+
+`waybills.direction` stays `Outgoing`/`Incoming` in the database; the app calls them **Shipped** and
+**Received**. `waybills.status` (`Pending` | `Complete`, sql/009_waybills_status.sql) marks shipments
+that haven't left yet. Add Shipment (`#/business/shipping/new`) picks a client, lists the birds linked
+to them (contact's owned/purchasing birds plus birds in their transactions), lets you search any
+bird, and offers "Add New Bird" which returns to the shipment draft afterwards.

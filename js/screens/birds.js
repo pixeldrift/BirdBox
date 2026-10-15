@@ -9,6 +9,7 @@ const BirdsScreen = (function () {
   }
 
   function renderList(main, navigate) {
+    BirdsAddScreen.afterAdd = null;
     var state = { query: '', status: 'All' };
 
     var wrap = document.createElement('div');

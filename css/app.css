@@ -1260,3 +1260,27 @@ textarea.form-input {
 .about-footer p {
   margin: 4px 0;
 }
+
+/* Shipping states */
+.type-shipped { background: #F5E1DD; color: #A6543D; }
+.type-received { background: #E7EDE2; color: #4C6B45; }
+.type-pending { background: #F6ECD6; color: #96712B; }
+.list-count strong { font-weight: 800; color: var(--text, inherit); }
+
+/* Add shipment */
+.pick-box { position: relative; }
+.pick-results { margin-top: 6px; display: flex; flex-direction: column; gap: 6px; }
+.pick-option {
+  display: flex; justify-content: space-between; align-items: center; gap: 10px;
+  width: 100%; text-align: left; padding: 10px 12px; border: 1px solid #E8DDD1; border-radius: 12px;
+  background: var(--card-bg); font: inherit; color: inherit; cursor: pointer;
+}
+.pick-option small { color: var(--muted); }
+.pick-option.selected { border-color: #4C6B45; background: #E7EDE2; }
+.pick-empty { color: var(--muted); font-size: 0.9rem; margin: 4px 2px; }
+.pick-selected { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 6px; }
+.pick-link {
+  background: none; border: 0; padding: 6px 0; font: inherit; font-weight: 700;
+  color: #A6543D; cursor: pointer; text-align: left;
+}
+.toggle-chips { display: flex; gap: 8px; flex-wrap: wrap; }

@@ -221,7 +221,10 @@ const BirdsAddScreen = (function () {
       saveBtn.textContent = 'Saving…';
       addBirds([result.bird]).then(function (data) {
         if (data.created.length) {
-          navigate(data.created[0].id);
+          // Started from "Add New Bird" in a shipment? Hand the bird back to it.
+          var back = BirdsAddScreen.afterAdd;
+          BirdsAddScreen.afterAdd = null;
+          if (back) back(data.created[0]); else navigate(data.created[0].id);
         } else {
           throw new Error(data.rejected.length ? data.rejected[0].error : 'Could not save this bird');
         }
@@ -459,5 +462,5 @@ const BirdsAddScreen = (function () {
     output.appendChild(section);
   }
 
-  return { renderForm: renderForm, renderImport: renderImport, analyze: analyze, check: check };
+  return { afterAdd: null, renderForm: renderForm, renderImport: renderImport, analyze: analyze, check: check };
 })();
