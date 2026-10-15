@@ -1,0 +1,19 @@
+{
+  "how to edit": "Each line in \"groups\" is a set of words or phrases that mean the same thing when someone searches. Typing any one finds the others. This only widens searching; the names shown in the app never change. Add a line, keep the commas between lines, and save. The change goes live after the next deploy.",
+  "groups": [
+    ["grey", "gray"],
+    ["budgie", "budgy", "budgerigar", "budgerygah"],
+    ["cockatiel", "cockateel"],
+    ["mitchell", "mitchells", "mitchel", "mitchels", "mitchell's"],
+    ["goffin", "goffins", "goffin's"],
+    ["greencheek", "green cheek", "green cheeked", "greencheeked"],
+    ["lovebird", "love bird"],
+    ["cockatoo", "cocatoo", "cockatu"],
+    ["parakeet", "parrakeet"],
+    ["macaw", "maccaw"],
+    ["eclectus", "eclectis"],
+    ["caique", "caic", "kaique"],
+    ["quaker", "quacker"],
+    ["colour", "color"]
+  ]
+}

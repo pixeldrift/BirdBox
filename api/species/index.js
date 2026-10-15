@@ -1,5 +1,6 @@
 const { neon } = require('@neondatabase/serverless');
 const { normalize, escapeLike, toSpecies } = require('../_lib/species');
+const { expand } = require('../_lib/dictionary');
 
 const sql = neon(process.env.DATABASE_URL);
 
@@ -20,15 +21,17 @@ const SELECT = `
 // pass adds close spellings ("major mitchels" -> Major Mitchell's Cockatoo).
 async function search(q, limit, avicultureOnly) {
   const n = normalize(q);
-  const esc = escapeLike(n);
+  // Every spelling the search dictionary treats as the same thing (data/search-dictionary.json).
+  const variants = expand(n);
+  const escs = variants.map(escapeLike);
   const strict = await sql(`
     with hits as (
       select code, name, is_sci, bb_norm(name) as nn from (${NAMES}) n
     ), scored as (
       select code, name,
-        (case when nn = $6 then -1 when nn like $1 then 0 when nn like $2 then 1 else 2 end)
+        (case when nn = any($6::text[]) then -1 when nn like any($1::text[]) then 0 when nn like any($2::text[]) then 1 else 2 end)
           + (case when is_sci then 3 else 0 end) as rank
-      from hits where nn like $3
+      from hits where nn like any($3::text[])
     )
     ${SELECT},
            (array_agg(h.name order by h.rank, length(h.name)))[1] as matched_name,
@@ -38,7 +41,7 @@ async function search(q, limit, avicultureOnly) {
     group by s.code
     order by coalesce(s.aviculture_override, s.aviculture) desc, (min(h.rank) = -1) desc,
              (s.popularity > 0) desc, min(h.rank), s.popularity desc, s.taxon_order
-    limit $5`, [esc + '%', '% ' + esc + '%', '%' + esc + '%', avicultureOnly, limit, n]);
+    limit $5`, [escs.map((e) => e + '%'), escs.map((e) => '% ' + e + '%'), escs.map((e) => '%' + e + '%'), avicultureOnly, limit, variants]);
 
   let rows = strict;
   if (rows.length < Math.min(limit, 5) && n.length >= 4) {

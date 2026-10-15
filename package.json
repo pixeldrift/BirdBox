@@ -6,6 +6,7 @@
     "@neondatabase/serverless": "^0.10.4"
   },
   "scripts": {
-    "seed:species": "node scripts/seed-species.js"
+    "seed:species": "node scripts/seed-species.js",
+    "check:dictionary": "node scripts/check-dictionary.js"
   }
 }

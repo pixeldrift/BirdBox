@@ -336,3 +336,15 @@ was clearly seeded from the same kind of source.
 - Cost/Price/Deposit/Paid/Owe/Debt/Profit/Client Balance is a lot of overlapping money fields on
   Birds itself; Transactions is the real ledger, so most of these could become formulas/rollups
   off Transactions rather than manually-entered fields.
+
+## Search dictionary (spelling variants and nicknames)
+
+`data/search-dictionary.json` is an autocorrect-style list of word groups that mean the same thing
+when searching (e.g. `["grey", "gray"]`, `["budgie", "budgerigar"]`). It only widens searching —
+the species picker, the species search and CSV species matching all try every spelling in a group.
+Canonical and display names are never changed, and nothing is stored in the database.
+
+To add one: edit the file (the GitHub web editor works from a phone), add a line to `groups`, commit.
+It goes live with the next deploy. `npm run check:dictionary` checks the file for mistakes. A broken
+file is ignored (search still works, just without the dictionary). For a nickname that belongs to one
+species (e.g. "Goffin" for Goffin's Cockatoo), `scripts/species-aliases.js` is still the place.

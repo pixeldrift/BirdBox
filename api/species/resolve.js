@@ -1,5 +1,6 @@
 const { neon } = require('@neondatabase/serverless');
 const { normalize, toSpecies } = require('../_lib/species');
+const { expand } = require('../_lib/dictionary');
 
 const sql = neon(process.env.DATABASE_URL);
 
@@ -26,13 +27,16 @@ module.exports = async function handler(req, res) {
   }
   try {
     const norms = Array.from(new Set(names.map(normalize).filter(Boolean)));
+    // Each name is also tried under every spelling the search dictionary treats as equivalent.
+    const pairs = [];
+    norms.forEach((nn) => expand(nn).forEach((v) => pairs.push([nn, v])));
     const exact = norms.length ? await sql(`
       select q.nn, s.code, s.common_name, s.display_name, s.scientific_name, s.family_name, s.order_name,
              coalesce(s.aviculture_override, s.aviculture) as aviculture
-      from unnest($1::text[]) as q(nn)
-      join (${NAMES}) n on bb_norm(n.name) = q.nn
+      from unnest($1::text[], $2::text[]) as q(nn, vn)
+      join (${NAMES}) n on bb_norm(n.name) = q.vn
       join species s on s.code = n.code
-      group by q.nn, s.code`, [norms]) : [];
+      group by q.nn, s.code`, [pairs.map((p) => p[0]), pairs.map((p) => p[1])]) : [];
     const byNorm = new Map();
     exact.forEach((r) => {
       if (!byNorm.has(r.nn)) byNorm.set(r.nn, []);
