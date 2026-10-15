@@ -119,6 +119,14 @@ async function seed({ query, taxonomy, version, log = console.log }) {
   return { species: taxonomy.length, aliases: rows.length, unresolved };
 }
 
+// Downloads the current eBird taxonomy and its version label.
+async function loadTaxonomy() {
+  const taxonomy = await fetchJson(TAXONOMY_URL);
+  const versions = await fetchJson(VERSIONS_URL);
+  const latest = versions.find((v) => v.latest) || versions[0];
+  return { taxonomy, version: String(latest.authorityVer).replace(/\.0$/, '') };
+}
+
 async function main() {
   const fileArg = process.argv.indexOf('--file');
   let taxonomy, version;
@@ -126,10 +134,7 @@ async function main() {
     taxonomy = JSON.parse(require('fs').readFileSync(process.argv[fileArg + 1], 'utf8'));
     version = 'file';
   } else {
-    taxonomy = await fetchJson(TAXONOMY_URL);
-    const versions = await fetchJson(VERSIONS_URL);
-    const latest = versions.find((v) => v.latest) || versions[0];
-    version = String(latest.authorityVer).replace(/\.0$/, '');
+    ({ taxonomy, version } = await loadTaxonomy());
   }
   if (!process.env.DATABASE_URL) throw new Error('Set DATABASE_URL to your Neon connection string');
   const { neon } = require('@neondatabase/serverless');
@@ -141,4 +146,4 @@ if (require.main === module) {
   main().catch((err) => { console.error(err.message); process.exit(1); });
 }
 
-module.exports = { seed, buildAliases, isAviculture, displayName };
+module.exports = { seed, loadTaxonomy, buildAliases, isAviculture, displayName };

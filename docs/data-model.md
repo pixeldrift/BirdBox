@@ -224,7 +224,7 @@ hornbills, turacos, flamingos, falcons, starlings/mynas, no wild songbirds) and 
 the picker offers first.
 
 `species_names` holds alternate names (kind: common / trade / regional / historical /
-scientific_synonym / other, plus source) — about 280 today, from two places in
+scientific_synonym / other, plus source) — about 175 today, from two places in
 `scripts/species-aliases.js`: curated entries keyed by scientific name (Major Mitchell's Cockatoo
 for eBird's "Pink Cockatoo", Goffin's Cockatoo for "Tanimbar Corella", Quaker, Budgie, Jenday,
 Masked Lovebird, ...) and genus rules (Parakeet → Conure for the conure genera, Parrot → Caique for
@@ -259,7 +259,11 @@ and eBird name differently). A species with no art falls back through its genus,
 (`GENUS_NODE` / `FAMILY_NODE` / `ORDER_NODE` in `js/data/icon-taxonomy.js`, which gained a Pigeon &
 Dove node) before the generic bird, so any species in the list gets a sensible icon.
 
-**Setup order:** run `sql/007_species.sql` in Neon; `DATABASE_URL=... npm run seed:species`; then
+**Setup order:** run `sql/007_species.sql` in Neon; load the species with `DATABASE_URL=... npm run seed:species`
+— or, with no computer, set a `SEED_TOKEN` environment variable in Vercel, redeploy, open
+`/api/admin/seed-species?token=<SEED_TOKEN>` once (`api/admin/seed-species.js`: off unless the variable
+is set, downloads the public eBird taxonomy and upserts it, safe to repeat; delete the variable
+afterwards to switch it off); then
 `sql/008_birds_species.sql`, which links the existing birds by matching their old
 Species + Subspecies text against species names (and clears the subspecies it consumed) and ends by
 listing any birds it could not link. Until 007 and 008 are run the birds API still serves birds
