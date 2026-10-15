@@ -75,6 +75,51 @@ are still read-only screens with no way to add records through the app (Health h
 but no import). Follow the same pattern: `POST` on the existing `/api/*` endpoint accepting one
 or an array, shared client/server validation, preview-before-commit import.
 
+## Species lists & taxonomy (needs a real plan before the species lookup is built)
+
+Per the user: Species/Subspecies/Mutation must become a lookup table (filter-as-you-type, most
+popular / recently used first) rather than free text, but there's no definitive taxonomy to copy.
+Points to settle in the plan:
+
+- **No single source of truth.** Classifications are debated and names vary (the app already hit
+  this: "Sun Conure" vs Birdorable's "Sun Parakeet", "Quaker" vs "Monk Parakeet", "Indian Ringneck"
+  vs "Rose-ringed Parakeet"). The data structure needs **alternate names** as first-class data —
+  likely a names table (species id, name, kind: preferred/common/trade/regional/historical,
+  source) plus scientific-name synonyms — and a record of which taxonomy/version a species came
+  from, so annual revisions don't break existing birds.
+- **Where to draw the line.** Don't load every bird in the world into the working list. Note that
+  storage isn't the real constraint — a full world list (~11k species) is tiny for Postgres; the
+  Airtable slowdown was linked-record UI. What needs limiting is what the picker *shows*: an
+  "aviculture" tier (parrots, finches, pigeons/doves, waterfowl, poultry/gamefowl, softbills,
+  ratites, falconry raptors) as the default list, ranked by popularity and the user's own recent
+  use, with the rest of the world reachable by search and promoted into the user's list on first
+  use. Decide this with the user, with real breeders' species in hand.
+- **Aviculture groupings are separate from taxonomy** (already modeled: `TAXONOMY_NODES`), and
+  **mutations are aviculture-specific** — no reference list covers them, so they're our own table.
+- **Migration:** existing free-text Species/Subspecies/Mutation values need mapping onto the new
+  records (the names table is how); the add-bird form, CSV import and icon packs should all resolve
+  through species ids.
+- **Candidate sources already in hand:** `IOC_Names_File_Plus-12.1.Red.Draft.xlsx` and
+  `Bird Species Master List.txt` / `Bird Species.tsv` in the repo root, and the 840 Birdorable names
+  in `species-map.json`. Outside: the eBird/Clements taxonomy (free API, stable species codes).
+- **Taxonomy/icon gaps to fill when this happens:** pigeon and dove nodes (not in
+  `TAXONOMY_NODES` yet), finch subgroups.
+
+## Birds of the World (Cornell Lab) — reference + possible partnership
+
+Birds of the World is the primary reference the user wants to align with: a vast species database
+with illustrations for nearly every bird, and (like Birdorable) a potential cross-promotional
+partner. Open questions, none verified yet:
+
+- **Link out, don't copy.** Store a stable species code per species and link to its Birds of the
+  World page for details; no duplicated content. Hotlinking/embedding their *illustrations* as an
+  icon pack is a different matter — it needs their permission (content is licensed, and access may
+  be subscription-gated or technically blocked). Treat it as a partnership/licensing conversation
+  with the Cornell Lab, not an engineering workaround. If agreed, an icon pack can be a pure
+  reference (species code -> their image URL) with nothing copied into our repo.
+- Check whether the eBird/Clements species codes used by Birds of the World are the right key for
+  our species table.
+
 ## Persistent storage / backend
 
 Everything built so far (Birds, Contacts, Accounting, Health) lives in in-memory sample arrays
@@ -108,7 +153,8 @@ User uploaded two image folders to `src/images/`: **TeraTiger** (named files, fe
   representative icon for most other groups (raptors, gulls, waterfowl, ratites, toucans, ...).
   Adding more is a data change: new taxonomy node (if needed) + `icons`/`subspeciesOverrides`
   entries. About 700 mapped species are not wired in yet because they have no taxonomy node; pick
-  the groups that matter to the user's breeders (songbirds and finches are the obvious next step).
+  the groups that matter to the user's breeders. Per the user: **finches and pigeons/doves** are
+  commonly kept (add nodes + icons for those); wild/native songbirds are rare in aviculture, so skip them.
   Per the user, the intent is a **cross-promotional partnership** — credit + a shop link back to
   Birdorable (`meetUrl` per species) so users can buy matching merch for their birds — worth
   confirming/formalizing that relationship before this pack ships to real users.
