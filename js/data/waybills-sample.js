@@ -56,3 +56,80 @@ function birdsLinkedToClient(client) {
   TRANSACTIONS_SAMPLE.forEach(function (tx) { if (tx.clientId === client.id) add(tx.birdId); });
   return ids.map(getBird).filter(Boolean);
 }
+
+// How a shipment travelled. Empty = not recorded. Nothing here assumes a flight.
+var SHIP_METHODS = ['Air cargo', 'Courier', 'Ground delivery', 'In person', 'Other'];
+
+// Kinds of attachment on a shipment.
+var SHIP_FILE_KINDS = {
+  photo: 'Photos',
+  receipt: 'Receipt',
+  waybill: 'Waybill',
+};
+
+var SHIP_FILE_MAX_BYTES = 3 * 1024 * 1024;
+
+function readAsDataUrl(blob) {
+  return new Promise(function (resolve, reject) {
+    var r = new FileReader();
+    r.onload = function () { resolve(r.result); };
+    r.onerror = function () { reject(new Error('Could not read that file')); };
+    r.readAsDataURL(blob);
+  });
+}
+
+// Photos are shrunk to a sensible size before upload (phone photos are huge); PDFs go as they are.
+function prepareShipFile(file) {
+  var isImage = /^image\//.test(file.type);
+  if (!isImage) {
+    if (file.type !== 'application/pdf') return Promise.reject(new Error('Use a photo or a PDF'));
+    if (file.size > SHIP_FILE_MAX_BYTES) return Promise.reject(new Error(file.name + ' is over 3 MB — try a smaller PDF or a photo of it'));
+    return readAsDataUrl(file).then(function (url) { return { contentType: file.type, filename: file.name, data: url.split(',')[1] }; });
+  }
+  return new Promise(function (resolve, reject) {
+    var img = new Image();
+    var src = URL.createObjectURL(file);
+    img.onload = function () {
+      var scale = Math.min(1, 1600 / Math.max(img.width, img.height));
+      var canvas = document.createElement('canvas');
+      canvas.width = Math.round(img.width * scale);
+      canvas.height = Math.round(img.height * scale);
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      URL.revokeObjectURL(src);
+      var url = canvas.toDataURL('image/jpeg', 0.82);
+      var name = (file.name || 'photo').replace(/\.[^.]+$/, '') + '.jpg';
+      if (url.length * 0.75 > SHIP_FILE_MAX_BYTES) return reject(new Error(file.name + ' is too large'));
+      resolve({ contentType: 'image/jpeg', filename: name, data: url.split(',')[1] });
+    };
+    img.onerror = function () {
+      URL.revokeObjectURL(src);
+      reject(new Error('Couldn’t open ' + (file.name || 'that image') + ' — try a JPG or PNG'));
+    };
+    img.src = src;
+  });
+}
+
+// Uploads one file to a saved shipment and adds it to the local record.
+function addWaybillFile(wb, kind, file) {
+  return prepareShipFile(file).then(function (prepared) {
+    return fetch('/api/waybills/files', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ waybillId: wb.id, kind: kind, filename: prepared.filename, contentType: prepared.contentType, data: prepared.data }),
+    });
+  }).then(function (res) {
+    return res.json().then(function (body) {
+      if (!res.ok) throw new Error(body.error || 'Upload failed');
+      wb.files = wb.files || [];
+      wb.files.push(body);
+      return body;
+    });
+  });
+}
+
+function removeWaybillFile(wb, fileId) {
+  return fetch('/api/waybills/files?id=' + encodeURIComponent(fileId), { method: 'DELETE' }).then(function (res) {
+    if (!res.ok) throw new Error('Could not remove that file');
+    wb.files = (wb.files || []).filter(function (f) { return f.id !== fileId; });
+  });
+}

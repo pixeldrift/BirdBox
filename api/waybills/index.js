@@ -4,16 +4,21 @@ const sql = neon(process.env.DATABASE_URL);
 
 const DIRECTIONS = ['Outgoing', 'Incoming'];
 const STATUSES = ['Pending', 'Complete'];
+const METHODS = ['Air cargo', 'Courier', 'Ground delivery', 'In person', 'Other'];
+
+const SETUP_NEEDED = 'This needs one more setup step — run sql/009_waybills_status.sql and sql/010_shipments.sql in Neon.';
 
 function isoDate(v) {
   if (!v) return null;
   return v instanceof Date ? v.toISOString().slice(0, 10) : String(v).slice(0, 10);
 }
 
-function toWaybill(row) {
+function toWaybill(row, files) {
   return {
     id: row.id,
     waybillNumber: row.waybill_number,
+    method: row.method || '',
+    carrier: row.carrier || '',
     direction: row.direction,
     // Rows from before sql/009_waybills_status.sql have no status: they already happened.
     status: row.status || 'Complete',
@@ -24,7 +29,26 @@ function toWaybill(row) {
     arrivingAirport: row.arriving_airport,
     cost: row.cost === null ? null : Number(row.cost),
     notes: row.notes,
+    files: (files || []).map(toFile),
   };
+}
+
+function toFile(f) {
+  return { id: f.id, kind: f.kind, filename: f.filename, contentType: f.content_type, size: f.size, url: '/api/waybills/files?id=' + encodeURIComponent(f.id) };
+}
+
+// File details only (never the bytes). Empty if the files table hasn't been created yet.
+async function loadFiles(ids) {
+  if (!ids.length) return [];
+  try {
+    return await sql`select id, waybill_id, kind, filename, content_type, size from waybill_files where waybill_id = any(${ids}) order by created_at`;
+  } catch (err) {
+    return [];
+  }
+}
+
+function withFiles(rows, files) {
+  return rows.map((r) => toWaybill(r, files.filter((f) => f.waybill_id === r.id)));
 }
 
 function isRealDate(s) {
@@ -44,8 +68,10 @@ function cleanNewWaybill(input) {
   if (!direction) return { error: 'Choose Shipped or Received' };
   const status = b.status === undefined ? 'Complete' : STATUSES.find((s) => s === b.status);
   if (!status) return { error: 'Status must be Pending or Complete' };
-  const date = str(b.date, 10);
-  if (!isRealDate(date)) return { error: 'Enter a real date' };
+  const date = str(b.date, 10) || null;
+  if (date && !isRealDate(date)) return { error: 'Enter a real date' };
+  const method = b.method ? METHODS.find((m) => m === b.method) : '';
+  if (method === undefined) return { error: 'Choose how it travelled from the list' };
   let cost = null;
   if (b.cost !== undefined && b.cost !== null && String(b.cost).trim() !== '') {
     cost = Number(b.cost);
@@ -53,9 +79,12 @@ function cleanNewWaybill(input) {
   }
   const birdIds = Array.isArray(b.birdIds) ? Array.from(new Set(b.birdIds.map((x) => str(x, 40)).filter(Boolean))) : [];
   if (birdIds.length > 100) return { error: 'Too many birds in one shipment' };
+  const hasSomething = birdIds.length || str(b.clientId, 40) || str(b.departingAirport, 60) || str(b.arrivingAirport, 60) || str(b.notes, 2000);
+  if (!hasSomething) return { error: 'Add at least a bird, a client, where it went, or a note' };
   return {
     waybill: {
-      direction, status, date, cost, birdIds,
+      direction, status, date, cost, birdIds, method,
+      carrier: str(b.carrier, 120),
       waybillNumber: str(b.waybillNumber, 60),
       clientId: str(b.clientId, 40) || null,
       departingAirport: str(b.departingAirport, 60),
@@ -68,8 +97,8 @@ function cleanNewWaybill(input) {
 module.exports = async function handler(req, res) {
   if (req.method === 'GET') {
     try {
-      const rows = await sql`select * from waybills order by date desc`;
-      res.status(200).json(rows.map(toWaybill));
+      const rows = await sql`select * from waybills order by date desc nulls last, id`;
+      res.status(200).json(withFiles(rows, await loadFiles(rows.map((r) => r.id))));
     } catch (err) {
       res.status(500).json({ error: 'Failed to load waybills' });
     }
@@ -96,18 +125,17 @@ module.exports = async function handler(req, res) {
       let rows;
       try {
         rows = await sql`
-          insert into waybills (id, waybill_number, direction, status, date, client_id, bird_ids, departing_airport, arriving_airport, cost, notes)
-          values (${id}, ${w.waybillNumber}, ${w.direction}, ${w.status}, ${w.date}, ${w.clientId}, ${w.birdIds}, ${w.departingAirport}, ${w.arrivingAirport}, ${w.cost}, ${w.notes})
+          insert into waybills (id, waybill_number, direction, status, method, carrier, date, client_id, bird_ids, departing_airport, arriving_airport, cost, notes)
+          values (${id}, ${w.waybillNumber}, ${w.direction}, ${w.status}, ${w.method}, ${w.carrier}, ${w.date}, ${w.clientId}, ${w.birdIds}, ${w.departingAirport}, ${w.arrivingAirport}, ${w.cost}, ${w.notes})
           returning *`;
       } catch (err) {
-        if (!/column "status"/.test(String(err && err.message))) throw err;
-        if (w.status === 'Pending') { res.status(409).json({ error: 'Pending shipments need one more setup step (sql/009_waybills_status.sql).' }); return; }
-        rows = await sql`
-          insert into waybills (id, waybill_number, direction, date, client_id, bird_ids, departing_airport, arriving_airport, cost, notes)
-          values (${id}, ${w.waybillNumber}, ${w.direction}, ${w.date}, ${w.clientId}, ${w.birdIds}, ${w.departingAirport}, ${w.arrivingAirport}, ${w.cost}, ${w.notes})
-          returning *`;
+        if (/column "(status|method|carrier)"|null value in column "date"/.test(String(err && err.message))) {
+          res.status(409).json({ error: SETUP_NEEDED });
+          return;
+        }
+        throw err;
       }
-      res.status(201).json(toWaybill(rows[0]));
+      res.status(201).json(toWaybill(rows[0], []));
     } catch (err) {
       res.status(500).json({ error: 'Failed to save shipment' });
     }

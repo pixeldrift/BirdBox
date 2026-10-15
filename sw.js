@@ -1,4 +1,4 @@
-const CACHE = 'birdbox-shell-v16';
+const CACHE = 'birdbox-shell-v17';
 const ASSETS = [
   './',
   './index.html',

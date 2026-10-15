@@ -1,12 +1,16 @@
-// Add a shipment (#/business/shipping/new). Pick Shipped or Received, optionally Pending
-// (hasn't left yet), then choose a client — which lists the birds linked to them — and/or
-// search any bird, or add a brand-new bird without losing the shipment you were filling in.
+// Add a shipment (#/business/shipping/new). A shipment doesn't have to be a flight: it can be
+// air cargo, a courier, a delivery, or a handoff in person — and you can record as little or as
+// much as you remember. Choose a client to see the birds linked to them, or search any bird;
+// "Add New Bird" lives in the search results for when the bird isn't there yet.
 const ShippingAddScreen = (function () {
   // Survives the trip to the Add Bird form and back (this is a single-page app).
   var draft = null;
 
   function newDraft() {
-    return { direction: 'Outgoing', pending: false, date: '', departing: '', arriving: '', waybill: '', cost: '', notes: '', clientId: '', birdIds: [] };
+    return {
+      direction: 'Outgoing', pending: false, method: '', carrier: '', date: '', from: '', to: '',
+      waybill: '', cost: '', notes: '', clientId: '', birdIds: [], files: { photo: [], receipt: [], waybill: [] },
+    };
   }
 
   function el(tag, cls, text) {
@@ -87,24 +91,20 @@ const ShippingAddScreen = (function () {
     // Client -> their birds.
     var clientBox = section('Client', 'Optional. Choose one to see the birds linked to them.');
     var clientSearch = input('search', { placeholder: 'Search clients…' });
-    clientSearch.className = 'form-input';
     var clientOut = el('div', 'pick-results');
     clientBox.appendChild(clientSearch);
     clientBox.appendChild(clientOut);
 
-    // Birds.
+    // Birds: what's chosen, the client's birds, then a search whose last option adds a new bird.
     var birdBox = section('Birds');
     var chosen = el('div', 'pick-selected');
     var linkedOut = el('div', 'pick-results');
     var birdSearch = input('search', { placeholder: 'Search any bird by band, name or species…' });
     var birdOut = el('div', 'pick-results');
-    var addNew = el('button', 'pick-link', '+ Add New Bird');
-    addNew.type = 'button';
     birdBox.appendChild(chosen);
     birdBox.appendChild(linkedOut);
     birdBox.appendChild(birdSearch);
     birdBox.appendChild(birdOut);
-    birdBox.appendChild(addNew);
 
     function birdOption(b, note) {
       var picked = draft.birdIds.indexOf(b.id) !== -1;
@@ -154,18 +154,26 @@ const ShippingAddScreen = (function () {
       });
     }
 
+    function addNewBird() {
+      keepDetails();
+      BirdsAddScreen.afterAdd = function (bird) {
+        if (draft.birdIds.indexOf(bird.id) === -1) draft.birdIds.push(bird.id);
+        location.hash = '#/business/shipping/new';
+      };
+      location.hash = '#/mybirds/birds/new';
+    }
+
     function drawBirds() {
       clearEl(chosen);
       draft.birdIds.map(getBird).filter(Boolean).forEach(function (b) {
-        var chip = makeChip('', birdShortLabel(b) + ' ✕', function () { toggleBird(b.id); });
-        chosen.appendChild(chip);
+        chosen.appendChild(makeChip('', birdShortLabel(b) + ' ✕', function () { toggleBird(b.id); }));
       });
 
       clearEl(linkedOut);
       var client = draft.clientId ? getContact(draft.clientId) : null;
       if (client) {
         var linked = birdsLinkedToClient(client);
-        linkedOut.appendChild(el('p', 'form-note', linked.length ? 'Birds linked to ' + client.name + ':' : 'No birds are linked to ' + client.name + ' yet — search below or add a new bird.'));
+        linkedOut.appendChild(el('p', 'form-note', linked.length ? 'Birds linked to ' + client.name + ':' : 'No birds are linked to ' + client.name + ' yet — search for one below.'));
         linked.forEach(function (b) { linkedOut.appendChild(birdOption(b, 'Add')); });
       }
 
@@ -175,25 +183,29 @@ const ShippingAddScreen = (function () {
         var found = BIRDS_SAMPLE.filter(function (b) { return matches(b, q); }).slice(0, 8);
         if (!found.length) birdOut.appendChild(el('p', 'pick-empty', 'No birds match that.'));
         found.forEach(function (b) { birdOut.appendChild(birdOption(b)); });
+        var add = el('button', 'pick-option add-new', '+ Add New Bird');
+        add.type = 'button';
+        add.addEventListener('click', addNewBird);
+        birdOut.appendChild(add);
       }
     }
 
     clientSearch.addEventListener('input', drawClient);
     birdSearch.addEventListener('input', drawBirds);
 
-    addNew.addEventListener('click', function () {
-      keepDetails();
-      BirdsAddScreen.afterAdd = function (bird) {
-        if (draft.birdIds.indexOf(bird.id) === -1) draft.birdIds.push(bird.id);
-        location.hash = '#/business/shipping/new';
-      };
-      location.hash = '#/mybirds/birds/new';
-    });
-
-    // Trip details.
+    // How it travelled and who handled it — all optional.
+    var method = el('select', 'form-input');
+    [{ value: '', label: 'Not sure / not recorded' }].concat(SHIP_METHODS.map(function (m) { return { value: m, label: m }; }))
+      .forEach(function (o) {
+        var opt = el('option', '', o.label);
+        opt.value = o.value;
+        method.appendChild(opt);
+      });
+    method.value = draft.method;
+    var carrier = input('text', { placeholder: 'e.g. Delta Cargo, FedEx, “drove it myself”', value: draft.carrier });
+    var from = input('text', { placeholder: 'A person, place or airport', value: draft.from });
+    var to = input('text', { placeholder: 'A person, place or airport', value: draft.to });
     var date = input('date', { value: draft.date });
-    var departing = input('text', { placeholder: 'e.g. LAX', value: draft.departing });
-    var arriving = input('text', { placeholder: 'e.g. DEN', value: draft.arriving });
     var waybill = input('text', { placeholder: 'Optional', value: draft.waybill });
     var cost = input('number', { min: '0', step: '0.01', placeholder: '0.00', value: draft.cost });
     var notes = el('textarea', 'form-input');
@@ -201,42 +213,92 @@ const ShippingAddScreen = (function () {
     notes.value = draft.notes;
 
     function keepDetails() {
-      draft.date = date.value; draft.departing = departing.value; draft.arriving = arriving.value;
-      draft.waybill = waybill.value; draft.cost = cost.value; draft.notes = notes.value;
+      draft.method = method.value; draft.carrier = carrier.value; draft.date = date.value;
+      draft.from = from.value; draft.to = to.value; draft.waybill = waybill.value;
+      draft.cost = cost.value; draft.notes = notes.value;
     }
+
+    // Files to attach once the shipment is saved.
+    var attachBox = section('Photos & papers', 'Optional. Photos of the crate or the handoff, the shipping receipt, a copy of the waybill.');
+    var attachList = el('div');
+    function drawAttach() {
+      clearEl(attachList);
+      [['photo', '+ Add Photos', 'image/*'], ['receipt', '+ Add Receipt', 'image/*,application/pdf'], ['waybill', '+ Add Waybill', 'image/*,application/pdf']].forEach(function (k) {
+        draft.files[k[0]].forEach(function (f, i) {
+          var row = el('div', 'file-row');
+          row.appendChild(el('span', '', SHIP_FILE_KINDS[k[0]] + ': ' + (f.name || 'file')));
+          var x = el('button', 'file-remove', '✕');
+          x.type = 'button';
+          x.addEventListener('click', function () { draft.files[k[0]].splice(i, 1); drawAttach(); });
+          row.appendChild(x);
+          attachList.appendChild(row);
+        });
+        var btn = el('label', 'add-record-btn photo-upload-btn', k[1]);
+        var fi = document.createElement('input');
+        fi.type = 'file';
+        fi.accept = k[2];
+        fi.multiple = true;
+        fi.hidden = true;
+        fi.addEventListener('change', function () {
+          Array.prototype.forEach.call(fi.files, function (f) { draft.files[k[0]].push(f); });
+          drawAttach();
+        });
+        btn.appendChild(fi);
+        attachList.appendChild(btn);
+      });
+    }
+    attachBox.appendChild(attachList);
 
     var errorBox = el('div');
     var saveBtn = el('button', 'save-btn', 'Save Shipment');
     saveBtn.type = 'submit';
 
-    [typeField, clientBox, birdBox, field('Date', date, 'The day it went out or arrived — or the planned day, if pending.'),
-      field('From (airport or city)', departing), field('To (airport or city)', arriving), field('Waybill #', waybill),
-      field('Cost', cost), field('Notes', notes), errorBox, saveBtn].forEach(function (e) { form.appendChild(e); });
+    [typeField, clientBox, birdBox, field('How did it travel?', method), field('Handled by', carrier, 'Courier, airline, or the person who carried it.'),
+      field('From', from, 'Who or where it came from — as much as you know.'), field('To', to),
+      field('Date', date, 'Leave blank if you don’t remember. For a pending shipment, the planned day.'),
+      field('Waybill / tracking #', waybill), attachBox, field('Notes', notes),
+      field('Cost', cost, 'Optional — the cost is also tracked in Accounting.'), errorBox, saveBtn].forEach(function (e) { form.appendChild(e); });
 
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       keepDetails();
       clearEl(errorBox);
-      function fail(msg) { var p = el('p', 'form-message error', msg); errorBox.appendChild(p); }
-      if (!draft.date) { fail('Choose a date'); return; }
+      function note(kind, msg) { errorBox.appendChild(el('p', 'form-message ' + kind, msg)); }
       saveBtn.disabled = true;
       saveBtn.textContent = 'Saving…';
       addWaybill({
-        direction: draft.direction, status: draft.pending ? 'Pending' : 'Complete', date: draft.date,
-        clientId: draft.clientId || null, birdIds: draft.birdIds, departingAirport: draft.departing,
-        arrivingAirport: draft.arriving, waybillNumber: draft.waybill, cost: draft.cost, notes: draft.notes,
+        direction: draft.direction, status: draft.pending ? 'Pending' : 'Complete', date: draft.date || null,
+        method: draft.method, carrier: draft.carrier, clientId: draft.clientId || null, birdIds: draft.birdIds,
+        departingAirport: draft.from, arrivingAirport: draft.to, waybillNumber: draft.waybill, cost: draft.cost, notes: draft.notes,
       }).then(function (wb) {
-        draft = null;
-        navigate(wb.id);
+        var jobs = [];
+        Object.keys(draft.files).forEach(function (kind) {
+          draft.files[kind].forEach(function (f) { jobs.push([kind, f]); });
+        });
+        var failed = [];
+        return jobs.reduce(function (chain, j) {
+          return chain.then(function () {
+            return addWaybillFile(wb, j[0], j[1]).catch(function (err) { failed.push(err.message); });
+          });
+        }, Promise.resolve()).then(function () {
+          draft = null;
+          if (!failed.length) { navigate(wb.id); return; }
+          note('error', 'The shipment was saved, but ' + failed.length + (failed.length === 1 ? ' file' : ' files') + ' didn’t upload: ' + failed.join('; ') + '. You can add them on the shipment.');
+          var open = el('button', 'save-btn', 'Open Shipment');
+          open.type = 'button';
+          open.addEventListener('click', function () { navigate(wb.id); });
+          saveBtn.replaceWith(open);
+        });
       }).catch(function (err) {
         saveBtn.disabled = false;
         saveBtn.textContent = 'Save Shipment';
-        fail(err.message);
+        note('error', err.message);
       });
     });
 
     drawClient();
     drawBirds();
+    drawAttach();
     wrap.appendChild(form);
     main.appendChild(wrap);
   }

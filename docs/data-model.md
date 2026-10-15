@@ -356,3 +356,11 @@ species (e.g. "Goffin" for Goffin's Cockatoo), `scripts/species-aliases.js` is s
 that haven't left yet. Add Shipment (`#/business/shipping/new`) picks a client, lists the birds linked
 to them (contact's owned/purchasing birds plus birds in their transactions), lets you search any
 bird, and offers "Add New Bird" which returns to the shipment draft afterwards.
+
+Shipments aren't always flights. `waybills.method` (Air cargo / Courier / Ground delivery / In person /
+Other, or blank), `carrier` (who handled it), and free-text `departing_airport` / `arriving_airport`
+(shown in the app as **From** / **To** — a person, place or airport) are all optional, and so is the
+date, so a shipment can be recorded from memory with whatever is known. Photos, the shipping receipt
+and a waybill copy are stored per shipment in `waybill_files` (sql/010_shipments.sql; images are
+shrunk in the browser, files capped at 3 MB, stored in Postgres). Cost stays as an optional field —
+the ledger of record is Accounting.
