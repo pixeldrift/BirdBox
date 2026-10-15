@@ -111,7 +111,12 @@ const BirdsScreen = (function () {
 
     var sub = document.createElement('span');
     sub.className = 'list-row-sub';
-    sub.textContent = bird.band + ' · ' + bird.sex + (bird.mutation ? ' · ' + bird.mutation : '');
+    var sexWord = document.createElement('span');
+    sexWord.className = sexTextClass(bird.sex);
+    sexWord.textContent = bird.sex;
+    sub.appendChild(document.createTextNode(bird.band + ' · '));
+    sub.appendChild(sexWord);
+    if (bird.mutation) sub.appendChild(document.createTextNode(' · ' + bird.mutation));
 
     info.appendChild(title);
     info.appendChild(sub);
@@ -175,7 +180,7 @@ const BirdsScreen = (function () {
     factsGrid.className = 'fact-grid';
     [
       ['Band #', bird.band],
-      ['Sex', bird.sex],
+      ['Sex', bird.sex, sexTextClass(bird.sex)],
     ].concat(speciesFacts(bird)).concat([
       ['Mutation', bird.mutation || '—'],
       ['Hatch Date', formatDate(bird.hatchDate)],

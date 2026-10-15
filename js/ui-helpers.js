@@ -111,6 +111,11 @@ function makeToggle(checked, labelText, onChange) {
   return row;
 }
 
+// The CSS class that tints the word Male / Female (or leaves Unsexed neutral).
+function sexTextClass(sex) {
+  return sex === 'Male' ? 'sex-male' : sex === 'Female' ? 'sex-female' : 'sex-unsexed';
+}
+
 // Fills an avatar container (.list-row-avatar or .detail-avatar) with the bird's primary
 // photo if it has one (full-bleed, object-fit: cover), else the taxonomy-resolved species
 // icon (small, centered) on a sex-coloured tile — see js/data/icon-taxonomy.js. Depends on birdPrimaryPhoto()
@@ -120,6 +125,7 @@ function fillBirdAvatar(container, bird) {
   // The tile behind the icon is blue for males, pink for females, light gray if unsexed.
   container.classList.remove('avatar-male', 'avatar-female', 'avatar-unsexed');
   container.classList.add(bird.sex === 'Male' ? 'avatar-male' : bird.sex === 'Female' ? 'avatar-female' : 'avatar-unsexed');
+  container.classList.toggle('avatar-framed', !!birdPrimaryPhoto(bird)); // photos get a 2px frame in the same colour
   var photo = birdPrimaryPhoto(bird);
   var img = document.createElement('img');
   img.alt = '';

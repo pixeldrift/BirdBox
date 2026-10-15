@@ -427,6 +427,13 @@ h1, h2, h3 {
 .list-row-avatar.avatar-female, .detail-avatar.avatar-female { background: #F7D9E4; }
 .list-row-avatar.avatar-unsexed, .detail-avatar.avatar-unsexed { background: #E7E5E2; }
 
+.list-row-avatar.avatar-framed, .detail-avatar.avatar-framed { border: 2px solid; box-sizing: border-box; }
+.avatar-framed.avatar-male { border-color: #7FB0DB; }
+.avatar-framed.avatar-female { border-color: #E58FB0; }
+.avatar-framed.avatar-unsexed { border-color: #C9C6C2; }
+.sex-male { color: #3F76A8; font-weight: 700; }
+.sex-female { color: #B8506F; font-weight: 700; }
+
 .detail-title {
   display: flex;
   flex-direction: column;

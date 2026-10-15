@@ -12,7 +12,7 @@ const RegistrySearchScreen = (function () {
       ['Band #', bird.band],
     ].concat(speciesFacts(bird)).concat([
       ['Mutation', bird.mutation || '—'],
-      ['Sex', bird.sex],
+      ['Sex', bird.sex, sexTextClass(bird.sex)],
       ['Hatch Date', formatDate(bird.hatchDate)],
     ]);
   }
