@@ -178,6 +178,20 @@ How it fits the plan above:
 - **Illustrations from BOW itself** remain a permission/licensing question for the Cornell Lab
   (a partnership, like Birdorable); linking out needs no permission.
 
+## Credits, partners and affiliate links
+
+Account -> Credits (`js/screens/credits.js`, data in `js/data/credits.js`) lists the sources, artists
+and partners behind the app with a short description of each and an external link: Birds of the
+World, eBird / the Clements Checklist, Avibase, the IOC list, Birdorable, TeraTigerStudio, and the
+typefaces. Adding one is a single entry in the data file. Each entry has a `relationship`
+(`courtesy` by default, `partner`, or `affiliate`); partner and affiliate entries are labelled on
+screen, can carry a `disclosure` line, and affiliate links are marked `rel="sponsored"`, so turning a
+courtesy link into a paid or cross-promotion one later is a data change plus the agreement itself.
+Still to do: add the recommended mutation/genetics references once their addresses are checked
+(see the Mutations section); check Avibase's address in a browser (it refused automated requests when
+tested); confirm the Birdorable and Cornell relationships before any link is marked partner;
+consider a per-species "shop" link using Birdorable's `meetUrl` once that agreement exists.
+
 ## Persistent storage / backend
 
 Everything built so far (Birds, Contacts, Accounting, Health) lives in in-memory sample arrays

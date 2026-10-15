@@ -69,6 +69,16 @@ const SettingsScreen = (function () {
     });
     section.appendChild(list);
 
+    var credit = document.createElement('p');
+    credit.className = 'form-note';
+    credit.appendChild(document.createTextNode('The artwork in these styles belongs to its artists. '));
+    var creditLink = document.createElement('a');
+    creditLink.className = 'ext-link';
+    creditLink.href = '#/account/credits';
+    creditLink.textContent = 'See Credits';
+    credit.appendChild(creditLink);
+    section.appendChild(credit);
+
     if (getIconPacks().length === 1) {
       var moreNote = document.createElement('p');
       moreNote.className = 'form-note';

@@ -1137,3 +1137,66 @@ textarea.form-input {
   background: #EEF0E4;
   color: var(--text);
 }
+
+/* Credits */
+
+.credit-item {
+  padding: 14px 0;
+  border-top: 1px solid #EEE3D6;
+}
+
+.credit-item:first-of-type {
+  border-top: none;
+}
+
+.credit-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.credit-name {
+  margin: 0;
+  font-family: 'Bree Serif', serif;
+  font-weight: 400;
+  font-size: 1.02rem;
+}
+
+.credit-tag {
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: #F6ECD6;
+  color: #96712B;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.credit-by {
+  margin: 2px 0 6px;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.credit-description {
+  margin: 0 0 6px;
+  line-height: 1.45;
+  font-size: 0.9rem;
+}
+
+.credit-used {
+  margin: 0 0 6px;
+  font-size: 0.8rem;
+  color: var(--muted);
+  font-style: italic;
+}
+
+.credit-disclosure {
+  margin: 0 0 6px;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.credit-blurb {
+  margin: -4px 0 6px;
+}
