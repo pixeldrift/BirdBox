@@ -3,7 +3,8 @@
 const ABOUT = {
   tagline: 'A cozy home for your birds’ records.',
   intro: 'BirdBox helps bird breeders keep track of their flock — who’s who, who’s related, how everyone’s doing, and the business side too — all in one friendly place.',
-  creator: 'Nathan',
+  creator: 'Nathan D. B. Pizar',
+  contactEmail: 'nathan@pizar.net',
   copyrightStartYear: 2026,
   audience: 'Made for bird breeders — hobbyists and small aviaries who want their records tidy, in one place, and easy to find when they need them.',
 

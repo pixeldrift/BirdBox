@@ -16,7 +16,11 @@ const AboutScreen = (function () {
     hero.appendChild(el('h3', 'about-name', 'BirdBox'));
     hero.appendChild(el('p', 'about-tagline', ABOUT.tagline));
     hero.appendChild(el('p', 'notes-text', ABOUT.intro));
-    hero.appendChild(el('p', 'about-byline', 'Created by ' + ABOUT.creator));
+    var byline = el('p', 'about-byline', 'Created by ' + ABOUT.creator + '. Questions or ideas? ');
+    var mail = el('a', 'ext-link', ABOUT.contactEmail);
+    mail.href = 'mailto:' + ABOUT.contactEmail;
+    byline.appendChild(mail);
+    hero.appendChild(byline);
     wrap.appendChild(hero);
 
     var who = el('div', 'detail-section');
