@@ -51,6 +51,30 @@ than duplicating band #, species, photos, etc. into a separate listing. Keep thi
 Classifieds and Registry -> Lost & Found get built — reach for "link to the existing record" over
 "re-enter the data" by default.
 
+## Data linking / import-mapping tool (separate project — integrate later)
+
+The user is building a **separate data-linking tool** that matches data fields between formats
+and lets you visually map/transfer them. Plan to integrate it here eventually rather than grow a
+bespoke importer. Where it would plug in:
+
+- **Birds -> Import CSV** (`js/screens/birds-add.js`) today only accepts BirdBox's own template
+  (headers matched case/space-insensitively, nothing else). With the linking tool, a breeder could
+  upload *any* spreadsheet (AviMate export, their own sheet, the old Airtable base), visually map
+  its columns onto BirdBox fields, and feed the result through the same validation/preview step
+  and `POST /api/birds` batch endpoint — those pieces are already field-mapping-agnostic.
+- Same idea for the other record types (Contacts, Transactions, Health, Waybills) once they get
+  add/import flows, and for **export** to other formats.
+- `js/csv.js` is deliberately generic (parse/stringify/download) so it can be shared.
+
+Not started — hold until the tool exists; don't build a column-mapping UI here in the meantime.
+
+## Add / import for the other record types
+
+Birds now has an add form and CSV batch import. Contacts, Transactions, Waybills, and Buildings
+are still read-only screens with no way to add records through the app (Health has an add form
+but no import). Follow the same pattern: `POST` on the existing `/api/*` endpoint accepting one
+or an array, shared client/server validation, preview-before-commit import.
+
 ## Persistent storage / backend
 
 Everything built so far (Birds, Contacts, Accounting, Health) lives in in-memory sample arrays

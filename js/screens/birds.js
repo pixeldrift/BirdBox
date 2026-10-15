@@ -14,6 +14,17 @@ const BirdsScreen = (function () {
     var wrap = document.createElement('div');
     wrap.className = 'list-screen';
 
+    var actions = document.createElement('div');
+    actions.className = 'list-actions';
+    [['+ Add Bird', 'new'], ['Import CSV', 'import']].forEach(function (a) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'add-record-btn';
+      btn.textContent = a[0];
+      btn.addEventListener('click', function () { navigate(a[1]); });
+      actions.appendChild(btn);
+    });
+
     var searchInput = document.createElement('input');
     searchInput.type = 'search';
     searchInput.placeholder = 'Search band #, name, species…';
@@ -73,6 +84,7 @@ const BirdsScreen = (function () {
 
     draw();
 
+    wrap.appendChild(actions);
     wrap.appendChild(searchInput);
     wrap.appendChild(chipsWrap);
     wrap.appendChild(countLabel);
@@ -120,6 +132,9 @@ const BirdsScreen = (function () {
     // "refresh myself" callback (Registry toggle, photo upload/primary switch) — without
     // this, a second call appends another copy instead of replacing the first.
     clearEl(main);
+
+    if (id === 'new') return BirdsAddScreen.renderForm(main, navigate, setTitle);
+    if (id === 'import') return BirdsAddScreen.renderImport(main, navigate, setTitle);
 
     var bird = getBird(id);
     if (!bird) {
