@@ -187,7 +187,7 @@ const ContactsScreen = (function () {
         var ownedRow = document.createElement('div');
         ownedRow.className = 'chip-row';
         owned.forEach(function (b) {
-          ownedRow.appendChild(makeChip(null, birdShortLabel(b), function () { goToBird(b.id); }));
+          ownedRow.appendChild(birdChip(b, function () { goToBird(b.id); }));
         });
         birdsSection.appendChild(ownedRow);
       }
@@ -200,7 +200,7 @@ const ContactsScreen = (function () {
         var purchasingRow = document.createElement('div');
         purchasingRow.className = 'chip-row';
         purchasing.forEach(function (b) {
-          purchasingRow.appendChild(makeChip(null, birdShortLabel(b), function () { goToBird(b.id); }));
+          purchasingRow.appendChild(birdChip(b, function () { goToBird(b.id); }));
         });
         birdsSection.appendChild(purchasingRow);
       }

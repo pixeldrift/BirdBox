@@ -110,7 +110,7 @@ const ShippingAddScreen = (function () {
       var picked = draft.birdIds.indexOf(b.id) !== -1;
       var o = el('button', 'pick-option' + (picked ? ' selected' : ''));
       o.type = 'button';
-      o.appendChild(el('span', '', birdShortLabel(b) + ' · ' + b.band));
+      o.appendChild(birdPickLead(b));
       o.appendChild(el('small', '', picked ? 'Added ✓' : (note || 'Add')));
       o.addEventListener('click', function () { toggleBird(b.id); });
       return o;
@@ -147,8 +147,7 @@ const ShippingAddScreen = (function () {
       found.forEach(function (c) {
         var o = el('button', 'pick-option');
         o.type = 'button';
-        o.appendChild(el('span', '', c.name));
-        o.appendChild(el('small', '', [c.city, c.state].filter(Boolean).join(', ')));
+        o.appendChild(contactPickLead(c));
         o.addEventListener('click', function () { draft.clientId = c.id; drawClient(); drawBirds(); });
         clientOut.appendChild(o);
       });
@@ -166,7 +165,10 @@ const ShippingAddScreen = (function () {
     function drawBirds() {
       clearEl(chosen);
       draft.birdIds.map(getBird).filter(Boolean).forEach(function (b) {
-        chosen.appendChild(makeChip('', birdShortLabel(b) + ' ✕', function () { toggleBird(b.id); }));
+        var c = birdChip(b, function () { toggleBird(b.id); });
+        c.title = 'Tap to remove';
+        c.querySelector('.chip-value').textContent += ' ✕';
+        chosen.appendChild(c);
       });
 
       clearEl(linkedOut);

@@ -101,17 +101,14 @@ const HealthScreen = (function () {
 
     var avatar = document.createElement('span');
     avatar.className = 'list-row-avatar';
-    var img = document.createElement('img');
-    img.src = 'icons/tinted/mybirds/Health.png';
-    img.alt = '';
-    avatar.appendChild(img);
+    fillThumb(avatar, healthThumbSpec(record));
 
     var info = document.createElement('span');
     info.className = 'list-row-info';
 
     var title = document.createElement('span');
     title.className = 'list-row-title';
-    title.textContent = bird ? birdShortLabel(bird) : 'Unknown bird';
+    title.textContent = bird ? birdShortLabel(bird) + ' (' + bird.band + ')' : 'Unknown bird';
 
     var sub = document.createElement('span');
     sub.className = 'list-row-sub';
@@ -192,7 +189,7 @@ const HealthScreen = (function () {
     birdSection.appendChild(birdTitle);
     var birdChips = document.createElement('div');
     birdChips.className = 'chip-row';
-    birdChips.appendChild(makeChip(null, bird ? birdShortLabel(bird) : 'Unknown', bird ? function () { goToBird(bird.id); } : null));
+    birdChips.appendChild(bird ? birdChip(bird, function () { goToBird(bird.id); }) : makeChip(null, 'Unknown', null));
     birdSection.appendChild(birdChips);
     wrap.appendChild(birdSection);
 

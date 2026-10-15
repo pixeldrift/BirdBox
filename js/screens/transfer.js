@@ -36,7 +36,9 @@ const TransferScreen = (function () {
     TransferScreen.pendingContactId = '';
     var wrap = el('div', 'detail-screen');
     var form = el('form', 'detail-section record-form');
-    form.appendChild(field('Bird', el('p', 'notes-text', birdShortLabel(bird) + ' · ' + bird.band)));
+    var birdRow = el('div', 'pick-selected');
+    birdRow.appendChild(birdChip(bird, null));
+    form.appendChild(field('Bird', birdRow));
 
     var dirWrap = el('div', 'toggle-chips');
     var label = el('span', 'form-label', 'What happened?');
@@ -89,8 +91,7 @@ const TransferScreen = (function () {
       found.forEach(function (c) {
         var o = el('button', 'pick-option');
         o.type = 'button';
-        o.appendChild(el('span', '', c.name));
-        o.appendChild(el('small', '', [c.city, c.state].filter(Boolean).join(', ')));
+        o.appendChild(contactPickLead(c));
         o.addEventListener('click', function () { state.contactId = c.id; drawContact(); });
         contactOut.appendChild(o);
       });

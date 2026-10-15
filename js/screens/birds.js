@@ -212,7 +212,7 @@ const BirdsScreen = (function () {
       var kidsRow = document.createElement('div');
       kidsRow.className = 'chip-row';
       kids.forEach(function (k) {
-        kidsRow.appendChild(makeChip(null, birdShortLabel(k), function () { navigate(k.id); }));
+        kidsRow.appendChild(birdChip(k, function () { navigate(k.id); }));
       });
       familySection.appendChild(kidsRow);
     }
@@ -289,7 +289,7 @@ const BirdsScreen = (function () {
         .slice()
         .sort(function (a, b) { return b.date.localeCompare(a.date); })
         .forEach(function (r) {
-          healthRow.appendChild(makeChip(r.type, formatDate(r.date), function () {
+          healthRow.appendChild(healthChip(r, function () {
             location.hash = '#/mybirds/health/' + r.id;
           }));
         });
@@ -319,18 +319,22 @@ const BirdsScreen = (function () {
     var history = transfersForBird(bird.id).map(function (t) {
       var who = getContact(t.contactId);
       return { date: t.date || '', label: (t.direction === 'Out' ? 'Went to ' : 'Came from ') + (who ? who.name : 'someone'),
-        sub: [t.method, t.date ? formatDate(t.date) : ''].filter(Boolean).join(' · '), go: who ? function () { location.hash = '#/business/contacts/' + who.id; } : null };
+        thumb: who && who.photoUrl ? { src: who.photoUrl } : { icon: 'icons/tinted/business/Contacts.png' }, sub: [t.method, t.date ? formatDate(t.date) : ''].filter(Boolean).join(' · '), go: who ? function () { location.hash = '#/business/contacts/' + who.id; } : null };
     }).concat(WAYBILLS_SAMPLE.filter(function (w) { return w.birdIds.indexOf(bird.id) !== -1; }).map(function (w) {
       var who = waybillClient(w);
       var verb = w.status === 'Pending' ? 'Pending shipment' : (w.direction === 'Incoming' ? 'Received' : 'Shipped');
       return { date: w.date || '', label: verb + (who ? (w.direction === 'Incoming' ? ' from ' : ' to ') + who.name : ''),
-        sub: [w.method || 'Shipment', w.date ? formatDate(w.date) : ''].filter(Boolean).join(' · '), go: function () { location.hash = '#/business/shipping/' + w.id; } };
+        thumb: waybillThumbSpec(w), sub: [w.method || 'Shipment', w.date ? formatDate(w.date) : ''].filter(Boolean).join(' · '), go: function () { location.hash = '#/business/shipping/' + w.id; } };
     })).sort(function (a, b) { return b.date.localeCompare(a.date); });
     if (history.length) {
       history.forEach(function (h) {
         var row = document.createElement('button');
         row.type = 'button';
         row.className = 'list-row';
+        var rowThumb = document.createElement('span');
+        rowThumb.className = 'list-row-avatar';
+        fillThumb(rowThumb, h.thumb);
+        row.appendChild(rowThumb);
         var info = document.createElement('span');
         info.className = 'list-row-info';
         var t = document.createElement('span');
@@ -400,7 +404,7 @@ const BirdsScreen = (function () {
   }
 
   function makeRelChip(label, relBird, navigate) {
-    return makeChip(label, relBird ? birdShortLabel(relBird) : 'Unknown', relBird ? function () { navigate(relBird.id); } : null);
+    return relBird ? birdChip(relBird, function () { navigate(relBird.id); }, label) : makeChip(label, 'Unknown', null);
   }
 
   function makeRegistryToggle(bird, onToggle) {

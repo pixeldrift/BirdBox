@@ -54,8 +54,7 @@ const SoldFollowUp = (function () {
       found.forEach(function (c) {
         var o = el('button', 'pick-option');
         o.type = 'button';
-        o.appendChild(el('span', '', c.name));
-        o.appendChild(el('small', '', [c.city, c.state].filter(Boolean).join(', ')));
+        o.appendChild(contactPickLead(c));
         o.addEventListener('click', function () { buyerId = c.id; drawBuyer(); drawActions(); });
         results.appendChild(o);
       });

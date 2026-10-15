@@ -171,7 +171,7 @@ const CagingScreen = (function () {
     var birdsRow = document.createElement('div');
     birdsRow.className = 'chip-row';
     group.birds.forEach(function (b) {
-      birdsRow.appendChild(makeChip(null, birdShortLabel(b), function () { goToBird(b.id); }));
+      birdsRow.appendChild(birdChip(b, function () { goToBird(b.id); }));
     });
     birdsSection.appendChild(birdsRow);
     wrap.appendChild(birdsSection);

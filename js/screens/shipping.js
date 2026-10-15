@@ -123,10 +123,7 @@ const ShippingScreen = (function () {
 
     var avatar = document.createElement('span');
     avatar.className = 'list-row-avatar';
-    var img = document.createElement('img');
-    img.src = 'icons/tinted/business/Shipping.png';
-    img.alt = '';
-    avatar.appendChild(img);
+    fillThumb(avatar, waybillThumbSpec(wb));
 
     var info = document.createElement('span');
     info.className = 'list-row-info';
@@ -134,7 +131,7 @@ const ShippingScreen = (function () {
     var birds = waybillBirds(wb);
     var title = document.createElement('span');
     title.className = 'list-row-title';
-    title.textContent = birds.length ? birds.map(birdShortLabel).join(', ') : 'Shipment';
+    title.textContent = birds.length ? birds.map(function (b) { return birdShortLabel(b) + ' (' + b.band + ')'; }).join(', ') : 'Shipment';
 
     var client = waybillClient(wb);
     var sub = document.createElement('span');
@@ -301,10 +298,7 @@ const ShippingScreen = (function () {
 
     var avatar = document.createElement('div');
     avatar.className = 'detail-avatar';
-    var img = document.createElement('img');
-    img.src = 'icons/tinted/business/Shipping.png';
-    img.alt = '';
-    avatar.appendChild(img);
+    fillThumb(avatar, waybillThumbSpec(wb));
 
     var titleWrap = document.createElement('div');
     titleWrap.className = 'detail-title';
@@ -374,9 +368,9 @@ const ShippingScreen = (function () {
 
       var linksRow = document.createElement('div');
       linksRow.className = 'chip-row';
-      if (client) linksRow.appendChild(makeChip('Client', client.name, function () { goToContact(client.id); }));
+      if (client) linksRow.appendChild(contactChip(client, function () { goToContact(client.id); }, 'Client'));
       birds.forEach(function (b) {
-        linksRow.appendChild(makeChip('Bird', birdShortLabel(b), function () { goToBird(b.id); }));
+        linksRow.appendChild(birdChip(b, function () { goToBird(b.id); }));
       });
       linksSection.appendChild(linksRow);
       wrap.appendChild(linksSection);

@@ -1313,3 +1313,25 @@ textarea.form-input {
 
 .ownership-prompt .save-btn { margin-bottom: 10px; }
 .ownership-prompt .add-record-btn { display: block; width: 100%; text-align: center; }
+
+/* Link chips with thumbnails */
+.chip.has-thumb { flex-direction: row; align-items: center; gap: 10px; padding: 6px 12px 6px 6px; }
+.chip-text { display: flex; flex-direction: column; gap: 2px; align-items: flex-start; min-width: 0; }
+.chip-sub { font-size: 0.74rem; color: var(--muted); }
+.chip-thumb {
+  flex: 0 0 auto; width: 36px; height: 36px; border-radius: 10px; background: #F5E4DC;
+  display: flex; align-items: center; justify-content: center; overflow: hidden;
+}
+.chip-thumb img { width: 22px; height: 22px; }
+.chip-thumb img.thumb-photo, .chip-thumb img.avatar-photo { width: 100%; height: 100%; object-fit: cover; }
+.chip-thumb .thumb-text { font-size: 0.62rem; font-weight: 800; color: #A6543D; letter-spacing: 0.03em; }
+.chip-thumb.avatar-male { background: #D6E6F4; }
+.chip-thumb.avatar-female { background: #F7D9E4; }
+.chip-thumb.avatar-unsexed { background: #E7E5E2; }
+.chip-thumb.avatar-framed { border: 2px solid; box-sizing: border-box; }
+.chip-thumb.avatar-framed.avatar-male { border-color: #7FB0DB; }
+.chip-thumb.avatar-framed.avatar-female { border-color: #E58FB0; }
+.chip-thumb.avatar-framed.avatar-unsexed { border-color: #C9C6C2; }
+.pick-option .chip-thumb { width: 30px; height: 30px; }
+.pick-option .pick-text { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; flex: 1; min-width: 0; }
+.pick-option .pick-lead { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; text-align: left; }

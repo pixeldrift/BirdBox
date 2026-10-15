@@ -207,10 +207,10 @@ const AccountingScreen = (function () {
       var linksRow = document.createElement('div');
       linksRow.className = 'chip-row';
       if (client) {
-        linksRow.appendChild(makeChip('Client', client.name, function () { goToContact(client.id); }));
+        linksRow.appendChild(contactChip(client, function () { goToContact(client.id); }, 'Client'));
       }
       if (bird) {
-        linksRow.appendChild(makeChip('Bird', birdShortLabel(bird), function () { goToBird(bird.id); }));
+        linksRow.appendChild(birdChip(bird, function () { goToBird(bird.id); }));
       }
       linksSection.appendChild(linksRow);
       wrap.appendChild(linksSection);

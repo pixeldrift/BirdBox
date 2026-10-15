@@ -20,7 +20,7 @@ const RegistrySearchScreen = (function () {
   function publicRelChip(label, relBird, navigate) {
     if (!relBird) return makeChip(label, 'Not on file', null);
     if (!relBird.registryPublic) return makeChip(label, 'Private record', null);
-    return makeChip(label, birdShortLabel(relBird), function () { navigate(relBird.id); });
+    return birdChip(relBird, function () { navigate(relBird.id); }, label);
   }
 
   function renderResult(container, bird, navigate) {
@@ -72,7 +72,7 @@ const RegistrySearchScreen = (function () {
       var kidsRow = document.createElement('div');
       kidsRow.className = 'chip-row';
       publicKids.forEach(function (k) {
-        kidsRow.appendChild(makeChip(null, birdShortLabel(k), function () { navigate(k.id); }));
+        kidsRow.appendChild(birdChip(k, function () { navigate(k.id); }));
       });
       lineage.appendChild(kidsRow);
     }
