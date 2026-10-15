@@ -101,24 +101,45 @@ Points to settle in the plan:
   through species ids.
 - **Candidate sources already in hand:** `IOC_Names_File_Plus-12.1.Red.Draft.xlsx` and
   `Bird Species Master List.txt` / `Bird Species.tsv` in the repo root, and the 840 Birdorable names
-  in `species-map.json`. Outside: the eBird/Clements taxonomy (free API, stable species codes).
+  in `species-map.json`. Outside: the eBird/Clements taxonomy (see the Birds of the World section — chosen as the canonical ID).
 - **Taxonomy/icon gaps to fill when this happens:** pigeon and dove nodes (not in
   `TAXONOMY_NODES` yet), finch subgroups.
 
-## Birds of the World (Cornell Lab) — reference + possible partnership
+## Birds of the World / eBird taxonomy — decided canonical species ID
 
-Birds of the World is the primary reference the user wants to align with: a vast species database
-with illustrations for nearly every bird, and (like Birdorable) a potential cross-promotional
-partner. Open questions, none verified yet:
+**Decision (user):** use the Birds of the World (BOW) / eBird (Clements) species as BirdBox's
+authoritative nomenclature and ID, so we're industry standard instead of inventing our own system.
 
-- **Link out, don't copy.** Store a stable species code per species and link to its Birds of the
-  World page for details; no duplicated content. Hotlinking/embedding their *illustrations* as an
-  icon pack is a different matter — it needs their permission (content is licensed, and access may
-  be subscription-gated or technically blocked). Treat it as a partnership/licensing conversation
-  with the Cornell Lab, not an engineering workaround. If agreed, an icon pack can be a pure
-  reference (species code -> their image URL) with nothing copied into our repo.
-- Check whether the eBird/Clements species codes used by Birds of the World are the right key for
-  our species table.
+Verified (2026-10): BOW's species pages are keyed by the **eBird species code**, not a universal
+numeric ID and not derived from the name by any formula:
+`https://birdsoftheworld.org/bow/species/<speciesCode>/cur/introduction` — e.g. `golphe` (Golden
+Pheasant), `ostric2` (Common Ostrich), `hyamac1` (Hyacinth Macaw), `gncpar` (Green-cheeked
+Parakeet, i.e. "Green-cheek Conure"). The trailing digit disambiguates collisions/splits, so the
+URL can't be reverse-engineered from a name — we store the code per species. The code list is
+the eBird taxonomy, available from the public endpoint
+`https://api.ebird.org/v2/ref/taxonomy/ebird?fmt=json&cat=species` (it returned all **11,167**
+species — exactly BOW's stated species count — with `speciesCode`, `comName`, `sciName`,
+`order`, `familyCode`/`familyComName`, and `taxonOrder`; it worked without an API key when tried,
+but confirm eBird's terms/key requirements before relying on it). The BOW page itself responded
+200 to an unauthenticated request; full content is subscription-gated, which is fine for a link.
+
+How it fits the plan above:
+- **Species table keyed by eBird `speciesCode`**, with the taxonomy version stored. Species
+  splits mint new codes (that's what `ostric2` is), so existing birds need a code-succession
+  story on each annual taxonomy update.
+- **Off-site links** wherever a bird page names a species (and later family), opening BOW in a new
+  tab. Family pages likely use `familyCode` but that URL pattern is unverified.
+- **Not everything has a code**: domestic breeds and forms (Pekin Duck, Faverolles, Embden Goose),
+  hybrids, and trade names have no eBird species. They need their own records, optionally linked
+  to a parent species code. Mutations remain our own table.
+- **Alternate names matter immediately:** only 780 of the 840 Birdorable names match an eBird
+  common name exactly (misses are naming variants, e.g. "Jandaya Conure", "Eclectus Parrot",
+  "Herring Gull", "Pekin Duck"), which is the names-table requirement in action. The eBird file
+  also gives us 410 parrots and 353 pigeons/doves for the aviculture tier.
+- **Icons:** with a code per species, icon packs can key on `speciesCode`; Birdorable's
+  `species-map.json` could be extended with the code for each image.
+- **Illustrations from BOW itself** remain a permission/licensing question for the Cornell Lab
+  (a partnership, like Birdorable); linking out needs no permission.
 
 ## Persistent storage / backend
 
