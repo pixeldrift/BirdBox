@@ -1,4 +1,4 @@
-const CACHE = 'birdbox-shell-v22';
+const CACHE = 'birdbox-shell-v24';
 const ASSETS = [
   './',
   './index.html',
@@ -19,7 +19,9 @@ const ASSETS = [
   './js/data/buildings-sample.js',
   './js/data/waybills-sample.js',
   './js/data/transfers-sample.js',
+  './js/data/files.js',
   './js/species-picker.js',
+  './js/files-ui.js',
   './js/ownership-prompt.js',
   './js/sold-followup.js',
   './js/screens/birds-add.js',
@@ -57,6 +59,9 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
+  // Data and uploaded files always come straight from the server — serving them from the app
+  // cache would show stale records (and miss anything saved since the last visit).
+  if (new URL(event.request.url).pathname.startsWith('/api/')) return;
   event.respondWith(
     caches.match(event.request).then((cached) => {
       const network = fetch(event.request)

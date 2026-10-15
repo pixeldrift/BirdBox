@@ -160,115 +160,17 @@ const ShippingScreen = (function () {
   // An upload problem to show after the section redraws.
   var uploadError = '';
 
-  function sizeLabel(bytes) {
-    return bytes >= 1048576 ? (bytes / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(bytes / 1024)) + ' KB';
-  }
-
   // Photos, the receipt and the waybill copy attached to a shipment.
   function renderFiles(wb, refresh) {
-    var section = document.createElement('div');
-    section.className = 'detail-section';
-    var message = document.createElement('div');
-
-    function fail(err) {
-      clearEl(message);
-      var p = document.createElement('p');
-      p.className = 'form-message error';
-      p.textContent = err.message || 'Something went wrong';
-      message.appendChild(p);
-    }
-
-    function addButton(kind, label, accept, multiple) {
-      var btn = document.createElement('label');
-      btn.className = 'add-record-btn photo-upload-btn';
-      btn.textContent = label;
-      var input = document.createElement('input');
-      input.type = 'file';
-      input.accept = accept;
-      input.multiple = !!multiple;
-      input.hidden = true;
-      input.addEventListener('change', function () {
-        var files = Array.prototype.slice.call(input.files);
-        if (!files.length) return;
-        btn.firstChild.textContent = 'Uploading…';
-        files.reduce(function (chain, f) {
-          return chain.then(function () { return addWaybillFile(wb, kind, f); });
-        }, Promise.resolve()).then(refresh).catch(function (err) { uploadError = err.message || 'Upload failed'; refresh(); });
-      });
-      btn.appendChild(input);
-      return btn;
-    }
-
-    function removeButton(file) {
-      var x = document.createElement('button');
-      x.type = 'button';
-      x.className = 'file-remove';
-      x.textContent = '✕';
-      x.setAttribute('aria-label', 'Remove ' + (file.filename || 'file'));
-      x.addEventListener('click', function (e) {
-        e.stopPropagation();
-        if (!window.confirm('Remove this file from the shipment?')) return;
-        removeWaybillFile(wb, file.id).then(refresh).catch(fail);
-      });
-      return x;
-    }
-
-    var files = wb.files || [];
-    var photos = files.filter(function (f) { return f.kind === 'photo'; });
-
-    var h = document.createElement('h3');
-    h.textContent = 'Photos';
-    section.appendChild(h);
-    if (photos.length) {
-      var grid = document.createElement('div');
-      grid.className = 'photo-grid';
-      photos.forEach(function (f) {
-        var tile = document.createElement('div');
-        tile.className = 'photo-tile';
-        var a = document.createElement('a');
-        a.href = f.url;
-        a.target = '_blank';
-        a.rel = 'noopener';
-        var img = document.createElement('img');
-        img.src = f.url;
-        img.alt = 'Shipment photo';
-        a.appendChild(img);
-        tile.appendChild(a);
-        tile.appendChild(removeButton(f));
-        grid.appendChild(tile);
-      });
-      section.appendChild(grid);
-    } else {
-      var none = document.createElement('p');
-      none.className = 'form-note';
-      none.textContent = 'The crate, the handoff, the bird at the airport — add photos if you have them.';
-      section.appendChild(none);
-    }
-    section.appendChild(addButton('photo', '+ Add Photos', 'image/*', true));
-
-    [['receipt', 'Receipt', '+ Add Receipt'], ['waybill', 'Waybill', '+ Add Waybill']].forEach(function (k) {
-      var docs = files.filter(function (f) { return f.kind === k[0]; });
-      var dh = document.createElement('h3');
-      dh.textContent = k[1];
-      section.appendChild(dh);
-      docs.forEach(function (f) {
-        var row = document.createElement('div');
-        row.className = 'file-row';
-        var link = document.createElement('a');
-        link.href = f.url;
-        link.target = '_blank';
-        link.rel = 'noopener';
-        link.textContent = (f.filename || k[1]) + ' · ' + sizeLabel(f.size);
-        row.appendChild(link);
-        row.appendChild(removeButton(f));
-        section.appendChild(row);
-      });
-      section.appendChild(addButton(k[0], k[2], 'image/*,application/pdf', true));
+    return FilesUI.render({
+      ownerType: 'waybill', ownerId: wb.id, refresh: refresh,
+      items: function () { return wb.files || []; },
+      kinds: [
+        { kind: 'photo', title: 'Photos', addLabel: '+ Add Photos', accept: 'image/*', grid: true, empty: 'The crate, the handoff, the bird at the airport — add photos if you have them.' },
+        { kind: 'receipt', title: 'Receipt', addLabel: '+ Add Receipt', accept: 'image/*,application/pdf' },
+        { kind: 'waybill', title: 'Waybill', addLabel: '+ Add Waybill', accept: 'image/*,application/pdf' },
+      ],
     });
-
-    section.appendChild(message);
-    if (uploadError) { fail({ message: uploadError }); uploadError = ''; }
-    return section;
   }
 
   function todayIso() {

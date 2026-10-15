@@ -206,53 +206,20 @@ const HealthScreen = (function () {
       wrap.appendChild(notesSection);
     }
 
-    var attSection = document.createElement('div');
-    attSection.className = 'detail-section';
-    var attTitle = document.createElement('h3');
-    attTitle.textContent = 'Attachments';
-    attSection.appendChild(attTitle);
-    if (record.attachments.length === 0) {
-      var noAtt = document.createElement('p');
-      noAtt.className = 'notes-text';
-      noAtt.textContent = 'No files attached.';
-      attSection.appendChild(noAtt);
-    } else {
-      var attGrid = document.createElement('div');
-      attGrid.className = 'attachment-grid';
-      record.attachments.forEach(function (att) { attGrid.appendChild(renderAttachment(att)); });
-      attSection.appendChild(attGrid);
-    }
-    wrap.appendChild(attSection);
+    wrap.appendChild(FilesUI.render({
+      ownerType: 'health', ownerId: record.id, title: 'Attachments',
+      refresh: function () { clearEl(main); renderDetail(main, id, navigate, setTitle); },
+      items: function () {
+        return record.attachments.map(function (a) {
+          return { id: a.id, kind: 'document', filename: a.name, url: a.url, size: a.size, contentType: a.kind === 'image' ? 'image/jpeg' : 'application/pdf' };
+        });
+      },
+      kinds: [{ kind: 'document', addLabel: '+ Add File', accept: 'image/*,application/pdf', grid: true, empty: 'No files attached — add the certificate, vaccine record or report.' }],
+    }));
 
     main.appendChild(wrap);
   }
 
-  function renderAttachment(att) {
-    var link = document.createElement('a');
-    link.className = 'attachment-tile';
-    link.href = att.url;
-    link.target = '_blank';
-    link.rel = 'noopener';
-
-    if (att.kind === 'image') {
-      var img = document.createElement('img');
-      img.src = att.url;
-      img.alt = att.name;
-      link.appendChild(img);
-    } else {
-      var icon = document.createElement('span');
-      icon.className = 'attachment-file-icon';
-      icon.textContent = 'PDF';
-      link.appendChild(icon);
-    }
-
-    var name = document.createElement('span');
-    name.className = 'attachment-name';
-    name.textContent = att.name;
-    link.appendChild(name);
-
-    return link;
-  }
 
   function renderAddForm(main, navigate, setTitle) {
     setTitle('Add Health Record');
@@ -358,13 +325,7 @@ const HealthScreen = (function () {
         birdSelect.focus();
         return;
       }
-      var attachments = Array.prototype.map.call(fileInput.files, function (file) {
-        return {
-          name: file.name,
-          kind: file.type.indexOf('image/') === 0 ? 'image' : 'pdf',
-          url: URL.createObjectURL(file),
-        };
-      });
+      var chosenFiles = Array.prototype.slice.call(fileInput.files);
       var record = {
         id: nextHealthRecordId(),
         birdId: birdSelect.value,
@@ -372,12 +333,19 @@ const HealthScreen = (function () {
         date: dateInput.value || new Date().toISOString().slice(0, 10),
         provider: providerInput.value.trim(),
         notes: notesInput.value.trim(),
-        attachments: attachments,
+        attachments: [],
       };
       saveBtn.disabled = true;
       saveBtn.textContent = 'Saving…';
       addHealthRecord(record).then(function () {
-        navigate(record.id);
+        // The files are saved to the database once the record exists.
+        var failed = 0;
+        return chosenFiles.reduce(function (chain, f) {
+          return chain.then(function () { return uploadFile('health', record.id, 'document', f).catch(function () { failed += 1; }); });
+        }, Promise.resolve()).then(function () {
+          if (failed) alert(failed + (failed === 1 ? ' file' : ' files') + ' didn’t upload — you can add ' + (failed === 1 ? 'it' : 'them') + ' on the record.');
+          navigate(record.id);
+        });
       }).catch(function () {
         saveBtn.disabled = false;
         saveBtn.textContent = 'Save Record';

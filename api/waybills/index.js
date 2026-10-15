@@ -14,7 +14,7 @@ function isoDate(v) {
   return v instanceof Date ? v.toISOString().slice(0, 10) : String(v).slice(0, 10);
 }
 
-function toWaybill(row, files) {
+function toWaybill(row) {
   return {
     id: row.id,
     waybillNumber: row.waybill_number,
@@ -30,27 +30,10 @@ function toWaybill(row, files) {
     arrivingAirport: row.arriving_airport,
     cost: row.cost === null ? null : Number(row.cost),
     notes: row.notes,
-    files: (files || []).map(toFile),
   };
 }
 
-function toFile(f) {
-  return { id: f.id, kind: f.kind, filename: f.filename, contentType: f.content_type, size: f.size, url: '/api/waybills/files?id=' + encodeURIComponent(f.id) };
-}
 
-// File details only (never the bytes). Empty if the files table hasn't been created yet.
-async function loadFiles(ids) {
-  if (!ids.length) return [];
-  try {
-    return await sql`select id, waybill_id, kind, filename, content_type, size from waybill_files where waybill_id = any(${ids}) order by created_at`;
-  } catch (err) {
-    return [];
-  }
-}
-
-function withFiles(rows, files) {
-  return rows.map((r) => toWaybill(r, files.filter((f) => f.waybill_id === r.id)));
-}
 
 function isRealDate(s) {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s);
@@ -101,7 +84,7 @@ module.exports = async function handler(req, res) {
   if (req.method === 'GET') {
     try {
       const rows = await sql`select * from waybills order by date desc nulls last, id`;
-      res.status(200).json(withFiles(rows, await loadFiles(rows.map((r) => r.id))));
+      res.status(200).json(rows.map(toWaybill));
     } catch (err) {
       res.status(500).json({ error: 'Failed to load waybills' });
     }
@@ -138,7 +121,7 @@ module.exports = async function handler(req, res) {
         }
         throw err;
       }
-      res.status(201).json(toWaybill(rows[0], []));
+      res.status(201).json(toWaybill(rows[0]));
     } catch (err) {
       res.status(500).json({ error: 'Failed to save shipment' });
     }
@@ -155,7 +138,7 @@ module.exports = async function handler(req, res) {
     try {
       const rows = await sql`update waybills set status = 'Complete', date = coalesce(${date}::date, date) where id = ${id} returning *`;
       if (!rows.length) { res.status(404).json({ error: 'Shipment not found' }); return; }
-      res.status(200).json(toWaybill(rows[0], await loadFiles([id])));
+      res.status(200).json(toWaybill(rows[0]));
     } catch (err) {
       res.status(500).json({ error: 'Failed to update shipment' });
     }

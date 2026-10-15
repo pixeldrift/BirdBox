@@ -386,3 +386,14 @@ Bird status (Available / Reserved / Sold / Deceased) is set from the bird's page
 the app also asks whether to mark the bird Sold (it left while still Available/Reserved) or
 Available again (it came back to you while still Sold). Never automatic: boarding and breeder loans
 change possession without a sale.
+
+## Files (one store for everything uploaded)
+
+Bird photos, health-record documents (DNA certificates, immunizations, reports), shipment photos /
+receipts / waybills, and invoices / receipts on accounting entries are all rows in `attachments`
+(sql/012_attachments.sql): `owner_type` (bird | health | waybill | transaction), `owner_id`, `kind`,
+filename, type, size and the bytes. API: `/api/files` (list, fetch, upload, make-main-photo, delete).
+Pictures are shrunk in the browser; files are capped at 3 MB and may be photos or PDFs (bird photos:
+images only). `js/data/files.js` loads the list at startup and hangs each file on its record;
+`js/files-ui.js` is the shared "files on this record" section. The service worker never caches
+`/api/` responses, so records and files are always current.

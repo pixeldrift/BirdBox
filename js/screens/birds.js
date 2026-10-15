@@ -445,9 +445,19 @@ const BirdsScreen = (function () {
         }
         tile.addEventListener('click', function () {
           if (photo.isPrimary) return;
-          bird.photos.forEach(function (p) { p.isPrimary = (p === photo); });
-          refresh();
+          makePhotoPrimary(bird, photo.id).then(refresh).catch(function () {});
         });
+        var del = document.createElement('span');
+        del.className = 'file-remove';
+        del.textContent = '✕';
+        del.setAttribute('role', 'button');
+        del.setAttribute('aria-label', 'Remove photo');
+        del.addEventListener('click', function (e) {
+          e.stopPropagation();
+          if (!window.confirm('Remove this photo?')) return;
+          removeFile(photo.id).then(refresh).catch(function () {});
+        });
+        tile.appendChild(del);
         grid.appendChild(tile);
       });
       section.appendChild(grid);
@@ -461,19 +471,25 @@ const BirdsScreen = (function () {
     fileInput.accept = 'image/*';
     fileInput.multiple = true;
     fileInput.hidden = true;
+    var photoMessage = document.createElement('div');
     fileInput.addEventListener('change', function () {
-      var hadPhotos = bird.photos.length > 0;
-      Array.prototype.forEach.call(fileInput.files, function (file, i) {
-        bird.photos.push({
-          id: nextPhotoId(),
-          url: URL.createObjectURL(file),
-          isPrimary: !hadPhotos && i === 0,
-        });
+      var files = Array.prototype.slice.call(fileInput.files);
+      if (!files.length) return;
+      fileLabel.firstChild.textContent = 'Uploading…';
+      files.reduce(function (chain, f) {
+        return chain.then(function () { return uploadFile('bird', bird.id, 'photo', f); });
+      }, Promise.resolve()).then(refresh).catch(function (err) {
+        fileLabel.firstChild.textContent = '+ Add Photos';
+        clearEl(photoMessage);
+        var p = document.createElement('p');
+        p.className = 'form-message error';
+        p.textContent = err.message || 'Upload failed';
+        photoMessage.appendChild(p);
       });
-      refresh();
     });
     fileLabel.appendChild(fileInput);
     section.appendChild(fileLabel);
+    section.appendChild(photoMessage);
 
     var note = document.createElement('p');
     note.className = 'form-note';

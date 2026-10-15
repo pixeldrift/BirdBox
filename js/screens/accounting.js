@@ -229,6 +229,17 @@ const AccountingScreen = (function () {
       wrap.appendChild(notesSection);
     }
 
+    wrap.appendChild(FilesUI.render({
+      ownerType: 'transaction', ownerId: tx.id, title: 'Invoices & Receipts',
+      refresh: function () { clearEl(main); renderDetail(main, id, navigate, setTitle); },
+      items: function () { return tx.files || []; },
+      kinds: [
+        { kind: 'invoice', title: 'Invoice', addLabel: '+ Add Invoice', accept: 'image/*,application/pdf' },
+        { kind: 'receipt', title: 'Receipt', addLabel: '+ Add Receipt', accept: 'image/*,application/pdf' },
+        { kind: 'document', title: 'Other documents', addLabel: '+ Add Document', accept: 'image/*,application/pdf' },
+      ],
+    }));
+
     main.appendChild(wrap);
   }
 

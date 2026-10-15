@@ -4,12 +4,8 @@
 // records POST to the same endpoint (js/screens/health.js) and get pushed into
 // this array on success so they show up immediately.
 //
-// attachments still aren't truly persisted -- the url on a newly-added
-// attachment is a browser-local URL.createObjectURL() blob, which only lives
-// for this tab's session, so it'll look broken after a reload even though the
-// record itself (bird, type, date, provider, notes) now survives one. Real
-// attachment persistence needs actual file storage wired into the POST
-// handler, which is a separate piece of work from this migration.
+// Attachments (DNA certificates, vaccine records…) are stored in the database like every other
+// uploaded file — see js/data/files.js and sql/012_attachments.sql.
 const RECORD_TYPES = ['DNA Certificate', 'Immunization', 'Surgical Sexing', 'Vet Visit', 'Other'];
 
 var HEALTH_RECORDS_SAMPLE = [];
