@@ -87,7 +87,7 @@ real file storage for attachments) or at least local persistence (IndexedDB) as 
 ## More icon packs / artwork
 
 User uploaded two image folders to `src/images/`: **TeraTiger** (named files, fewer species) and
-**Birdorable** (many more images, but unreadable CDN hash filenames with no ground truth).
+**Birdorable** (hundreds of species, now matched to names via `species-map.json`).
 
 - **TeraTiger — done.** Built as the `teratiger` ("Hand-Drawn") pack in `ICON_PACKS`
   (`js/data/icon-taxonomy.js`), referencing files directly from `src/images/TeraTiger/` (no
@@ -100,38 +100,18 @@ User uploaded two image folders to `src/images/`: **TeraTiger** (named files, fe
   there's no conure art in this pack — a real gap since Conure is the most common species in the
   sample data.
 
-- **Birdorable — done for the species identified so far.** Built as the `birdorable`
-  ("Birdorable") pack in `ICON_PACKS`, referencing `src/images/Birdorable/Parrots-Parakeets/`
-  directly. Filenames there are garbled CDN hashes (e.g. `01nc3s7f...@2x.webp`) with no species
-  info in the filename itself — solved by cross-referencing: the user saved 18 pages of
-  `birdorable.com/meet?page=N` as `.html` (now in `src/images/Birdorable/`), whose markup embeds
-  the *same* CDN hash per bird thumbnail next to its species name/slug, so the hash is the join
-  key, no visual guessing needed. `src/images/Birdorable/species-map.json` is the durable result
-  of that match (hash → species/slug/meetUrl) — 85 unique species identified from 89 of 109 local
-  files (4 more were duplicate downloads of an already-matched hash). The pack itself uses 79 of
-  those 85: 21 node-level generic icons plus 68 `subspeciesOverrides` mapping Birdorable's species
-  names onto our Species|Subspecies convention (far richer than `teratiger` per node, since
-  Birdorable draws many species per genus — e.g. all 12 macaw species, not just one generic
-  macaw). Six new taxonomy nodes came with it: `lory`, `rosella`, `pionus-parrot`, `vasa-parrot`,
-  `kea`, `pesquets-parrot`, plus standalone `kakapo`. See docs/data-model.md and the comment above
-  the `birdorable` entry in `js/data/icon-taxonomy.js` for the 6 matched-but-unused species and
-  why (real taxonomic edge cases, not oversights).
-
-  **Still open**: 20 of the 109 local files are unresolved — every saved page was missing the
-  same last 20-of-70 thumbnails (lazy-load hadn't scrolled them into view before the page was
-  saved, so their hash never made it into the HTML). Re-saving those pages scrolled to the
-  bottom, or fetching `meet?page=N` directly, would close the gap — direct fetches to
-  `birdorable.com` were still blocked by the environment's egress proxy as of this writing even
-  after the user set network access to allow all domains (worth retrying; may need a fresh
-  session for the setting to take effect, per `read_documentation`'s `environment.network` page).
-  **When more Birdorable images or `meet`/`families` page saves are uploaded — the user has more
-  categories beyond Parrots-Parakeets not yet uploaded — re-run the same hash-matching script
-  (hash = filename minus `@2x`/`-N`/`.webp`) rather than re-identifying by hand**, then extend the
-  `birdorable` pack's `icons`/`subspeciesOverrides` the same way. Per the user, the intent here is
-  a **cross-promotional partnership** — credit + a shop link back to Birdorable (the `meetUrl`
-  already captured per species) so users can buy real merch matching their own birds, not just
-  using the art for free — worth confirming/formalizing that relationship before this pack ships
-  to real users.
+- **Birdorable — done, and growing.** Built as the `birdorable` ("Birdorable") pack in
+  `ICON_PACKS`, using the 200x200 PNGs in `src/images/Birdorable/Birds/` (named for each species)
+  and the user-maintained `src/images/Birdorable/species-map.json` (original hash filename →
+  species, slug, `meetUrl`, clean file name). 840 species mapped; the pack uses ~140 of them:
+  52 node-level icons and 90 `subspeciesOverrides`, covering every parrot we have a node for plus a
+  representative icon for most other groups (raptors, gulls, waterfowl, ratites, toucans, ...).
+  Adding more is a data change: new taxonomy node (if needed) + `icons`/`subspeciesOverrides`
+  entries. About 700 mapped species are not wired in yet because they have no taxonomy node; pick
+  the groups that matter to the user's breeders (songbirds and finches are the obvious next step).
+  Per the user, the intent is a **cross-promotional partnership** — credit + a shop link back to
+  Birdorable (`meetUrl` per species) so users can buy matching merch for their birds — worth
+  confirming/formalizing that relationship before this pack ships to real users.
 
 The switching architecture (`ICON_PACKS`, picker at Account → Settings → Icon Style) needs no
 further changes for a third pack — same pattern as `teratiger`: a new entry with id/label/

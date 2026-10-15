@@ -173,31 +173,30 @@ product-listing screenshot (stickers photographed on a wood background) plus a c
 `.textClipping`/`.webloc` files, not individual transparent icons, so `teratiger` has no conure
 art despite Conures being the most common species in the sample data.
 
-A third real pack, `birdorable` ("Birdorable" — user-supplied illustrations from
-birdorable.com, referenced directly from `src/images/Birdorable/Parrots-Parakeets/`), fills that
-gap: `Conure|Sun`, `Conure|Blue-crowned`, and 9 more conure subspecies all resolve to real art
-under this pack. Unlike `teratiger`, its filenames are unreadable CDN hashes with no species
-info — solved by cross-referencing the *same* hash embedded in the `<picture>` markup of pages
-the user saved from `birdorable.com/meet` (now `src/images/Birdorable/Meet the Birds at
-Birdorable{1..18}.html`) next to each bird's actual name. That match is recorded once, durably,
-in `src/images/Birdorable/species-map.json` (hash → species/slug/meetUrl) rather than repeated by
-hand — 85 of 109 local files resolved to a species this way (4 more were duplicate downloads of
-an already-matched hash; 20 are still unmatched because those thumbnails hadn't lazy-loaded into
-the saved page yet, see the manifest's `unresolvedFiles`/`_unresolvedReason`).
+A third real pack, `birdorable` ("Birdorable" — illustrations from birdorable.com, 200x200
+transparent PNGs in `src/images/Birdorable/Birds/`, one per species, named for the species e.g.
+`Scarlet-Macaw.png`), fills that gap: `Conure|Sun`, `Conure|Blue-crowned`, `Conure|Green-Cheeked`
+and more all resolve to real art under this pack.
 
-`birdorable` covers noticeably more ground per node than `teratiger` because Birdorable draws
-many individual species per genus where our taxonomy has one node per genus (12 macaw species, 9
-cockatoos, 11 conures/Aratinga-type parakeets, ...) — so its `subspeciesOverrides` (68 entries) do
-most of the work, keyed by mapping Birdorable's own species name onto our Species|Subspecies
-convention (e.g. Birdorable's "Blue-and-yellow Macaw" → our `Macaw|Blue and Gold`, matching Rio's
-record exactly), with the `icons` map (21 entries) supplying one generic per node as the
-fallback. Six new taxonomy nodes were added for genera Birdorable has that neither prior pack
-did: `lory`, `rosella`, `pionus-parrot`, `vasa-parrot`, `kea`, `pesquets-parrot`, plus a
-standalone `kakapo` node. A handful of matched species were deliberately left unused rather than
-force-fit into a node — see the comment above the `birdorable` pack entry in
-`js/data/icon-taxonomy.js` for exactly which and why (mostly: real Poicephalus species with no
-per-species node yet, since that node only holds one icon; an extinct species; one unidentifiable
-name).
+The images were originally downloaded with unreadable CDN-hash filenames. The user matched each to
+its species and supplied `src/images/Birdorable/species-map.json` (original hash filename →
+species, slug, `meetUrl`, and the clean file name under `Birds/`) plus `Birdorable filenames.csv`;
+the PNGs were renamed from that map. **The map is the durable lookup**: keep adding entries when
+more images arrive rather than identifying anything by eye. 840 species are mapped today.
+
+The pack uses far more art than `teratiger` because Birdorable draws many species per genus where
+our taxonomy has one node per genus (12 macaws, 9 cockatoos, 11 conures, ...). So parrots are
+covered species by species through `subspeciesOverrides` keyed `Species|Subspecies` (Birdorable's
+"Blue-and-yellow Macaw" → our `Macaw|Blue and Gold`, matching Rio's record), with one generic icon
+per node in `icons` as the fallback. With the larger set the pack also gives one representative
+icon to nearly every non-parrot node (eagle, hawk, falcon, owl, gull, swan, duck, goose, flamingo,
+toucan, hornbill, turaco, kingfisher, finch, chicken, turkey, peafowl, quail, ostrich, emu, ...)
+plus a few well-known subspecies, which closes the old "Bird of Prey / Sea Bird have no icon in any
+pack" gap. New taxonomy nodes for this: `lory`, `rosella`, `pionus-parrot`, `vasa-parrot`, `kea`,
+`pesquets-parrot`, `kakapo`, `eagle`, `hawk`, `falcon`, `owl` (under Bird of Prey), `gull` (under
+Sea Bird), and `swan` (under Waterfowl). About 700 mapped species still have no node and are
+unused; see the comment above the pack entry in `js/data/icon-taxonomy.js` for the deliberate
+exclusions among the parrots.
 
 **Attribution**: per the user, the long-term intent for this pack is a cross-promotional
 partnership with Birdorable — credit plus a shop link (already captured per species as `meetUrl`
