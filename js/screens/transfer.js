@@ -17,8 +17,9 @@ const TransferScreen = (function () {
     return label;
   }
 
-  function start(birdId) {
+  function start(birdId, contactId) {
     TransferScreen.pendingBirdId = birdId;
+    TransferScreen.pendingContactId = contactId || '';
     location.hash = '#/mybirds/birds/transfer';
   }
 
@@ -31,7 +32,8 @@ const TransferScreen = (function () {
     }
     setTitle('Record Transfer');
 
-    var state = { direction: 'Out', contactId: '' };
+    var state = { direction: 'Out', contactId: TransferScreen.pendingContactId || '' };
+    TransferScreen.pendingContactId = '';
     var wrap = el('div', 'detail-screen');
     var form = el('form', 'detail-section record-form');
     form.appendChild(field('Bird', el('p', 'notes-text', birdShortLabel(bird) + ' · ' + bird.band)));
@@ -166,5 +168,5 @@ const TransferScreen = (function () {
     main.appendChild(wrap);
   }
 
-  return { start: start, renderForm: renderForm, pendingBirdId: null };
+  return { start: start, renderForm: renderForm, pendingBirdId: null, pendingContactId: '' };
 })();

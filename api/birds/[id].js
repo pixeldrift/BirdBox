@@ -11,6 +11,8 @@ const EDITABLE_FIELDS = {
   notes: 'notes',
 };
 
+const STATUSES = ['Available', 'Reserved', 'Sold', 'Deceased'];
+
 module.exports = async function handler(req, res) {
   const { id } = req.query;
 
@@ -18,6 +20,10 @@ module.exports = async function handler(req, res) {
     const updates = Object.keys(req.body || {}).filter((k) => EDITABLE_FIELDS[k]);
     if (updates.length === 0) {
       res.status(400).json({ error: 'No editable fields provided' });
+      return;
+    }
+    if ('status' in req.body && !STATUSES.includes(req.body.status)) {
+      res.status(400).json({ error: 'Status must be one of ' + STATUSES.join(', ') });
       return;
     }
     try {

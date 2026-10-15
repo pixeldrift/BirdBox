@@ -313,14 +313,16 @@ const ShippingAddScreen = (function () {
   // ownership changes too. A pending shipment hasn't left yet, so there's nothing to ask.
   function afterSave(wb, moved, navigate, main) {
     var contact = moved.clientId ? getContact(moved.clientId) : null;
-    if (moved.pending || !contact) { navigate(wb.id); return; }
+    if (moved.pending) { navigate(wb.id); return; }
     clearEl(main);
     var box = el('div', 'detail-screen');
     box.appendChild(el('p', 'form-message info', 'Shipment saved.'));
     var promptBox = el('div');
     box.appendChild(promptBox);
     main.appendChild(box);
-    OwnershipPrompt.render(promptBox, { birdIds: moved.ids, contact: contact, direction: moved.direction === 'Outgoing' ? 'Out' : 'In', onDone: function () { navigate(wb.id); } });
+    var opts = { birdIds: moved.ids, contact: contact, direction: moved.direction === 'Outgoing' ? 'Out' : 'In', onDone: function () { navigate(wb.id); } };
+    // No contact to hand ownership to, but the status question still applies.
+    if (contact) OwnershipPrompt.render(promptBox, opts); else OwnershipPrompt.askStatus(promptBox, opts);
   }
 
   // Start a shipment with some details already filled in (e.g. from a bird's transfer).

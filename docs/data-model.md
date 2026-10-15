@@ -377,3 +377,12 @@ the ledger of record is Accounting.
   (`api/ownership`, `js/ownership-prompt.js`). It is never automatic — boarding and breeder loans
   change possession only. Ownership lives on the contact (`contacts.birds_owned`); a bird nobody
   lists as owned is yours. A bird's page shows its Owner and its transfer/shipment history.
+
+## Status follows the bird (asked, not assumed)
+
+Bird status (Available / Reserved / Sold / Deceased) is set from the bird's page. Marking a bird
+**Sold** opens a follow-up — who bought it, then *Set up shipping*, *Hand it over in person*,
+*Just update ownership* or *Not now*. After any shipment, transfer or "Mark as Shipped/Received",
+the app also asks whether to mark the bird Sold (it left while still Available/Reserved) or
+Available again (it came back to you while still Sold). Never automatic: boarding and breeder loans
+change possession without a sale.

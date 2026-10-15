@@ -346,9 +346,10 @@ const ShippingScreen = (function () {
         completeWaybill(wb, wb.date || todayIso()).then(function () {
           var after = function () { renderDetail(main, id, navigate, setTitle); };
           var who = waybillClient(wb);
-          if (!who || !wb.birdIds.length) { after(); return; }
+          if (!wb.birdIds.length) { after(); return; }
           clearEl(pendingBox);
-          OwnershipPrompt.render(pendingBox, { birdIds: wb.birdIds, contact: who, direction: wb.direction === 'Incoming' ? 'In' : 'Out', onDone: after });
+          var opts = { birdIds: wb.birdIds, contact: who, direction: wb.direction === 'Incoming' ? 'In' : 'Out', onDone: after };
+          if (who) OwnershipPrompt.render(pendingBox, opts); else OwnershipPrompt.askStatus(pendingBox, opts);
         }).catch(function (err) {
           happened.disabled = false;
           clearEl(pendingMsg);

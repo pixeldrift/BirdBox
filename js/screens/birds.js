@@ -227,6 +227,49 @@ const BirdsScreen = (function () {
       : 'Off by default — turn on to make this bird searchable in the public Registry.';
     registrySection.appendChild(registryNote);
 
+    var statusSection = document.createElement('div');
+    statusSection.className = 'detail-section';
+    var statusTitle = document.createElement('h3');
+    statusTitle.textContent = 'Status';
+    statusSection.appendChild(statusTitle);
+    var statusChips = document.createElement('div');
+    statusChips.className = 'filter-chips';
+    var followUp = document.createElement('div');
+    function drawStatus() {
+      clearEl(statusChips);
+      STATUSES.filter(function (st) { return st !== 'All'; }).forEach(function (st) {
+        var chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = 'filter-chip' + (bird.status === st ? ' active' : '');
+        chip.textContent = st;
+        chip.addEventListener('click', function () {
+          if (bird.status === st) return;
+          updateBird(bird.id, { status: st }).then(function () {
+            statusBadge.className = 'status-badge ' + statusClass(bird.status);
+            statusBadge.textContent = bird.status;
+            drawStatus();
+            clearEl(followUp);
+            // Sold means it's leaving: ask about shipping / a hand-over / ownership.
+            if (st === 'Sold') SoldFollowUp.render(followUp, bird, function () { clearEl(followUp); });
+          }).catch(function () {
+            clearEl(followUp);
+            var p = document.createElement('p');
+            p.className = 'form-message error';
+            p.textContent = 'Could not change the status — try again.';
+            followUp.appendChild(p);
+          });
+        });
+        statusChips.appendChild(chip);
+      });
+    }
+    drawStatus();
+    statusSection.appendChild(statusChips);
+    var statusNote = document.createElement('p');
+    statusNote.className = 'form-note';
+    statusNote.textContent = 'Only Available birds appear in the Available list. Marking a bird Sold will ask about shipping or handing it over.';
+    statusSection.appendChild(statusNote);
+    statusSection.appendChild(followUp);
+
     var healthSection = document.createElement('div');
     healthSection.className = 'detail-section';
     var healthTitle = document.createElement('h3');
@@ -328,6 +371,7 @@ const BirdsScreen = (function () {
     wrap.appendChild(header);
     wrap.appendChild(buildPhotosSection(bird, function () { renderDetail(main, id, navigate, setTitle); }));
     wrap.appendChild(factsGrid);
+    wrap.appendChild(statusSection);
     wrap.appendChild(familySection);
     wrap.appendChild(registrySection);
     wrap.appendChild(healthSection);
