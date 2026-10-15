@@ -7,9 +7,23 @@
 -- species a breeder is likely to keep (rules in scripts/seed-species.js, editable), and
 -- `aviculture_override` lets a human correct any single species without the next seed undoing it.
 
+create extension if not exists pg_trgm;
+
+-- One normalisation used by every name search and match (mirrored in api/_lib/species.js):
+-- lower-case; hyphens, periods and apostrophes dropped; "&" -> "and"; grey -> gray.
+create or replace function bb_norm(t text) returns text
+language sql immutable as $$
+  select btrim(regexp_replace(
+    replace(replace(replace(replace(replace(replace(replace(lower(t), '-', ' '), '''', ''), '’', ''), '.', ''), '&', ' and '), 'grey', 'gray'), '  ', ' '),
+    '\s+', ' ', 'g'))
+$$;
+
 create table if not exists species (
   code text primary key,
   common_name text not null,
+  -- The name shown in labels when it differs from eBird's common name: US aviculture usage
+  -- ("Sun Conure", "African Grey", "Quaker Parrot"). Null means use common_name.
+  display_name text,
   scientific_name text not null,
   order_name text not null,
   family_code text,
@@ -21,6 +35,8 @@ create table if not exists species (
   aviculture_override boolean,
   popularity integer not null default 0
 );
+
+alter table species add column if not exists display_name text;
 
 create index if not exists species_aviculture_idx on species (aviculture);
 create index if not exists species_family_idx on species (family_code);

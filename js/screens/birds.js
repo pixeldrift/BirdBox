@@ -58,7 +58,7 @@ const BirdsScreen = (function () {
       var results = BIRDS_SAMPLE.filter(function (b) {
         if (state.status !== 'All' && b.status !== state.status) return false;
         if (!q) return true;
-        var hay = [b.band, b.name, b.species, b.subspecies, b.mutation].filter(Boolean).join(' ').toLowerCase();
+        var hay = [b.band, b.name, b.speciesName, b.scientificName, b.species, b.subspecies, b.mutation].filter(Boolean).join(' ').toLowerCase();
         return hay.indexOf(q) !== -1;
       });
 
@@ -174,12 +174,12 @@ const BirdsScreen = (function () {
     [
       ['Band #', bird.band],
       ['Sex', bird.sex],
-      ['Species', bird.species],
-      ['Subspecies', bird.subspecies],
+    ].concat(speciesFacts(bird)).concat([
       ['Mutation', bird.mutation || '—'],
       ['Hatch Date', formatDate(bird.hatchDate)],
       ['Location', bird.cage || '—'],
-    ].forEach(function (f) { factsGrid.appendChild(factRow(f[0], f[1])); });
+    ]).forEach(function (f) { factsGrid.appendChild(factRow(f[0], f[1], f[2])); });
+    appendSpeciesLink(factsGrid, bird);
 
     var familySection = document.createElement('div');
     familySection.className = 'detail-section';

@@ -9,7 +9,7 @@
 // Uses eBird's public taxonomy endpoint, which worked without an API key when tried; if eBird
 // starts requiring one, set EBIRD_API_KEY and it is sent as the X-eBirdApiToken header.
 
-const { ALIASES, GENUS_RULES, POPULAR } = require('./species-aliases');
+const { ALIASES, DISPLAY, GENUS_RULES, POPULAR } = require('./species-aliases');
 
 const TAXONOMY_URL = 'https://api.ebird.org/v2/ref/taxonomy/ebird?fmt=json&cat=species';
 const VERSIONS_URL = 'https://api.ebird.org/v2/ref/taxonomy/versions';
@@ -32,6 +32,24 @@ function genusOf(r) {
   return r.sciName.split(' ')[0];
 }
 
+// The rule-derived name for a species (e.g. "Nanday Parakeet" -> "Nanday Conure"), or null.
+function ruleName(r, onlyDisplay) {
+  for (const rule of GENUS_RULES) {
+    if (onlyDisplay && !rule.display) continue;
+    if (rule.genera.indexOf(genusOf(r)) !== -1 && r.comName.endsWith(' ' + rule.from)) {
+      return { name: r.comName.slice(0, -rule.from.length) + rule.to, kind: rule.kind };
+    }
+  }
+  return null;
+}
+
+// Name shown in labels: an explicit US name, else a genus-rule name, else null (use eBird's).
+function displayName(r) {
+  if (DISPLAY[r.sciName]) return DISPLAY[r.sciName];
+  const rule = ruleName(r, true);
+  return rule ? rule.name : null;
+}
+
 async function fetchJson(url) {
   const headers = process.env.EBIRD_API_KEY ? { 'X-eBirdApiToken': process.env.EBIRD_API_KEY } : {};
   const res = await fetch(url, { headers });
@@ -51,11 +69,9 @@ function buildAliases(taxonomy) {
     ALIASES[sci].forEach((a) => rows.push([r.speciesCode, a[0], a[1], 'curated']));
   });
   taxonomy.forEach((r) => {
-    GENUS_RULES.forEach((rule) => {
-      if (rule.genera.indexOf(genusOf(r)) === -1) return;
-      if (!r.comName.endsWith(' ' + rule.from)) return;
-      rows.push([r.speciesCode, r.comName.slice(0, -rule.from.length) + rule.to, rule.kind, 'genus rule']);
-    });
+    const rule = ruleName(r, false);
+    if (rule) rows.push([r.speciesCode, rule.name, rule.kind, 'genus rule']);
+    if (DISPLAY[r.sciName]) rows.push([r.speciesCode, DISPLAY[r.sciName], 'trade', 'display name']);
   });
   return { rows, unresolved };
 }
@@ -63,10 +79,10 @@ function buildAliases(taxonomy) {
 // `query(text, params)` runs one parameterised statement — injected so tests can use any driver.
 async function seed({ query, taxonomy, version, log = console.log }) {
   const popularity = new Map(POPULAR.map((sci, i) => [sci, 100 - i]));
-  const cols = [[], [], [], [], [], [], [], [], [], [], []];
+  const cols = [[], [], [], [], [], [], [], [], [], [], [], []];
   taxonomy.forEach((r) => {
     [r.speciesCode, r.comName, r.sciName, r.order, r.familyCode || null, r.familyComName || null,
-      r.familySciName || null, r.taxonOrder, version, isAviculture(r), popularity.get(r.sciName) || 0]
+      r.familySciName || null, r.taxonOrder, version, isAviculture(r), popularity.get(r.sciName) || 0, displayName(r)]
       .forEach((v, i) => cols[i].push(v));
   });
 
@@ -75,15 +91,16 @@ async function seed({ query, taxonomy, version, log = console.log }) {
     const p = cols.map((c) => c.slice(start, start + BATCH));
     await query(`
       insert into species (code, common_name, scientific_name, order_name, family_code, family_name,
-                           family_scientific, taxon_order, taxonomy_version, aviculture, popularity)
+                           family_scientific, taxon_order, taxonomy_version, aviculture, popularity, display_name)
       select * from unnest($1::text[], $2::text[], $3::text[], $4::text[], $5::text[], $6::text[],
-                           $7::text[], $8::numeric[], $9::text[], $10::boolean[], $11::int[])
+                           $7::text[], $8::numeric[], $9::text[], $10::boolean[], $11::int[], $12::text[])
       on conflict (code) do update set
         common_name = excluded.common_name, scientific_name = excluded.scientific_name,
         order_name = excluded.order_name, family_code = excluded.family_code,
         family_name = excluded.family_name, family_scientific = excluded.family_scientific,
         taxon_order = excluded.taxon_order, taxonomy_version = excluded.taxonomy_version,
-        aviculture = excluded.aviculture, popularity = excluded.popularity`, p);
+        aviculture = excluded.aviculture, popularity = excluded.popularity,
+        display_name = excluded.display_name`, p);
   }
   log('Species upserted: ' + taxonomy.length + ' (taxonomy ' + version + ')');
 
@@ -124,4 +141,4 @@ if (require.main === module) {
   main().catch((err) => { console.error(err.message); process.exit(1); });
 }
 
-module.exports = { seed, buildAliases, isAviculture };
+module.exports = { seed, buildAliases, isAviculture, displayName };

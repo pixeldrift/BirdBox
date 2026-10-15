@@ -208,31 +208,62 @@ To extend: add a node to `TAXONOMY_NODES` (with the right `parent`) for a new sp
 not yet modeled at all, or add art for an existing node/subspecies/mutation to a pack's `icons`/
 `subspeciesOverrides`/`mutationOverrides` — neither touches the resolver.
 
-## Species reference (new — not yet linked to Birds)
+## Species reference and how Birds link to it (new)
 
 `species` is keyed by the **eBird/Clements species code**, the same code Birds of the World uses in
 its URLs (`https://birdsoftheworld.org/bow/species/<code>/cur/introduction`). Columns: code,
-common_name, scientific_name, order_name, family_code/name/scientific, taxon_order,
-taxonomy_version, `aviculture` (first-guess rules, see `scripts/seed-species.js`),
-`aviculture_override` (a human correction a re-seed never overwrites), `popularity` (ranking
-boost). The full world list (11,167 species in taxonomy 2025) is loaded, because storage is cheap;
-what limits the picker is ranking and the `aviculture` flag (about 2,100 species: parrots, pigeons
-and doves, waterfowl, game birds, ratites, finches and relatives, toucans, hornbills, turacos,
-flamingos, falcons, starlings/mynas — no wild songbirds).
+common_name (eBird's US-English name), `display_name` (US aviculture name where it differs: "Sun
+Conure" for eBird's "Sun Parakeet", "African Grey" for "Gray Parrot"), scientific_name, order,
+family code/name/scientific, taxon_order, taxonomy_version, `aviculture` (first-guess rules in
+`scripts/seed-species.js`), `aviculture_override` (a human correction a re-seed never overwrites)
+and `popularity` (ranking boost). **Labels use the display name, falling back to eBird's common
+name; the scientific name is only ever secondary information.** The full world list (11,167 species,
+taxonomy 2025) is loaded because storage is cheap; the `aviculture` flag (about 2,100 species:
+parrots, pigeons and doves, waterfowl, game birds, ratites, finches and relatives, toucans,
+hornbills, turacos, flamingos, falcons, starlings/mynas, no wild songbirds) and ranking decide what
+the picker offers first.
 
 `species_names` holds alternate names (kind: common / trade / regional / historical /
-scientific_synonym / other, plus source): "Sun Conure" for the eBird "Sun Parakeet", "Quaker" for
-"Monk Parakeet", "Indian Ringneck" for "Rose-ringed Parakeet", "Green-cheek Conure" for
-"Green-cheeked Parakeet". Curated entries are keyed by scientific name in
-`scripts/species-aliases.js`, plus genus rules (Parakeet → Conure for conure genera, Parrot → Amazon
-for *Amazona*, Caique for *Pionites*, Pionus for *Pionus*) — about 120 names today.
+scientific_synonym / other, plus source) — about 280 today, from two places in
+`scripts/species-aliases.js`: curated entries keyed by scientific name (Major Mitchell's Cockatoo
+for eBird's "Pink Cockatoo", Goffin's Cockatoo for "Tanimbar Corella", Quaker, Budgie, Jenday,
+Masked Lovebird, ...) and genus rules (Parakeet → Conure for the conure genera, Parrot → Caique for
+*Pionites*, Parrot → Pionus for *Pionus*). `DISPLAY` in that file holds the US display names.
+Taxonomies disagree with breeders: Clements splits Eclectus into four species, so each carries the
+umbrella name "Eclectus Parrot" and a bare "Eclectus" search returns all of them.
 
-`GET /api/species?q=green cheek` is the typeahead: case/hyphen/apostrophe-insensitive, searches the
-official name, scientific name and every alternate name, ranks likely-kept species and curated
-popular ones first, returns `matchedName` when an alternate name matched, and a Birds of the World
-URL per species. `?code=gncpar` returns one species with its alternate names; `scope=aviculture`
-limits results to the aviculture tier. Setup: run `sql/007_species.sql` in Neon, then
-`DATABASE_URL=... npm run seed:species` (safe to re-run; new taxonomy versions upsert in place).
+**Birds link to a species:** `birds.species_code`. The bird API returns `speciesCode`,
+`speciesName` (display name), `scientificName`, `family`, `familyScientific`, `order` and
+`birdsOfTheWorldUrl`. `birds.species` is now optional legacy text (the old free-text species, kept
+for birds not yet matched); `birds.subspecies` means a true subspecies or form ("Congo", "Timneh"),
+no longer half of the name. New birds are created from a chosen species only — the add form uses the
+species picker and CSV import resolves a `species` column of common names to codes (a
+`species_code` column is also accepted). Bird pages show the species name, the scientific name in
+small italics, and a small "Birds of the World" link that opens in a new tab.
+
+**Search.** `GET /api/species?q=goffin` — case, hyphen, apostrophe and grey/gray insensitive;
+searches display, official, alternate and scientific names; an exact name first, then likely-kept
+and popular species, then prefix / word-start / contains matches; if that finds only a few species,
+a typo-tolerant pass adds close spellings ("major mitchels" → Major Mitchell's Cockatoo,
+"cockatel" → Cockatiel). Results say which alternate name matched. In the app, the picker also puts
+species already in the user's flock first, then their recent picks. `?code=gncpar` returns one
+species with its alternate names; `scope=aviculture` limits to the aviculture tier.
+`POST /api/species/resolve` ({names: [...]}) is what CSV import uses: `exact` is accepted
+automatically, `ambiguous` and `close` (a near spelling, offered as a suggestion) are never guessed.
+
+**Icons.** Packs can now key art by species code (`speciesIcons`, plus `speciesMutationIcons`
+keyed `code|Mutation`). The Birdorable pack gets 813 of its 840 species this way
+(`js/data/icon-species-birdorable.js`, generated by `scripts/build-birdorable-icons.js`; the
+remainder are shown in that script's output, mostly domestic breeds and a few species Birdorable
+and eBird name differently). A species with no art falls back through its genus, family and order
+(`GENUS_NODE` / `FAMILY_NODE` / `ORDER_NODE` in `js/data/icon-taxonomy.js`, which gained a Pigeon &
+Dove node) before the generic bird, so any species in the list gets a sensible icon.
+
+**Setup order:** run `sql/007_species.sql` in Neon; `DATABASE_URL=... npm run seed:species`; then
+`sql/008_birds_species.sql`, which links the existing birds by matching their old
+Species + Subspecies text against species names (and clears the subspecies it consumed) and ends by
+listing any birds it could not link. Until 007 and 008 are run the birds API still serves birds
+without species (they show their old text labels).
 
 ## Registry (new in BirdBox)
 

@@ -8,11 +8,12 @@ const BirdsAddScreen = (function () {
 
   var TEMPLATE_HEADERS = ['band', 'name', 'sex', 'species', 'subspecies', 'mutation', 'hatch_date',
     'status', 'cage', 'mother_band', 'father_band', 'paired_band', 'cost', 'price', 'registry_public', 'notes'];
+  // species = the common name you know the bird by; it's matched to the standard species list.
   var TEMPLATE_EXAMPLES = [
-    ['AR 20001 CA', 'Pepper', 'Female', 'Conure', 'Green-Cheeked', 'Cinnamon', '2024-03-15', 'Available', 'F2-004', '', '', '', '250', '650', 'no', 'Example row — replace or delete me'],
+    ['AR 20001 CA', 'Pepper', 'Female', 'Green-cheeked Conure', '', 'Cinnamon', '2024-03-15', 'Available', 'F2-004', '', '', '', '250', '650', 'no', 'Example row — replace or delete me'],
     ['AR 20002 CA', '', 'Male', 'Cockatiel', '', 'Lutino', '3/2/2024', 'Reserved', '', '', '', 'AR 20001 CA', '', '120', 'yes', ''],
   ];
-  var REQUIRED_COLUMNS = ['band', 'sex', 'species'];
+  var REQUIRED_COLUMNS = ['band', 'sex'];
 
   function distinct(values) {
     var seen = {};
@@ -55,7 +56,7 @@ const BirdsAddScreen = (function () {
   function check(raw, extraIds) {
     var band = (raw.band || '').trim().replace(/\s+/g, ' ');
     if (!band) return { error: 'Band number is required' };
-    if (!(raw.species || '').trim()) return { error: 'Species is required' };
+    if (!raw.speciesCode) return { error: 'Choose a species' };
     var sex = matchOption(raw.sex, SEXES);
     if (!sex) return { error: 'Sex must be Male, Female, or Unsexed' };
     var status = raw.status ? matchOption(raw.status, STATUSES) : 'Available';
@@ -68,7 +69,7 @@ const BirdsAddScreen = (function () {
     var id = birdIdFromBand(band);
     if (getBird(id)) return { error: 'A bird with band ' + band + ' already exists' };
     var bird = {
-      band: band, name: (raw.name || '').trim(), sex: sex, species: raw.species.trim(),
+      band: band, name: (raw.name || '').trim(), sex: sex, speciesCode: raw.speciesCode, speciesName: raw.speciesName || '',
       subspecies: (raw.subspecies || '').trim(), mutation: (raw.mutation || '').trim(),
       hatchDate: date.value, status: status, cage: (raw.cage || '').trim(),
       motherId: raw.motherId || '', fatherId: raw.fatherId || '', pairedId: raw.pairedId || '',
@@ -77,8 +78,10 @@ const BirdsAddScreen = (function () {
     return { bird: bird, id: id };
   }
 
-  function field(labelText, control, hint) {
-    var label = document.createElement('label');
+  function field(labelText, control, hint, asDiv) {
+    // asDiv: for controls with their own buttons/links (the species picker), where a wrapping
+    // <label> would hijack clicks.
+    var label = document.createElement(asDiv ? 'div' : 'label');
     label.className = 'form-field';
     var span = document.createElement('span');
     span.className = 'form-label';
@@ -155,9 +158,21 @@ const BirdsAddScreen = (function () {
     var name = input('text', { placeholder: 'Optional' });
     var sex = select(SEXES.map(function (s) { return { value: s, label: s }; }));
     sex.value = 'Unsexed';
-    var species = input('text', { placeholder: 'Start typing…', required: true });
-    species.setAttribute('list', 'dl-species');
-    var subspecies = input('text', { placeholder: 'Start typing…' });
+    var picked = null;
+    var speciesPicker = SpeciesPicker.create({
+      onChange: function (s) {
+        picked = s;
+        clearEl(dlSub);
+        if (!s) return;
+        distinct(BIRDS_SAMPLE.filter(function (b) { return b.speciesCode === s.code; })
+          .map(function (b) { return b.subspecies; })).forEach(function (v) {
+          var opt = document.createElement('option');
+          opt.value = v;
+          dlSub.appendChild(opt);
+        });
+      },
+    });
+    var subspecies = input('text', { placeholder: 'Only if it applies — e.g. Congo, Timneh' });
     subspecies.setAttribute('list', 'dl-subspecies');
     var mutation = input('text', { placeholder: 'Optional' });
     var hatch = input('date');
@@ -173,22 +188,8 @@ const BirdsAddScreen = (function () {
     notes.className = 'form-input';
     notes.rows = 3;
 
-    // Light typeahead from what's already in the flock; a proper species lookup
-    // (see docs/roadmap.md) will replace this.
-    var speciesNames = distinct(Object.keys(SPECIES_NODE).concat(BIRDS_SAMPLE.map(function (b) { return b.species; })));
-    var dlSpecies = datalist('dl-species', speciesNames);
     var dlSub = datalist('dl-subspecies', []);
     var dlCages = datalist('dl-cages', distinct(BIRDS_SAMPLE.map(function (b) { return b.cage; })));
-    species.addEventListener('input', function () {
-      var wanted = species.value.trim().toLowerCase();
-      clearEl(dlSub);
-      distinct(BIRDS_SAMPLE.filter(function (b) { return b.species.toLowerCase() === wanted; })
-        .map(function (b) { return b.subspecies; })).forEach(function (v) {
-        var opt = document.createElement('option');
-        opt.value = v;
-        dlSub.appendChild(opt);
-      });
-    });
 
     var errorBox = document.createElement('div');
     var saveBtn = document.createElement('button');
@@ -196,17 +197,18 @@ const BirdsAddScreen = (function () {
     saveBtn.className = 'save-btn';
     saveBtn.textContent = 'Add Bird';
 
-    [field('Band number', band), field('Name', name), field('Sex', sex), field('Species', species),
-      field('Subspecies', subspecies), field('Mutation', mutation), field('Hatch date', hatch),
+    [field('Band number', band), field('Name', name), field('Sex', sex), field('Species', speciesPicker.el, 'Search by any name you know — common, trade, or scientific.', true),
+      field('Subspecies / form', subspecies), field('Mutation', mutation), field('Hatch date', hatch),
       field('Status', status), field('Cage', cage), field('Mother', mother), field('Father', father),
       field('Paired with', paired), field('Cost', cost), field('Asking price', price), field('Notes', notes),
-      dlSpecies, dlSub, dlCages, errorBox, saveBtn].forEach(function (el) { form.appendChild(el); });
+      dlSub, dlCages, errorBox, saveBtn].forEach(function (el) { form.appendChild(el); });
 
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       clearEl(errorBox);
       var result = check({
-        band: band.value, name: name.value, sex: sex.value, species: species.value,
+        band: band.value, name: name.value, sex: sex.value,
+        speciesCode: picked ? picked.code : '', speciesName: picked ? picked.name : '',
         subspecies: subspecies.value, mutation: mutation.value, hatchDate: hatch.value,
         status: status.value, cage: cage.value, motherId: mother.value, fatherId: father.value,
         pairedId: paired.value, cost: cost.value, price: price.value, notes: notes.value,
@@ -242,22 +244,49 @@ const BirdsAddScreen = (function () {
     return h.trim().toLowerCase().replace(/[\s-]+/g, '_');
   }
 
-  // Turns parsed CSV rows into { ready: [{ line, bird }], problems: [{ line, error }] }.
+  // Turns parsed CSV rows into Promise<{ ready: [{ line, bird, from }], problems: [{ line, error }] }>
+  // (or { fatal }). Species names are matched against the standard species list on the server;
+  // only an exact match is accepted automatically — near spellings are suggested, never assumed.
   function analyze(rows) {
     var headers = rows[0].map(headerKey);
+    var hasName = headers.indexOf('species') !== -1, hasCode = headers.indexOf('species_code') !== -1;
     var missing = REQUIRED_COLUMNS.filter(function (c) { return headers.indexOf(c) === -1; });
-    if (missing.length) return { fatal: 'Missing required column' + (missing.length > 1 ? 's' : '') + ': ' + missing.join(', ') + '. Download the template to see the expected headers.' };
-
-    var fileIds = {};
-    rows.slice(1).forEach(function (r) {
-      var b = r[headers.indexOf('band')];
-      if (b && b.trim()) fileIds[birdIdFromBand(b)] = true;
-    });
+    if (!hasName && !hasCode) missing.push('species');
+    if (missing.length) return Promise.resolve({ fatal: 'Missing required column' + (missing.length > 1 ? 's' : '') + ': ' + missing.join(', ') + '. Download the template to see the expected headers.' });
 
     function cell(r, name) {
       var i = headers.indexOf(name);
       return i === -1 ? '' : (r[i] || '');
     }
+    var body = rows.slice(1);
+    var names = [];
+    body.forEach(function (r) {
+      var n = cell(r, 'species').trim();
+      if (n && !cell(r, 'species_code').trim() && names.indexOf(n) === -1) names.push(n);
+    });
+
+    var lookup = names.length ? SpeciesApi.resolve(names) : Promise.resolve([]);
+    return lookup.then(function (resolved) {
+      var byInput = {};
+      resolved.forEach(function (r) { byInput[r.input] = r; });
+      return build(body, headers, cell, byInput);
+    });
+  }
+
+  function speciesProblem(input, r) {
+    if (!r || r.status === 'none') return 'Species “' + input + '” wasn’t found in the species list';
+    var names = (r.candidates || []).map(function (c) { return c.name; }).join(', ');
+    if (r.status === 'close') return 'Species “' + input + '” wasn’t found — did you mean ' + names + '?';
+    return 'Species “' + input + '” matches several species (' + names + ') — use one of those names';
+  }
+
+  function build(body, headers, cell, byInput) {
+    var fileIds = {};
+    body.forEach(function (r) {
+      var b = cell(r, 'band');
+      if (b && b.trim()) fileIds[birdIdFromBand(b)] = true;
+    });
+
     function parent(r, name) {
       var v = cell(r, name).trim();
       if (!v) return { id: '' };
@@ -267,21 +296,39 @@ const BirdsAddScreen = (function () {
     }
 
     var ready = [], problems = [], seen = {};
-    rows.slice(1).forEach(function (r, i) {
+    body.forEach(function (r, i) {
       var line = i + 2;
       var mother = parent(r, 'mother_band'), father = parent(r, 'father_band'), paired = parent(r, 'paired_band');
       var parentError = mother.error || father.error || paired.error;
+
+      var code = cell(r, 'species_code').trim(), spName = '', from = '', speciesError = '';
+      if (code) {
+        spName = code;
+      } else {
+        var input = cell(r, 'species').trim();
+        if (!input) speciesError = 'Species is required';
+        else {
+          var res = byInput[input];
+          if (res && res.status === 'exact') {
+            code = res.species.code;
+            spName = res.species.name;
+            from = input.toLowerCase() === spName.toLowerCase() ? '' : input;
+          } else speciesError = speciesProblem(input, res);
+        }
+      }
+
       var result = check({
-        band: cell(r, 'band'), name: cell(r, 'name'), sex: cell(r, 'sex'), species: cell(r, 'species'),
+        band: cell(r, 'band'), name: cell(r, 'name'), sex: cell(r, 'sex'), speciesCode: code, speciesName: spName,
         subspecies: cell(r, 'subspecies'), mutation: cell(r, 'mutation'), hatchDate: cell(r, 'hatch_date'),
         status: cell(r, 'status'), cage: cell(r, 'cage'), motherId: mother.id, fatherId: father.id,
         pairedId: paired.id, cost: cell(r, 'cost'), price: cell(r, 'price'),
         registryPublic: parseBool(cell(r, 'registry_public')), notes: cell(r, 'notes'),
       });
-      if (result.error) problems.push({ line: line, error: result.error });
+      if (speciesError && (!result.error || result.error === 'Choose a species')) problems.push({ line: line, error: speciesError });
+      else if (result.error) problems.push({ line: line, error: result.error });
       else if (parentError) problems.push({ line: line, error: parentError });
       else if (seen[result.id]) problems.push({ line: line, error: 'Band ' + result.bird.band + ' appears more than once in this file' });
-      else { seen[result.id] = true; ready.push({ line: line, bird: result.bird }); }
+      else { seen[result.id] = true; ready.push({ line: line, bird: result.bird, from: from }); }
     });
     return { ready: ready, problems: problems };
   }
@@ -300,7 +347,7 @@ const BirdsAddScreen = (function () {
     var steps = document.createElement('p');
     steps.className = 'notes-text';
     steps.textContent = 'Download the template, fill in one row per bird, save it as a CSV, then upload it here. ' +
-      'Only band, sex, and species are required. You’ll see a preview before anything is added.';
+      'Only band, sex, and species are required. For species, use the name you know the bird by — Sun Conure, African Grey, Goffin’s Cockatoo — and we’ll match it to the standard species list. You’ll see a preview before anything is added.';
     var tplBtn = document.createElement('button');
     tplBtn.type = 'button';
     tplBtn.className = 'add-record-btn';
@@ -326,12 +373,18 @@ const BirdsAddScreen = (function () {
           output.appendChild(message('error', 'That file doesn’t have any bird rows in it.'));
           return;
         }
-        var analysis = analyze(rows);
-        if (analysis.fatal) {
-          output.appendChild(message('error', analysis.fatal));
-          return;
-        }
-        renderPreview(output, analysis, navigate);
+        output.appendChild(message('info', 'Checking your file…'));
+        analyze(rows).then(function (analysis) {
+          clearEl(output);
+          if (analysis.fatal) {
+            output.appendChild(message('error', analysis.fatal));
+            return;
+          }
+          renderPreview(output, analysis, navigate);
+        }).catch(function () {
+          clearEl(output);
+          output.appendChild(message('error', 'Couldn’t check the species in your file just now — check your connection and try again.'));
+        });
       };
       reader.readAsText(file);
     });
@@ -351,7 +404,8 @@ const BirdsAddScreen = (function () {
     analysis.ready.slice(0, 8).forEach(function (r) {
       var p = document.createElement('p');
       p.className = 'notes-text';
-      p.textContent = r.bird.band + ' · ' + r.bird.sex + ' · ' + (r.bird.subspecies ? r.bird.subspecies + ' ' : '') + r.bird.species;
+      p.textContent = r.bird.band + ' · ' + r.bird.sex + ' · ' + (r.bird.speciesName || r.bird.speciesCode) +
+        (r.from ? ' (from “' + r.from + '”)' : '');
       section.appendChild(p);
     });
     if (analysis.ready.length > 8) {

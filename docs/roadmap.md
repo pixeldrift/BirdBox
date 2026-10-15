@@ -77,19 +77,18 @@ or an array, shared client/server validation, preview-before-commit import.
 
 ## Species lists & taxonomy (needs a real plan before the species lookup is built)
 
-**Status:** stage 1 is built — `species` + `species_names` tables (`sql/007_species.sql`), a seed
-script that loads the eBird taxonomy and curated alternate names (`npm run seed:species`), and a
-typeahead endpoint `GET /api/species?q=...` (see docs/data-model.md). **Not wired to Birds yet.**
-Stage 2: add `species_code` to `birds` and migrate existing free-text Species via the names table;
-replace the free-text species/subspecies inputs (add-bird form, CSV import) with a typeahead on
-this endpoint; show a small "Birds of the World" link beside each species; key icon packs by
-species code; rank by the user's own usage/recent picks instead of the hand-picked `POPULAR` list;
-decide how domestic breeds/forms (no eBird code) are modeled; extend Birdorable's `species-map.json`
-with a code per image; define the yearly taxonomy-update procedure (species splits mint new codes);
-review the first-guess `aviculture` rules in `scripts/seed-species.js` with real breeders.
+**Status:** stages 1 and 2 are built (see docs/data-model.md): the species and alternate-names
+tables, the eBird seed, US display names, typo-tolerant search, birds linked to species, the picker
+in the add form, name matching in CSV import, Birds of the World links, and species-keyed icons.
+Still open: the add-bird form is the only place that uses the picker (an edit-bird screen would
+need it too); domestic breeds and forms with no eBird code (Pekin Duck, Embden Goose, Faverolles,
+society finches, fancy pigeons) need their own records linked to a parent species; the
+first-guess `aviculture` rules, display names and `POPULAR` list in `scripts/` need review with real
+breeders; popularity should come from real usage; the yearly taxonomy-update procedure (species
+splits mint new codes); family-level Birds of the World links; a code per Birdorable image beyond
+the 813 matched. Review the US display names in `scripts/species-aliases.js` (e.g. "African Grey"
+vs "African Gray", "Blue-and-gold Macaw") — they are suggestions.
 
-Per the user: Species/Subspecies/Mutation must become a lookup table (filter-as-you-type, most
-popular / recently used first) rather than free text, but there's no definitive taxonomy to copy.
 Points to settle in the plan:
 
 - **No single source of truth.** Classifications are debated and names vary (the app already hit

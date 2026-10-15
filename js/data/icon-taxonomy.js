@@ -65,6 +65,9 @@ const TAXONOMY_NODES = {
   'turaco': { label: 'Turaco', parent: 'softbill' },
   'kingfisher': { label: 'Kingfisher', parent: 'softbill' },
 
+  // Pigeons & doves — commonly kept, so a group of their own
+  'pigeon': { label: 'Pigeon & Dove', parent: 'bird' },
+
   // Songbirds
   'songbird': { label: 'Songbird', parent: 'bird' },
   'finch': { label: 'Finch', parent: 'songbird' },
@@ -155,6 +158,46 @@ const SPECIES_NODE = {
   'Swan': 'swan',
 };
 
+// Which category node a bird starts from when its species has no icon of its own, derived from
+// the species' taxonomy (scientific genus, then family, then order) so every species in the list
+// gets a sensible fallback without hand-mapping thousands of them. Genus wins over family.
+var GENUS_NODE = {
+  Aratinga: 'conure', Eupsittula: 'conure', Psittacara: 'conure', Pyrrhura: 'conure', Thectocercus: 'conure', Guaruba: 'conure',
+  Ara: 'macaw', Anodorhynchus: 'macaw', Cyanopsitta: 'macaw', Primolius: 'macaw', Orthopsittaca: 'macaw', Diopsittaca: 'macaw',
+  Cacatua: 'cockatoo', Eolophus: 'cockatoo', Probosciger: 'cockatoo', Calyptorhynchus: 'cockatoo', Callocephalon: 'cockatoo', Zanda: 'cockatoo',
+  Nymphicus: 'cockatiel', Amazona: 'amazon', Psittacus: 'african-grey', Eclectus: 'eclectus', Poicephalus: 'poicephalus',
+  Agapornis: 'lovebird', Pionites: 'caique', Pionus: 'pionus-parrot', Melopsittacus: 'budgie', Forpus: 'parrotlet',
+  Myiopsitta: 'quaker', Bolborhynchus: 'linnie', Cyanoramphus: 'kakariki', Neopsephotus: 'bourkes-parakeet',
+  Psittacula: 'parakeet', Platycercus: 'rosella', Trichoglossus: 'lory', Lorius: 'lory', Eos: 'lory', Chalcopsitta: 'lory',
+  Pseudeos: 'lory', Strigops: 'kakapo', Nestor: 'kea', Coracopsis: 'vasa-parrot', Psittrichas: 'pesquets-parrot',
+  Gallus: 'chicken', Meleagris: 'turkey', Pavo: 'peafowl', Afropavo: 'peafowl',
+  Coturnix: 'quail', Callipepla: 'quail', Colinus: 'quail', Cyrtonyx: 'quail', Excalfactoria: 'quail',
+  Struthio: 'ostrich', Dromaius: 'emu', Cygnus: 'swan', Anser: 'goose', Branta: 'goose',
+  Aquila: 'eagle', Haliaeetus: 'eagle', Hieraaetus: 'eagle', Harpia: 'eagle', Buteo: 'hawk', Accipiter: 'hawk', Parabuteo: 'hawk',
+};
+var FAMILY_NODE = {
+  Columbidae: 'pigeon', Estrildidae: 'finch', Fringillidae: 'finch', Ploceidae: 'finch', Viduidae: 'finch', Sturnidae: 'songbird',
+  Anatidae: 'duck', Phasianidae: 'ground-bird', Numididae: 'poultry', Cracidae: 'ground-bird',
+  Struthionidae: 'ratite', Casuariidae: 'ratite', Rheidae: 'ratite', Apterygidae: 'ratite',
+  Ramphastidae: 'toucan', Bucerotidae: 'hornbill', Musophagidae: 'turaco', Alcedinidae: 'kingfisher', Halcyonidae: 'kingfisher',
+  Cerylidae: 'kingfisher', Phoenicopteridae: 'flamingo', Falconidae: 'falcon', Accipitridae: 'bird-of-prey',
+  Strigidae: 'owl', Tytonidae: 'owl', Laridae: 'gull', Ardeidae: 'wading-bird', Threskiornithidae: 'wading-bird', Ciconiidae: 'wading-bird',
+};
+var ORDER_NODE = {
+  Psittaciformes: 'parrot', Passeriformes: 'songbird', Galliformes: 'ground-bird', Anseriformes: 'waterfowl',
+  Columbiformes: 'pigeon', Falconiformes: 'falcon', Strigiformes: 'owl', Charadriiformes: 'sea-bird',
+};
+
+function nodeForBird(bird) {
+  if (bird.scientificName) {
+    var genus = bird.scientificName.split(' ')[0];
+    if (GENUS_NODE[genus]) return GENUS_NODE[genus];
+    if (FAMILY_NODE[bird.familyScientific]) return FAMILY_NODE[bird.familyScientific];
+    if (ORDER_NODE[bird.order]) return ORDER_NODE[bird.order];
+  }
+  return SPECIES_NODE[bird.species] || null;
+}
+
 // Every pack must at minimum cover the 'bird' root — that's the guaranteed final
 // fallback. subspeciesOverrides/mutationOverrides are keyed "Species|Subspecies" /
 // "Species|Subspecies|Mutation", for illustrating one specific bird without adding
@@ -223,6 +266,16 @@ const ICON_PACKS = [
     mutationOverrides: {
       'Parakeet|Indian Ring-Necked|Blue': 'src/images/TeraTiger/Indian Ringnecks/Blue Indian Ringneck.png',
     },
+    // The same specific portraits, keyed by eBird species code for birds linked to a species.
+    speciesIcons: {
+      'whicoc1': 'src/images/TeraTiger/Cockatoos/Umbrella Cockatoo.png',
+      'baymac': 'src/images/TeraTiger/Macaws/Blue and Gold Macaw.png',
+      'yenpar1': 'src/images/TeraTiger/Amazons/Yellow-Naped Amazon.png',
+      'grepar': 'src/images/TeraTiger/African Greys/Congo African Grey.png',
+    },
+    speciesMutationIcons: {
+      'rorpar|Blue': 'src/images/TeraTiger/Indian Ringnecks/Blue Indian Ringneck.png',
+    },
   },
   {
     id: 'birdorable',
@@ -264,6 +317,7 @@ const ICON_PACKS = [
       "gull": "src/images/Birdorable/Birds/Herring-Gull.png",
       "kakariki": "src/images/Birdorable/Birds/Red-crowned-Parakeet.png",
       'macaw': "src/images/Birdorable/Birds/Blue-and-yellow-Macaw.png",
+      'pigeon': "src/images/Birdorable/Birds/Rock-Pigeon.png",
       'cockatoo': "src/images/Birdorable/Birds/Umbrella-Cockatoo.png",
       'amazon': "src/images/Birdorable/Birds/Yellow-headed-Amazon.png",
       'eclectus': "src/images/Birdorable/Birds/Eclectus-Parrot.png",
@@ -383,6 +437,9 @@ const ICON_PACKS = [
       'Rosella|Northern': "src/images/Birdorable/Birds/Northern-Rosella.png",
     },
     mutationOverrides: {},
+    // One illustration per species, keyed by eBird species code (js/data/icon-species-birdorable.js,
+    // generated from species-map.json). The node icons and subspecies keys above remain as fallbacks.
+    speciesIcons: BIRDORABLE_SPECIES_ICONS,
   },
   // Add more packs here as they're illustrated — e.g. a "cartoon" or "realistic"
   // style. Each just needs an id/label/description and an `icons` map using the
@@ -432,16 +489,26 @@ function getActiveIconPack() {
   return ICON_PACKS.filter(function (p) { return p.id === id; })[0] || ICON_PACKS[0];
 }
 
+// Most specific art wins: this species (and mutation) -> older free-text overrides -> the species'
+// genus/family/order category and its parents -> the generic bird. A pack only needs art for
+// the levels it has; everything else falls through.
 function resolveBirdIcon(bird) {
   var pack = getActiveIconPack();
 
+  if (bird.speciesCode) {
+    var byMutation = pack.speciesMutationIcons && bird.mutation && pack.speciesMutationIcons[bird.speciesCode + '|' + bird.mutation];
+    if (byMutation) return byMutation;
+    if (pack.speciesIcons && pack.speciesIcons[bird.speciesCode]) return pack.speciesIcons[bird.speciesCode];
+  }
+
+  // Birds not linked to a species yet still use the free-text keys.
   var mutKey = bird.species + '|' + bird.subspecies + '|' + (bird.mutation || '');
   if (bird.mutation && pack.mutationOverrides[mutKey]) return pack.mutationOverrides[mutKey];
 
   var subKey = bird.species + '|' + bird.subspecies;
   if (bird.subspecies && pack.subspeciesOverrides[subKey]) return pack.subspeciesOverrides[subKey];
 
-  var key = SPECIES_NODE[bird.species] || null;
+  var key = nodeForBird(bird);
   while (key) {
     if (pack.icons[key]) return pack.icons[key];
     var node = TAXONOMY_NODES[key];

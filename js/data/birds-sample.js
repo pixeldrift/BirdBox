@@ -92,16 +92,23 @@ function birdChildren(id) {
 
 const SEX_LETTER = { Male: 'M', Female: 'F', Unsexed: 'U' };
 
+// What kind of bird this is, for labels: the linked species' US common name (plus a true
+// subspecies/form if one was entered), or — for birds not yet linked — the old free text.
+function birdTypeLabel(bird) {
+  if (bird.speciesName) return bird.speciesName + (bird.subspecies ? ' (' + bird.subspecies + ')' : '');
+  return ((bird.subspecies ? bird.subspecies + ' ' : '') + (bird.species || '')).trim() || 'Unknown species';
+}
+
 function birdIdentifier(bird) {
   var sexPart = SEX_LETTER[bird.sex] || '?';
   var namePart = bird.name ? '"' + bird.name + '" ' : '';
   var mutationPart = bird.mutation ? bird.mutation + ' ' : '';
-  return bird.band + ' - (' + sexPart + ') ' + namePart + mutationPart + bird.subspecies + ' ' + bird.species;
+  return bird.band + ' - (' + sexPart + ') ' + namePart + mutationPart + birdTypeLabel(bird);
 }
 
 // Shorter label for chips/rows elsewhere (no band #, no sex letter).
 function birdShortLabel(bird) {
-  return (bird.name ? '"' + bird.name + '" ' : '') + bird.subspecies + ' ' + bird.species;
+  return (bird.name ? '"' + bird.name + '" ' : '') + birdTypeLabel(bird);
 }
 
 function birdPrimaryPhoto(bird) {

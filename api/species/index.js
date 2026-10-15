@@ -1,59 +1,66 @@
 const { neon } = require('@neondatabase/serverless');
+const { normalize, escapeLike, toSpecies } = require('../_lib/species');
 
 const sql = neon(process.env.DATABASE_URL);
 
-// Ignore case, hyphens and apostrophes so "green cheek" finds "Green-cheeked" and
-// "bourkes" finds "Bourke's" — matches the expression used in the SQL below.
-function normalize(s) {
-  return String(s || '').toLowerCase().replace(/[-]/g, ' ').replace(/['’]/g, '').replace(/\s+/g, ' ').trim();
-}
+const NAMES = `
+  select code, common_name as name, false as is_sci from species
+  union all select code, display_name, false from species where display_name is not null
+  union all select species_code, name, false from species_names
+  union all select code, scientific_name, true from species`;
 
-function escapeLike(s) {
-  return s.replace(/[\\%_]/g, (c) => '\\' + c);
-}
+const SELECT = `
+  select s.code, s.common_name, s.display_name, s.scientific_name, s.family_name, s.order_name,
+         coalesce(s.aviculture_override, s.aviculture) as aviculture`;
 
-function toSpecies(row) {
-  return {
-    code: row.code,
-    commonName: row.common_name,
-    scientificName: row.scientific_name,
-    family: row.family_name,
-    order: row.order_name,
-    aviculture: row.aviculture,
-    // Set when the query matched an alternate name (trade name, older name, ...) rather than the
-    // official common name, so the picker can show "Sun Conure → Sun Parakeet".
-    matchedName: row.matched_name && row.matched_name !== row.common_name ? row.matched_name : null,
-    birdsOfTheWorldUrl: 'https://birdsoftheworld.org/bow/species/' + row.code + '/cur/introduction',
-  };
-}
-
-const NORM = "lower(replace(replace(replace(name, '-', ' '), '''', ''), '’', ''))";
-
-// Typeahead: species a breeder is likely to keep come first, and among those the curated
-// popular ones; then prefix matches, word-start matches, and anything containing the text
-// (scientific-name matches rank behind name matches); popularity and taxonomic order break ties.
-// Matches the official name, scientific name, and every alternate name.
+// Typeahead. Results are ranked: species a breeder is likely to keep first, an exact name match
+// above all, then the curated popular species, then prefix / word-start / contains matches
+// (scientific-name matches rank behind name matches). Official names, US display names, scientific
+// names and every alternate name are searched. If that finds only a few species, a typo-tolerant
+// pass adds close spellings ("major mitchels" -> Major Mitchell's Cockatoo).
 async function search(q, limit, avicultureOnly) {
-  const n = escapeLike(normalize(q));
-  return sql(`
+  const n = normalize(q);
+  const esc = escapeLike(n);
+  const strict = await sql(`
     with hits as (
+      select code, name, is_sci, bb_norm(name) as nn from (${NAMES}) n
+    ), scored as (
       select code, name,
-        (case when ${NORM} like $1 then 0 when ${NORM} like $2 then 1 else 2 end) + (case when is_sci then 3 else 0 end) as rank
-      from (
-        select code, common_name as name, false as is_sci from species
-        union all select species_code, name, false from species_names
-        union all select code, scientific_name, true from species
-      ) n
-      where ${NORM} like $3
+        (case when nn = $6 then -1 when nn like $1 then 0 when nn like $2 then 1 else 2 end)
+          + (case when is_sci then 3 else 0 end) as rank
+      from hits where nn like $3
     )
-    select s.code, s.common_name, s.scientific_name, s.family_name, s.order_name,
-           coalesce(s.aviculture_override, s.aviculture) as aviculture,
-           (array_agg(h.name order by h.rank, length(h.name)))[1] as matched_name
-    from hits h join species s on s.code = h.code
+    ${SELECT},
+           (array_agg(h.name order by h.rank, length(h.name)))[1] as matched_name,
+           min(h.rank) as rank
+    from scored h join species s on s.code = h.code
     where ($4::boolean = false or coalesce(s.aviculture_override, s.aviculture))
     group by s.code
-    order by coalesce(s.aviculture_override, s.aviculture) desc, (s.popularity > 0) desc, min(h.rank), s.popularity desc, s.taxon_order
-    limit $5`, [n + '%', '% ' + n + '%', '%' + n + '%', avicultureOnly, limit]);
+    order by coalesce(s.aviculture_override, s.aviculture) desc, (min(h.rank) = -1) desc,
+             (s.popularity > 0) desc, min(h.rank), s.popularity desc, s.taxon_order
+    limit $5`, [esc + '%', '% ' + esc + '%', '%' + esc + '%', avicultureOnly, limit, n]);
+
+  let rows = strict;
+  if (rows.length < Math.min(limit, 5) && n.length >= 4) {
+    const fuzzy = await sql(`
+      with hits as (
+        select code, name, bb_norm(name) as nn from (${NAMES}) n where not is_sci
+      )
+      ${SELECT},
+             (array_agg(h.name order by word_similarity($1, h.nn) + similarity($1, h.nn) desc))[1] as matched_name,
+             max(word_similarity($1, h.nn) + similarity($1, h.nn)) as score
+      from hits h join species s on s.code = h.code
+      where word_similarity($1, h.nn) >= 0.55 and similarity($1, h.nn) >= 0.3
+        and ($2::boolean = false or coalesce(s.aviculture_override, s.aviculture))
+        and s.code <> all($3::text[])
+      group by s.code
+      order by round((max(word_similarity($1, h.nn) + similarity($1, h.nn)) + (case when coalesce(s.aviculture_override, s.aviculture) then 0.3 else 0 end))::numeric, 1) desc, s.popularity desc
+      limit $4`, [n, avicultureOnly, rows.map((r) => r.code), limit - rows.length]);
+    // Keep only spellings about as close as the best one, so a clear typo gives one answer.
+    const best = fuzzy.length ? Math.max.apply(null, fuzzy.map((r) => Number(r.score))) : 0;
+    rows = rows.concat(fuzzy.filter((r) => Number(r.score) >= best - 0.25));
+  }
+  return rows;
 }
 
 module.exports = async function handler(req, res) {
@@ -65,7 +72,7 @@ module.exports = async function handler(req, res) {
   try {
     if (query.code) {
       const rows = await sql(`
-        select s.*, coalesce(s.aviculture_override, s.aviculture) as aviculture_effective,
+        ${SELECT}, s.taxonomy_version,
                coalesce((select json_agg(json_build_object('name', n.name, 'kind', n.kind) order by n.name)
                          from species_names n where n.species_code = s.code), '[]'::json) as names
         from species s where s.code = $1`, [String(query.code)]);
@@ -73,8 +80,7 @@ module.exports = async function handler(req, res) {
         res.status(404).json({ error: 'Species not found' });
         return;
       }
-      const r = rows[0];
-      res.status(200).json(Object.assign(toSpecies(Object.assign({}, r, { aviculture: r.aviculture_effective })), { alternateNames: r.names, taxonomyVersion: r.taxonomy_version }));
+      res.status(200).json(Object.assign(toSpecies(rows[0]), { alternateNames: rows[0].names, taxonomyVersion: rows[0].taxonomy_version }));
       return;
     }
     const q = String(query.q || '').trim();
@@ -84,10 +90,14 @@ module.exports = async function handler(req, res) {
     }
     const limit = Math.min(Math.max(parseInt(query.limit, 10) || 15, 1), 50);
     const rows = await search(q, limit, query.scope === 'aviculture');
-    res.status(200).json(rows.map(toSpecies));
+    res.status(200).json(rows.map((r) => {
+      const s = toSpecies(r);
+      // Which alternate name matched, shown when it isn't the name we'd label the species with.
+      s.matchedName = r.matched_name && normalize(r.matched_name) !== normalize(s.name) &&
+        normalize(r.matched_name) !== normalize(s.scientificName) ? r.matched_name : null;
+      return s;
+    }));
   } catch (err) {
     res.status(500).json({ error: 'Failed to search species' });
   }
 };
-
-module.exports.normalize = normalize;

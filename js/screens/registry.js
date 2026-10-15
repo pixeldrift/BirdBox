@@ -10,12 +10,11 @@ const RegistrySearchScreen = (function () {
   function publicFacts(bird) {
     return [
       ['Band #', bird.band],
-      ['Species', bird.species],
-      ['Subspecies', bird.subspecies],
+    ].concat(speciesFacts(bird)).concat([
       ['Mutation', bird.mutation || '—'],
       ['Sex', bird.sex],
       ['Hatch Date', formatDate(bird.hatchDate)],
-    ];
+    ]);
   }
 
   function publicRelChip(label, relBird, navigate) {
@@ -50,7 +49,7 @@ const RegistrySearchScreen = (function () {
 
     var factsGrid = document.createElement('div');
     factsGrid.className = 'fact-grid';
-    publicFacts(bird).forEach(function (f) { factsGrid.appendChild(factRow(f[0], f[1])); });
+    publicFacts(bird).forEach(function (f) { factsGrid.appendChild(factRow(f[0], f[1], f[2])); });
     card.appendChild(factsGrid);
 
     var lineage = document.createElement('div');

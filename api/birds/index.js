@@ -1,9 +1,24 @@
 const { neon } = require('@neondatabase/serverless');
+const { bowUrl } = require('../_lib/species');
 
 const sql = neon(process.env.DATABASE_URL);
 
 const SEXES = ['Male', 'Female', 'Unsexed'];
 const STATUSES = ['Available', 'Reserved', 'Sold', 'Deceased'];
+
+// A bird plus the species it is linked to (if any). Species columns are null for birds that
+// haven't been linked yet (older records, until sql/008_birds_species.sql has matched them).
+const WITH_SPECIES = `
+  select b.*, s.common_name as sp_common_name, s.display_name as sp_display_name,
+         s.scientific_name as sp_scientific_name, s.family_name as sp_family_name,
+         s.family_scientific as sp_family_scientific, s.order_name as sp_order_name
+  from birds b left join species s on s.code = b.species_code`;
+
+// Postgres date columns can arrive as Date objects; the app wants plain 'YYYY-MM-DD'.
+function isoDate(v) {
+  if (!v) return null;
+  return v instanceof Date ? v.toISOString().slice(0, 10) : String(v).slice(0, 10);
+}
 
 function toBird(row) {
   return {
@@ -11,10 +26,20 @@ function toBird(row) {
     band: row.band,
     name: row.name,
     sex: row.sex,
+    // Linked species (current model). `speciesName` is the US display name used in labels;
+    // the scientific name is secondary information only.
+    speciesCode: row.species_code || null,
+    speciesName: row.sp_display_name || row.sp_common_name || null,
+    scientificName: row.sp_scientific_name || null,
+    family: row.sp_family_name || null,
+    familyScientific: row.sp_family_scientific || null,
+    order: row.sp_order_name || null,
+    birdsOfTheWorldUrl: row.species_code ? bowUrl(row.species_code) : null,
+    // Legacy free-text species, kept for birds not yet linked.
     species: row.species,
     subspecies: row.subspecies,
     mutation: row.mutation,
-    hatchDate: row.hatch_date,
+    hatchDate: isoDate(row.hatch_date),
     status: row.status,
     cage: row.cage,
     motherId: row.mother_id,
@@ -45,8 +70,8 @@ function cleanNewBird(input) {
   const cleanBand = band.replace(/\s+/g, ' ');
   const id = cleanBand.replace(/\s+/g, '').toUpperCase();
   if (!SEXES.includes(input.sex)) return { error: 'Sex must be Male, Female, or Unsexed' };
-  const species = text(input.species);
-  if (!species) return { error: 'Species is required' };
+  const speciesCode = text(input.speciesCode);
+  if (!speciesCode) return { error: 'Choose a species' };
   const status = input.status || 'Available';
   if (!STATUSES.includes(status)) return { error: 'Status must be one of ' + STATUSES.join(', ') };
   const hatch = text(input.hatchDate);
@@ -62,7 +87,7 @@ function cleanNewBird(input) {
   if (Number.isNaN(cost) || Number.isNaN(price)) return { error: 'Cost and price must be numbers' };
   return {
     bird: {
-      id, band: cleanBand, name: text(input.name), sex: input.sex, species,
+      id, band: cleanBand, name: text(input.name), sex: input.sex, speciesCode,
       subspecies: text(input.subspecies), mutation: text(input.mutation),
       hatchDate: hatch, status, cage: text(input.cage),
       motherId: text(input.motherId), fatherId: text(input.fatherId), pairedId: text(input.pairedId),
@@ -74,7 +99,14 @@ function cleanNewBird(input) {
 module.exports = async function handler(req, res) {
   if (req.method === 'GET') {
     try {
-      const rows = await sql`select * from birds order by band`;
+      let rows;
+      try {
+        rows = await sql(WITH_SPECIES + ' order by b.band');
+      } catch (joinErr) {
+        // Species tables not created yet (sql/007, sql/008 not run): still serve the birds.
+        console.error('Birds loaded without species (run sql/007 and sql/008):', joinErr.message);
+        rows = await sql`select * from birds order by band`;
+      }
       res.status(200).json(rows.map(toBird));
     } catch (err) {
       res.status(500).json({ error: 'Failed to load birds' });
@@ -83,8 +115,8 @@ module.exports = async function handler(req, res) {
   }
 
   if (req.method === 'POST') {
-    // Accepts one bird or an array (batch import). Rows that fail validation or
-    // already exist are reported back; the rest are inserted together.
+    // Accepts one bird or an array (batch import). Rows that fail validation, name an unknown
+    // species, or already exist are reported back; the rest are inserted together.
     const body = req.body;
     const inputs = Array.isArray(body) ? body : [body];
     if (inputs.length === 0 || inputs.length > 1000) {
@@ -105,19 +137,24 @@ module.exports = async function handler(req, res) {
         ? await sql`select id from birds where id = any(${cleaned.map((c) => c.bird.id)})`
         : [];
       const taken = new Set(existing.map((r) => r.id));
+      const codes = cleaned.length
+        ? await sql`select code from species where code = any(${Array.from(new Set(cleaned.map((c) => c.bird.speciesCode)))})`
+        : [];
+      const knownCodes = new Set(codes.map((r) => r.code));
       const toInsert = [];
       cleaned.forEach((c) => {
         if (taken.has(c.bird.id)) rejected.push({ index: c.index, error: 'A bird with this band number already exists' });
+        else if (!knownCodes.has(c.bird.speciesCode)) rejected.push({ index: c.index, error: 'Unknown species — pick one from the list' });
         else toInsert.push(c.bird);
       });
       if (toInsert.length) {
         await sql.transaction(toInsert.map((b) => sql`
-          insert into birds (id, band, name, sex, species, subspecies, mutation, hatch_date, status, cage, mother_id, father_id, paired_id, cost, price, registry_public, notes)
-          values (${b.id}, ${b.band}, ${b.name}, ${b.sex}, ${b.species}, ${b.subspecies}, ${b.mutation}, ${b.hatchDate}, ${b.status}, ${b.cage}, ${b.motherId}, ${b.fatherId}, ${b.pairedId}, ${b.cost}, ${b.price}, ${b.registryPublic}, ${b.notes})
+          insert into birds (id, band, name, sex, species_code, subspecies, mutation, hatch_date, status, cage, mother_id, father_id, paired_id, cost, price, registry_public, notes)
+          values (${b.id}, ${b.band}, ${b.name}, ${b.sex}, ${b.speciesCode}, ${b.subspecies}, ${b.mutation}, ${b.hatchDate}, ${b.status}, ${b.cage}, ${b.motherId}, ${b.fatherId}, ${b.pairedId}, ${b.cost}, ${b.price}, ${b.registryPublic}, ${b.notes})
         `));
       }
       const created = toInsert.length
-        ? (await sql`select * from birds where id = any(${toInsert.map((b) => b.id)}) order by band`).map(toBird)
+        ? (await sql(WITH_SPECIES + ' where b.id = any($1) order by b.band', [toInsert.map((b) => b.id)])).map(toBird)
         : [];
       res.status(created.length ? 201 : 200).json({ created, rejected: rejected.sort((a, b) => a.index - b.index) });
     } catch (err) {

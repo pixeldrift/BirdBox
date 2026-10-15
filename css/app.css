@@ -1026,3 +1026,114 @@ textarea.form-input {
   background: #F5E1DD;
   color: #8A3A26;
 }
+
+/* Species picker and species links */
+
+.species-picker {
+  position: relative;
+}
+
+.species-results {
+  position: absolute;
+  z-index: 20;
+  left: 0;
+  right: 0;
+  margin: 4px 0 0;
+  padding: 4px;
+  list-style: none;
+  background: var(--card-bg);
+  border: 1px solid #E9DCC9;
+  border-radius: 14px;
+  box-shadow: 0 6px 18px rgba(58, 46, 39, 0.16);
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.species-option {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 8px;
+  padding: 9px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.species-option.active,
+.species-option:hover {
+  background: #EEF0E4;
+}
+
+.sp-name {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.sp-via {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.sp-sci {
+  flex-basis: 100%;
+  font-size: 0.75rem;
+  font-style: italic;
+  color: var(--muted);
+}
+
+.species-message {
+  padding: 9px 10px;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.species-chosen {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  padding: 10px 12px;
+  border: 1px solid #E9DCC9;
+  border-radius: 12px;
+  background: #EEF0E4;
+}
+
+.species-chosen-text {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 160px;
+}
+
+.species-change {
+  border: none;
+  background: none;
+  color: var(--brand);
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.ext-link {
+  color: var(--brand);
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.ext-link:hover {
+  text-decoration: underline;
+}
+
+.sci-name {
+  font-style: italic;
+}
+
+.fact-wide {
+  grid-column: 1 / -1;
+}
+
+.form-message.info {
+  background: #EEF0E4;
+  color: var(--text);
+}
