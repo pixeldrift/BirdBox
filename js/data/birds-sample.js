@@ -59,6 +59,29 @@ function updateBird(id, changes) {
   });
 }
 
+// Sends one bird or a batch to the server. Resolves to { created, rejected } where
+// rejected is [{ index, error }] for rows the server refused (invalid or duplicate).
+// Created birds are added to the local list immediately.
+function addBirds(list) {
+  return fetch('/api/birds', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(list),
+  }).then(function (res) {
+    return res.json().then(function (data) {
+      if (!res.ok) throw new Error(data.error || 'Save failed');
+      data.created.forEach(function (b) { BIRDS_SAMPLE.push(b); });
+      BIRDS_SAMPLE.sort(function (a, b) { return a.band < b.band ? -1 : a.band > b.band ? 1 : 0; });
+      reindexBirds();
+      return data;
+    });
+  });
+}
+
+function birdIdFromBand(band) {
+  return String(band || '').replace(/\s+/g, '').toUpperCase();
+}
+
 function getBird(id) {
   return BIRDS_BY_ID[id] || null;
 }

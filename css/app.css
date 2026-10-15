@@ -1002,3 +1002,27 @@ textarea.form-input {
   align-items: center;
   justify-content: center;
 }
+
+/* Add-bird / import */
+
+.list-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.list-actions .add-record-btn {
+  margin-bottom: 12px;
+}
+
+.form-message {
+  margin: 0 0 8px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+}
+
+.form-message.error {
+  background: #F5E1DD;
+  color: #8A3A26;
+}
