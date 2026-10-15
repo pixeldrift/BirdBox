@@ -1200,3 +1200,63 @@ textarea.form-input {
 .credit-blurb {
   margin: -4px 0 6px;
 }
+
+/* About */
+
+.about-name {
+  font-size: 1.4rem;
+  margin: 0 0 2px;
+}
+
+.about-tagline {
+  margin: 0 0 10px;
+  font-family: 'Bree Serif', serif;
+  color: var(--brand);
+  font-size: 1.05rem;
+}
+
+.about-byline {
+  margin: 10px 0 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.about-item {
+  padding: 10px 0;
+  border-top: 1px solid #EEE3D6;
+}
+
+.about-item:first-of-type {
+  border-top: none;
+}
+
+.about-item-title {
+  margin: 0 0 2px;
+  font-family: 'Bree Serif', serif;
+  font-weight: 400;
+  font-size: 1rem;
+}
+
+.about-item-text {
+  margin: 0;
+  line-height: 1.45;
+  font-size: 0.9rem;
+}
+
+.about-list {
+  margin: 0 0 10px;
+  padding-left: 20px;
+  line-height: 1.5;
+  font-size: 0.9rem;
+}
+
+.about-footer {
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--muted);
+  padding: 4px 8px 16px;
+}
+
+.about-footer p {
+  margin: 4px 0;
+}

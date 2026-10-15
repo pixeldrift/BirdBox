@@ -129,6 +129,8 @@ const NAV = [
         blurb: 'Keep data stored locally on this device only.' },
       { id: 'help', label: 'Help', icon: 'icons/tinted/account/Help.png',
         blurb: 'Guides, FAQs, and support.' },
+      { id: 'about', label: 'About', icon: 'icons/tinted/mybirds/Birds.png',
+        blurb: 'Who made BirdBox, who it’s for, and where it’s headed.' },
       { id: 'credits', label: 'Credits', icon: 'icons/tinted/classifieds/Notes.png',
         blurb: 'The sources, artists, and partners behind BirdBox.' },
     ],

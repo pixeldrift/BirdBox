@@ -6,6 +6,7 @@
 // on screen so readers can tell, and affiliate links are marked rel="sponsored". `disclosure` is
 // optional extra text shown with a partner or affiliate entry.
 // Only list addresses that have been checked.
+// (Fonts and other technical credits are deliberately left out of the app.)
 const CREDITS = [
   {
     title: 'Species names & taxonomy',
@@ -68,15 +69,23 @@ const CREDITS = [
     ],
   },
   {
-    title: 'Typefaces',
-    blurb: 'The lettering used throughout the app.',
+    title: 'Mutations & genetics',
+    blurb: 'Where to look up color mutations and work out what a pairing can produce.',
     items: [
       {
-        name: 'Bree Serif and Roboto Slab',
-        by: 'Google Fonts',
-        url: 'https://fonts.google.com',
-        description: 'Free, open typefaces. Bree Serif is used for titles and names, Roboto Slab for everything else.',
-        used: 'Titles, names and body text.',
+        name: 'Dribbr',
+        by: 'Dribbr',
+        url: 'https://dribbr.app',
+        description: 'An atlas of expert-confirmed color mutations for budgerigars, lovebirds and more, plus a calculator that shows what a pairing can produce.',
+        used: 'Recommended reading — not used inside BirdBox.',
+        relationship: 'courtesy',
+      },
+      {
+        name: 'Gencalc',
+        by: 'Gencalc',
+        url: 'https://www.gencalc.com',
+        description: 'A genetics calculator for working out what a pairing can produce.',
+        used: 'Recommended reading — not used inside BirdBox.',
         relationship: 'courtesy',
       },
     ],
