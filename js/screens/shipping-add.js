@@ -89,14 +89,14 @@ const ShippingAddScreen = (function () {
     typeField.appendChild(pendingBox);
 
     // Client -> their birds.
-    var clientBox = section('Client', 'Optional. Choose one to see the birds linked to them.');
+    var clientBox = section('Who is it going to / coming from?', 'Choose a contact to see the birds linked to them. (Or just fill in From / To below.)');
     var clientSearch = input('search', { placeholder: 'Search clients…' });
     var clientOut = el('div', 'pick-results');
     clientBox.appendChild(clientSearch);
     clientBox.appendChild(clientOut);
 
     // Birds: what's chosen, the client's birds, then a search whose last option adds a new bird.
-    var birdBox = section('Birds');
+    var birdBox = section('Birds', 'Required — at least one.');
     var chosen = el('div', 'pick-selected');
     var linkedOut = el('div', 'pick-results');
     var birdSearch = input('search', { placeholder: 'Search any bird by band, name or species…' });
@@ -254,7 +254,7 @@ const ShippingAddScreen = (function () {
     saveBtn.type = 'submit';
 
     [typeField, clientBox, birdBox, field('How did it travel?', method), field('Handled by', carrier, 'Courier, airline, or the person who carried it.'),
-      field('From', from, 'Who or where it came from — as much as you know.'), field('To', to),
+      field('From', from, 'Optional — a place, airport or person, as much as you know.'), field('To', to),
       field('Date', date, 'Leave blank if you don’t remember. For a pending shipment, the planned day.'),
       field('Waybill / tracking #', waybill), attachBox, field('Notes', notes),
       field('Cost', cost, 'Optional — the cost is also tracked in Accounting.'), errorBox, saveBtn].forEach(function (e) { form.appendChild(e); });
@@ -264,6 +264,11 @@ const ShippingAddScreen = (function () {
       keepDetails();
       clearEl(errorBox);
       function note(kind, msg) { errorBox.appendChild(el('p', 'form-message ' + kind, msg)); }
+      if (!draft.birdIds.length) { note('error', 'Choose at least one bird'); return; }
+      if (!draft.clientId && !draft.from.trim() && !draft.to.trim()) {
+        note('error', 'Choose who it ' + (draft.direction === 'Outgoing' ? 'went to' : 'came from') + ', or fill in From / To');
+        return;
+      }
       saveBtn.disabled = true;
       saveBtn.textContent = 'Saving…';
       addWaybill({
@@ -276,17 +281,18 @@ const ShippingAddScreen = (function () {
           draft.files[kind].forEach(function (f) { jobs.push([kind, f]); });
         });
         var failed = [];
+        var moved = { ids: draft.birdIds.slice(), clientId: draft.clientId, direction: draft.direction, pending: draft.pending };
         return jobs.reduce(function (chain, j) {
           return chain.then(function () {
             return addWaybillFile(wb, j[0], j[1]).catch(function (err) { failed.push(err.message); });
           });
         }, Promise.resolve()).then(function () {
           draft = null;
-          if (!failed.length) { navigate(wb.id); return; }
+          if (!failed.length) { afterSave(wb, moved, navigate, main); return; }
           note('error', 'The shipment was saved, but ' + failed.length + (failed.length === 1 ? ' file' : ' files') + ' didn’t upload: ' + failed.join('; ') + '. You can add them on the shipment.');
           var open = el('button', 'save-btn', 'Open Shipment');
           open.type = 'button';
-          open.addEventListener('click', function () { navigate(wb.id); });
+          open.addEventListener('click', function () { afterSave(wb, moved, navigate, main); });
           saveBtn.replaceWith(open);
         });
       }).catch(function (err) {
@@ -303,5 +309,28 @@ const ShippingAddScreen = (function () {
     main.appendChild(wrap);
   }
 
-  return { renderForm: renderForm, reset: function () { draft = null; } };
+  // A shipment that has really happened means possession moved — ask (never assume) whether
+  // ownership changes too. A pending shipment hasn't left yet, so there's nothing to ask.
+  function afterSave(wb, moved, navigate, main) {
+    var contact = moved.clientId ? getContact(moved.clientId) : null;
+    if (moved.pending || !contact) { navigate(wb.id); return; }
+    clearEl(main);
+    var box = el('div', 'detail-screen');
+    box.appendChild(el('p', 'form-message info', 'Shipment saved.'));
+    var promptBox = el('div');
+    box.appendChild(promptBox);
+    main.appendChild(box);
+    OwnershipPrompt.render(promptBox, { birdIds: moved.ids, contact: contact, direction: moved.direction === 'Outgoing' ? 'Out' : 'In', onDone: function () { navigate(wb.id); } });
+  }
+
+  // Start a shipment with some details already filled in (e.g. from a bird's transfer).
+  function prefill(values) {
+    draft = newDraft();
+    if (values.direction) draft.direction = values.direction;
+    if (values.clientId) draft.clientId = values.clientId;
+    if (values.birdIds) draft.birdIds = values.birdIds.slice();
+    if (values.date) draft.date = values.date;
+  }
+
+  return { renderForm: renderForm, prefill: prefill, reset: function () { draft = null; } };
 })();

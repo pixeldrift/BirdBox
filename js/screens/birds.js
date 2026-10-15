@@ -136,6 +136,7 @@ const BirdsScreen = (function () {
 
     if (id === 'new') return BirdsAddScreen.renderForm(main, navigate, setTitle);
     if (id === 'import') return BirdsAddScreen.renderImport(main, navigate, setTitle);
+    if (id === 'transfer') return TransferScreen.renderForm(main, navigate, setTitle);
 
     var bird = getBird(id);
     if (!bird) {
@@ -179,6 +180,7 @@ const BirdsScreen = (function () {
       ['Mutation', bird.mutation || '—'],
       ['Hatch Date', formatDate(bird.hatchDate)],
       ['Location', bird.cage || '—'],
+      ['Owner', (birdOwner(bird.id) || { name: 'You' }).name],
     ]).forEach(function (f) { factsGrid.appendChild(factRow(f[0], f[1], f[2])); });
     appendSpeciesLink(factsGrid, bird);
 
@@ -261,6 +263,57 @@ const BirdsScreen = (function () {
     });
     healthSection.appendChild(addHealthBtn);
 
+    var transferSection = document.createElement('div');
+    transferSection.className = 'detail-section';
+    var transferTitle = document.createElement('h3');
+    transferTitle.textContent = 'Transfers & Shipments';
+    transferSection.appendChild(transferTitle);
+    var history = transfersForBird(bird.id).map(function (t) {
+      var who = getContact(t.contactId);
+      return { date: t.date || '', label: (t.direction === 'Out' ? 'Went to ' : 'Came from ') + (who ? who.name : 'someone'),
+        sub: [t.method, t.date ? formatDate(t.date) : ''].filter(Boolean).join(' · '), go: who ? function () { location.hash = '#/business/contacts/' + who.id; } : null };
+    }).concat(WAYBILLS_SAMPLE.filter(function (w) { return w.birdIds.indexOf(bird.id) !== -1; }).map(function (w) {
+      var who = waybillClient(w);
+      var verb = w.status === 'Pending' ? 'Pending shipment' : (w.direction === 'Incoming' ? 'Received' : 'Shipped');
+      return { date: w.date || '', label: verb + (who ? (w.direction === 'Incoming' ? ' from ' : ' to ') + who.name : ''),
+        sub: [w.method || 'Shipment', w.date ? formatDate(w.date) : ''].filter(Boolean).join(' · '), go: function () { location.hash = '#/business/shipping/' + w.id; } };
+    })).sort(function (a, b) { return b.date.localeCompare(a.date); });
+    if (history.length) {
+      history.forEach(function (h) {
+        var row = document.createElement('button');
+        row.type = 'button';
+        row.className = 'list-row';
+        var info = document.createElement('span');
+        info.className = 'list-row-info';
+        var t = document.createElement('span');
+        t.className = 'list-row-title';
+        t.textContent = h.label;
+        var sub = document.createElement('span');
+        sub.className = 'list-row-sub';
+        sub.textContent = h.sub;
+        info.appendChild(t);
+        info.appendChild(sub);
+        row.appendChild(info);
+        if (h.go) row.addEventListener('click', h.go);
+        transferSection.appendChild(row);
+      });
+    } else {
+      var noTransfers = document.createElement('p');
+      noTransfers.className = 'form-note';
+      noTransfers.textContent = 'No hand-overs recorded for this bird yet.';
+      transferSection.appendChild(noTransfers);
+    }
+    var transferBtn = document.createElement('button');
+    transferBtn.type = 'button';
+    transferBtn.className = 'add-record-btn';
+    transferBtn.textContent = '+ Record Transfer';
+    transferBtn.addEventListener('click', function () { TransferScreen.start(bird.id); });
+    transferSection.appendChild(transferBtn);
+    var transferNote = document.createElement('p');
+    transferNote.className = 'form-note';
+    transferNote.textContent = 'For a local pick up, a local meet or a delivery. Shipped birds get a Shipment record under Business → Shipping.';
+    transferSection.appendChild(transferNote);
+
     var moneySection = document.createElement('div');
     moneySection.className = 'detail-section';
     var moneyTitle = document.createElement('h3');
@@ -278,6 +331,7 @@ const BirdsScreen = (function () {
     wrap.appendChild(familySection);
     wrap.appendChild(registrySection);
     wrap.appendChild(healthSection);
+    wrap.appendChild(transferSection);
     wrap.appendChild(moneySection);
 
     if (bird.notes) {

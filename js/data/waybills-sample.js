@@ -57,8 +57,9 @@ function birdsLinkedToClient(client) {
   return ids.map(getBird).filter(Boolean);
 }
 
-// How a shipment travelled. Empty = not recorded. Nothing here assumes a flight.
-var SHIP_METHODS = ['Air cargo', 'Courier', 'Ground delivery', 'In person', 'Other'];
+// How a shipment travelled. Empty = not recorded. Nothing here assumes a flight. Handing a bird
+// over in person isn't a shipment — that's a transfer recorded on the bird (js/data/transfers-sample.js).
+var SHIP_METHODS = ['Air cargo', 'Courier', 'Ground delivery', 'Other'];
 
 // Kinds of attachment on a shipment.
 var SHIP_FILE_KINDS = {
@@ -131,5 +132,21 @@ function removeWaybillFile(wb, fileId) {
   return fetch('/api/waybills/files?id=' + encodeURIComponent(fileId), { method: 'DELETE' }).then(function (res) {
     if (!res.ok) throw new Error('Could not remove that file');
     wb.files = (wb.files || []).filter(function (f) { return f.id !== fileId; });
+  });
+}
+
+// Marks a pending shipment as having happened.
+function completeWaybill(wb, date) {
+  return fetch('/api/waybills?id=' + encodeURIComponent(wb.id), {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status: 'Complete', date: date || null }),
+  }).then(function (res) {
+    return res.json().then(function (body) {
+      if (!res.ok) throw new Error(body.error || 'Could not update the shipment');
+      wb.status = body.status;
+      wb.date = body.date;
+      return wb;
+    });
   });
 }

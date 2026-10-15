@@ -4,7 +4,8 @@ const sql = neon(process.env.DATABASE_URL);
 
 const DIRECTIONS = ['Outgoing', 'Incoming'];
 const STATUSES = ['Pending', 'Complete'];
-const METHODS = ['Air cargo', 'Courier', 'Ground delivery', 'In person', 'Other'];
+// In-person handoffs aren't shipments: they're recorded as transfers on the bird.
+const METHODS = ['Air cargo', 'Courier', 'Ground delivery', 'Other'];
 
 const SETUP_NEEDED = 'This needs one more setup step — run sql/009_waybills_status.sql and sql/010_shipments.sql in Neon.';
 
@@ -79,8 +80,10 @@ function cleanNewWaybill(input) {
   }
   const birdIds = Array.isArray(b.birdIds) ? Array.from(new Set(b.birdIds.map((x) => str(x, 40)).filter(Boolean))) : [];
   if (birdIds.length > 100) return { error: 'Too many birds in one shipment' };
-  const hasSomething = birdIds.length || str(b.clientId, 40) || str(b.departingAirport, 60) || str(b.arrivingAirport, 60) || str(b.notes, 2000);
-  if (!hasSomething) return { error: 'Add at least a bird, a client, where it went, or a note' };
+  // The two things a shipment record needs: which bird(s), and who it came from / went to.
+  if (!birdIds.length) return { error: 'Choose at least one bird' };
+  const who = str(b.clientId, 40) || str(b.departingAirport, 60) || str(b.arrivingAirport, 60);
+  if (!who) return { error: 'Choose who it ' + (direction === 'Outgoing' ? 'went to' : 'came from') };
   return {
     waybill: {
       direction, status, date, cost, birdIds, method,
@@ -138,6 +141,23 @@ module.exports = async function handler(req, res) {
       res.status(201).json(toWaybill(rows[0], []));
     } catch (err) {
       res.status(500).json({ error: 'Failed to save shipment' });
+    }
+    return;
+  }
+
+  // Mark a pending shipment as having happened (and optionally set the date).
+  if (req.method === 'PATCH') {
+    const id = String((req.query && req.query.id) || '');
+    const b = req.body || {};
+    const date = String(b.date || '').trim() || null;
+    if (b.status !== 'Complete') { res.status(400).json({ error: 'Only marking a shipment complete is supported' }); return; }
+    if (date && !isRealDate(date)) { res.status(400).json({ error: 'Enter a real date' }); return; }
+    try {
+      const rows = await sql`update waybills set status = 'Complete', date = coalesce(${date}::date, date) where id = ${id} returning *`;
+      if (!rows.length) { res.status(404).json({ error: 'Shipment not found' }); return; }
+      res.status(200).json(toWaybill(rows[0], await loadFiles([id])));
+    } catch (err) {
+      res.status(500).json({ error: 'Failed to update shipment' });
     }
     return;
   }

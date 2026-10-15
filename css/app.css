@@ -1299,3 +1299,6 @@ textarea.form-input {
 .file-row .file-remove { background: none; border: 0; color: #A6543D; font-weight: 800; cursor: pointer; padding: 4px 8px; }
 .detail-section .photo-upload-btn { display: block; margin-bottom: 14px; }
 .pick-option.add-new { border-style: dashed; color: #A6543D; font-weight: 700; justify-content: flex-start; }
+
+.ownership-prompt .save-btn { margin-bottom: 10px; }
+.ownership-prompt .add-record-btn { display: block; width: 100%; text-align: center; }

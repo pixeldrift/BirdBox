@@ -364,3 +364,16 @@ date, so a shipment can be recorded from memory with whatever is known. Photos, 
 and a waybill copy are stored per shipment in `waybill_files` (sql/010_shipments.sql; images are
 shrunk in the browser, files capped at 3 MB, stored in Postgres). Cost stays as an optional field —
 the ledger of record is Accounting.
+
+## Shipments vs. transfers (possession vs. ownership)
+
+- A **shipment** (`waybills`) needs only the bird(s) and who it came from / went to. Method is air
+  cargo, courier, ground delivery or other. It can be **Pending** until it actually happens
+  ("Mark as Shipped / Received" on its page).
+- An in-person handoff is **not** a shipment. It's a **transfer** on the bird (`bird_transfers`,
+  sql/011_transfers.sql): went to / came from a contact, with a method of Local pick up, Local meet,
+  Delivery or Shipped (from the Airtable "Delivery" field), plus date and notes.
+- Either one means **possession** moved, so the app then *asks* whether **ownership** changes too
+  (`api/ownership`, `js/ownership-prompt.js`). It is never automatic — boarding and breeder loans
+  change possession only. Ownership lives on the contact (`contacts.birds_owned`); a bird nobody
+  lists as owned is yours. A bird's page shows its Owner and its transfer/shipment history.

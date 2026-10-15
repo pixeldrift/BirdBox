@@ -274,6 +274,11 @@ const ShippingScreen = (function () {
     return section;
   }
 
+  function todayIso() {
+    var d = new Date();
+    return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
+  }
+
   function renderDetail(main, id, navigate, setTitle) {
     clearEl(main);
     if (id === 'new') return ShippingAddScreen.renderForm(main, navigate, setTitle);
@@ -327,6 +332,36 @@ const ShippingScreen = (function () {
     if (wb.cost !== null && wb.cost !== undefined) factsGrid.appendChild(factRow('Cost', formatMoney(wb.cost)));
     if (factsGrid.children.length) wrap.appendChild(factsGrid);
 
+
+    if (wb.status === 'Pending') {
+      var pendingBox = document.createElement('div');
+      pendingBox.className = 'detail-section';
+      var happened = document.createElement('button');
+      happened.type = 'button';
+      happened.className = 'save-btn';
+      happened.textContent = wb.direction === 'Incoming' ? 'Mark as Received' : 'Mark as Shipped';
+      var pendingMsg = document.createElement('div');
+      happened.addEventListener('click', function () {
+        happened.disabled = true;
+        completeWaybill(wb, wb.date || todayIso()).then(function () {
+          var after = function () { renderDetail(main, id, navigate, setTitle); };
+          var who = waybillClient(wb);
+          if (!who || !wb.birdIds.length) { after(); return; }
+          clearEl(pendingBox);
+          OwnershipPrompt.render(pendingBox, { birdIds: wb.birdIds, contact: who, direction: wb.direction === 'Incoming' ? 'In' : 'Out', onDone: after });
+        }).catch(function (err) {
+          happened.disabled = false;
+          clearEl(pendingMsg);
+          var p = document.createElement('p');
+          p.className = 'form-message error';
+          p.textContent = err.message;
+          pendingMsg.appendChild(p);
+        });
+      });
+      pendingBox.appendChild(happened);
+      pendingBox.appendChild(pendingMsg);
+      wrap.appendChild(pendingBox);
+    }
 
     var client = waybillClient(wb);
     if (client || birds.length) {
