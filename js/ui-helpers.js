@@ -113,10 +113,13 @@ function makeToggle(checked, labelText, onChange) {
 
 // Fills an avatar container (.list-row-avatar or .detail-avatar) with the bird's primary
 // photo if it has one (full-bleed, object-fit: cover), else the taxonomy-resolved species
-// icon (small, centered) — see js/data/icon-taxonomy.js. Depends on birdPrimaryPhoto()
+// icon (small, centered) on a sex-coloured tile — see js/data/icon-taxonomy.js. Depends on birdPrimaryPhoto()
 // and resolveBirdIcon(), both defined in js/data/*.js, loaded before this is ever called.
 function fillBirdAvatar(container, bird) {
   clearEl(container);
+  // The tile behind the icon is blue for males, pink for females, light gray if unsexed.
+  container.classList.remove('avatar-male', 'avatar-female', 'avatar-unsexed');
+  container.classList.add(bird.sex === 'Male' ? 'avatar-male' : bird.sex === 'Female' ? 'avatar-female' : 'avatar-unsexed');
   var photo = birdPrimaryPhoto(bird);
   var img = document.createElement('img');
   img.alt = '';

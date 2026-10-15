@@ -423,6 +423,10 @@ h1, h2, h3 {
   object-fit: cover;
 }
 
+.list-row-avatar.avatar-male, .detail-avatar.avatar-male { background: #D6E6F4; }
+.list-row-avatar.avatar-female, .detail-avatar.avatar-female { background: #F7D9E4; }
+.list-row-avatar.avatar-unsexed, .detail-avatar.avatar-unsexed { background: #E7E5E2; }
+
 .detail-title {
   display: flex;
   flex-direction: column;
