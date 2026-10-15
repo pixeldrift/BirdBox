@@ -171,10 +171,7 @@ const RegistryManageScreen = (function () {
 
       var avatar = document.createElement('span');
       avatar.className = 'list-row-avatar';
-      var img = document.createElement('img');
-      img.src = 'icons/tinted/mybirds/Birds.png';
-      img.alt = '';
-      avatar.appendChild(img);
+      fillBirdAvatar(avatar, bird);
 
       var info = document.createElement('span');
       info.className = 'list-row-info';
