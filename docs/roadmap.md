@@ -77,6 +77,17 @@ or an array, shared client/server validation, preview-before-commit import.
 
 ## Species lists & taxonomy (needs a real plan before the species lookup is built)
 
+**Status:** stage 1 is built — `species` + `species_names` tables (`sql/007_species.sql`), a seed
+script that loads the eBird taxonomy and curated alternate names (`npm run seed:species`), and a
+typeahead endpoint `GET /api/species?q=...` (see docs/data-model.md). **Not wired to Birds yet.**
+Stage 2: add `species_code` to `birds` and migrate existing free-text Species via the names table;
+replace the free-text species/subspecies inputs (add-bird form, CSV import) with a typeahead on
+this endpoint; show a small "Birds of the World" link beside each species; key icon packs by
+species code; rank by the user's own usage/recent picks instead of the hand-picked `POPULAR` list;
+decide how domestic breeds/forms (no eBird code) are modeled; extend Birdorable's `species-map.json`
+with a code per image; define the yearly taxonomy-update procedure (species splits mint new codes);
+review the first-guess `aviculture` rules in `scripts/seed-species.js` with real breeders.
+
 Per the user: Species/Subspecies/Mutation must become a lookup table (filter-as-you-type, most
 popular / recently used first) rather than free text, but there's no definitive taxonomy to copy.
 Points to settle in the plan:
@@ -104,6 +115,33 @@ Points to settle in the plan:
   in `species-map.json`. Outside: the eBird/Clements taxonomy (see the Birds of the World section — chosen as the canonical ID).
 - **Taxonomy/icon gaps to fill when this happens:** pigeon and dove nodes (not in
   `TAXONOMY_NODES` yet), finch subgroups.
+
+## Mutations & genetics reference (BOW doesn't cover these)
+
+Birds of the World gives us species, scientific names and taxonomy, but not aviculture
+**mutations**, so the mutation list is either our own table or a reference to an outside source.
+Things any design has to handle:
+
+- **Names are species-specific.** The same name can be a different gene (or a different mode of
+  inheritance) in different species — "Pied" is recessive in some and dominant in others — so a
+  mutation record is keyed by species (or species group) plus name, not by name alone.
+- **Inheritance data is the valuable part** for the user's separate genetics predictor: mode
+  (autosomal recessive / dominant / incomplete dominant / sex-linked), which locus or allele it
+  belongs to, and how mutations combine into visual forms (split, double factor, compound).
+- **Aliases again:** Cinnamon/Fawn, regional and breeder-association names — same names-table idea
+  as species.
+- Each mutation should carry a `source` and an external reference so we can link out and credit.
+
+Sources the user named — Gencalc, Mutabase, Dribbr, One Odd Bird, Avibase, B10K. I haven't
+evaluated any of them. My understanding is that Avibase is a names/synonyms and checklist-crosswalk
+database (more useful for alternate species names and taxonomy disagreements than for mutations)
+and B10K is a genome-sequencing/phylogeny project (probably not a source of mutation names). For
+each candidate, before depending on it, check: permission/licence to reuse the data (don't scrape
+— approach them, as with Birdorable and Cornell), whether there's an export or API, species
+coverage, whether it records inheritance mode, how actively it's maintained, and whether its names
+conflict with breeders' usage. Default until decided: our own mutation table with `source` /
+external-link fields, so any outside source can be linked or imported later. Coordinate with the
+genetics-predictor project, which needs the same dataset.
 
 ## Birds of the World / eBird taxonomy — decided canonical species ID
 

@@ -208,6 +208,32 @@ To extend: add a node to `TAXONOMY_NODES` (with the right `parent`) for a new sp
 not yet modeled at all, or add art for an existing node/subspecies/mutation to a pack's `icons`/
 `subspeciesOverrides`/`mutationOverrides` — neither touches the resolver.
 
+## Species reference (new — not yet linked to Birds)
+
+`species` is keyed by the **eBird/Clements species code**, the same code Birds of the World uses in
+its URLs (`https://birdsoftheworld.org/bow/species/<code>/cur/introduction`). Columns: code,
+common_name, scientific_name, order_name, family_code/name/scientific, taxon_order,
+taxonomy_version, `aviculture` (first-guess rules, see `scripts/seed-species.js`),
+`aviculture_override` (a human correction a re-seed never overwrites), `popularity` (ranking
+boost). The full world list (11,167 species in taxonomy 2025) is loaded, because storage is cheap;
+what limits the picker is ranking and the `aviculture` flag (about 2,100 species: parrots, pigeons
+and doves, waterfowl, game birds, ratites, finches and relatives, toucans, hornbills, turacos,
+flamingos, falcons, starlings/mynas — no wild songbirds).
+
+`species_names` holds alternate names (kind: common / trade / regional / historical /
+scientific_synonym / other, plus source): "Sun Conure" for the eBird "Sun Parakeet", "Quaker" for
+"Monk Parakeet", "Indian Ringneck" for "Rose-ringed Parakeet", "Green-cheek Conure" for
+"Green-cheeked Parakeet". Curated entries are keyed by scientific name in
+`scripts/species-aliases.js`, plus genus rules (Parakeet → Conure for conure genera, Parrot → Amazon
+for *Amazona*, Caique for *Pionites*, Pionus for *Pionus*) — about 120 names today.
+
+`GET /api/species?q=green cheek` is the typeahead: case/hyphen/apostrophe-insensitive, searches the
+official name, scientific name and every alternate name, ranks likely-kept species and curated
+popular ones first, returns `matchedName` when an alternate name matched, and a Birds of the World
+URL per species. `?code=gncpar` returns one species with its alternate names; `scope=aviculture`
+limits results to the aviculture tier. Setup: run `sql/007_species.sql` in Neon, then
+`DATABASE_URL=... npm run seed:species` (safe to re-run; new taxonomy versions upsert in place).
+
 ## Registry (new in BirdBox)
 
 Not a separate entity — Registry -> Search reads directly off `Birds.registryPublic` (new
