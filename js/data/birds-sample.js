@@ -71,15 +71,40 @@ function addBirds(list) {
     return res.json().then(function (data) {
       if (!res.ok) throw new Error(data.error || 'Save failed');
       data.created.forEach(function (b) { BIRDS_SAMPLE.push(b); });
-      BIRDS_SAMPLE.sort(function (a, b) { return a.band < b.band ? -1 : a.band > b.band ? 1 : 0; });
+      BIRDS_SAMPLE.sort(compareBirds);
       reindexBirds();
       return data;
     });
   });
 }
 
-function birdIdFromBand(band) {
+// A bird's ID is its own (never made from the band), so a band can be missing or changed.
+function newBirdId() {
+  return 'b-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+}
+
+// A band number compared ignoring spaces and capitals.
+function bandKey(band) {
   return String(band || '').replace(/\s+/g, '').toUpperCase();
+}
+
+function findBirdByBand(band) {
+  var key = bandKey(band);
+  if (!key) return null;
+  return BIRDS_SAMPLE.filter(function (b) { return bandKey(b.band) === key; })[0] || null;
+}
+
+// How to show a bird's band number: the band, or "No band" for birds without one.
+function birdBandLabel(bird) {
+  return bird.band || 'No band';
+}
+
+// Banded birds in band order, then birds without a band by name.
+function compareBirds(a, b) {
+  if (a.band && b.band) return a.band < b.band ? -1 : a.band > b.band ? 1 : 0;
+  if (a.band) return -1;
+  if (b.band) return 1;
+  return String(a.name || '').localeCompare(String(b.name || ''));
 }
 
 function getBird(id) {
@@ -103,7 +128,7 @@ function birdIdentifier(bird) {
   var sexPart = SEX_LETTER[bird.sex] || '?';
   var namePart = bird.name ? '"' + bird.name + '" ' : '';
   var mutationPart = bird.mutation ? bird.mutation + ' ' : '';
-  return bird.band + ' - (' + sexPart + ') ' + namePart + mutationPart + birdTypeLabel(bird);
+  return (bird.band ? bird.band + ' - ' : '') + '(' + sexPart + ') ' + namePart + mutationPart + birdTypeLabel(bird);
 }
 
 // Shorter label for chips/rows elsewhere (no band #, no sex letter).

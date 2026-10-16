@@ -1,5 +1,5 @@
 const { neon } = require('@neondatabase/serverless');
-const { WITH_SPECIES, toBird, text, money } = require('../_lib/birds');
+const { WITH_SPECIES, toBird, text, money, bandKey, newBirdId } = require('../_lib/birds');
 
 const sql = neon(process.env.DATABASE_URL);
 
@@ -8,10 +8,12 @@ const STATUSES = ['Available', 'Reserved', 'Sold', 'Deceased'];
 
 // Returns { bird } with cleaned fields, or { error } describing the first problem.
 function cleanNewBird(input) {
+  // A band number is optional — some birds don't have one. The bird's ID is its own: the app may
+  // suggest one (so a CSV can link parents inside the same file); otherwise one is generated.
   const band = text(input && input.band);
-  if (!band) return { error: 'Band number is required' };
-  const cleanBand = band.replace(/\s+/g, ' ');
-  const id = cleanBand.replace(/\s+/g, '').toUpperCase();
+  const cleanBand = band ? band.replace(/\s+/g, ' ') : null;
+  const suggested = text(input && input.id);
+  const id = suggested && /^b-[a-z0-9]{6,30}$/.test(suggested) ? suggested : newBirdId();
   if (!SEXES.includes(input.sex)) return { error: 'Sex must be Male, Female, or Unsexed' };
   const speciesCode = text(input.speciesCode);
   if (!speciesCode) return { error: 'Choose a species' };
@@ -44,11 +46,11 @@ module.exports = async function handler(req, res) {
     try {
       let rows;
       try {
-        rows = await sql(WITH_SPECIES + ' order by b.band');
+        rows = await sql(WITH_SPECIES + ' order by b.band nulls last, b.name');
       } catch (joinErr) {
         // Species tables not created yet (sql/007, sql/008 not run): still serve the birds.
         console.error('Birds loaded without species (run sql/007 and sql/008):', joinErr.message);
-        rows = await sql`select * from birds order by band`;
+        rows = await sql`select * from birds order by band nulls last, name`;
       }
       res.status(200).json(rows.map(toBird));
     } catch (err) {
@@ -72,21 +74,27 @@ module.exports = async function handler(req, res) {
     inputs.forEach((input, i) => {
       const result = cleanNewBird(input);
       if (result.error) rejected.push({ index: i, error: result.error });
-      else if (seen.has(result.bird.id)) rejected.push({ index: i, error: 'Duplicate band number in this upload' });
-      else { seen.add(result.bird.id); cleaned.push({ index: i, bird: result.bird }); }
+      else if (result.bird.band && seen.has(bandKey(result.bird.band))) rejected.push({ index: i, error: 'Duplicate band number in this upload' });
+      else { if (result.bird.band) seen.add(bandKey(result.bird.band)); cleaned.push({ index: i, bird: result.bird }); }
     });
     try {
-      const existing = cleaned.length
+      const keys = cleaned.map((c) => c.bird.band ? bandKey(c.bird.band) : null).filter(Boolean);
+      const bandRows = keys.length
+        ? await sql`select upper(regexp_replace(band, '[[:space:]]+', '', 'g')) as k from birds where upper(regexp_replace(band, '[[:space:]]+', '', 'g')) = any(${keys})`
+        : [];
+      const takenBands = new Set(bandRows.map((r) => r.k));
+      const idRows = cleaned.length
         ? await sql`select id from birds where id = any(${cleaned.map((c) => c.bird.id)})`
         : [];
-      const taken = new Set(existing.map((r) => r.id));
+      const takenIds = new Set(idRows.map((r) => r.id));
       const codes = cleaned.length
         ? await sql`select code from species where code = any(${Array.from(new Set(cleaned.map((c) => c.bird.speciesCode)))})`
         : [];
       const knownCodes = new Set(codes.map((r) => r.code));
       const toInsert = [];
       cleaned.forEach((c) => {
-        if (taken.has(c.bird.id)) rejected.push({ index: c.index, error: 'A bird with this band number already exists' });
+        if (takenBands.has(c.bird.band ? bandKey(c.bird.band) : '') ) rejected.push({ index: c.index, error: 'A bird with this band number already exists' });
+        else if (takenIds.has(c.bird.id)) rejected.push({ index: c.index, error: 'Could not save this bird — please try again' });
         else if (!knownCodes.has(c.bird.speciesCode)) rejected.push({ index: c.index, error: 'Unknown species — pick one from the list' });
         else toInsert.push(c.bird);
       });
@@ -97,7 +105,7 @@ module.exports = async function handler(req, res) {
         `));
       }
       const created = toInsert.length
-        ? (await sql(WITH_SPECIES + ' where b.id = any($1) order by b.band', [toInsert.map((b) => b.id)])).map(toBird)
+        ? (await sql(WITH_SPECIES + ' where b.id = any($1) order by b.band nulls last, b.name', [toInsert.map((b) => b.id)])).map(toBird)
         : [];
       res.status(created.length ? 201 : 200).json({ created, rejected: rejected.sort((a, b) => a.index - b.index) });
     } catch (err) {

@@ -131,7 +131,7 @@ const ShippingScreen = (function () {
     var birds = waybillBirds(wb);
     var title = document.createElement('span');
     title.className = 'list-row-title';
-    title.textContent = birds.length ? birds.map(function (b) { return birdShortLabel(b) + ' (' + b.band + ')'; }).join(', ') : 'Shipment';
+    title.textContent = birds.length ? birds.map(function (b) { return birdShortLabel(b) + (b.band ? ' (' + b.band + ')' : ''); }).join(', ') : 'Shipment';
 
     var client = waybillClient(wb);
     var sub = document.createElement('span');

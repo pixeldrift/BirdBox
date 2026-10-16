@@ -417,8 +417,8 @@ not an editable field — it changes only through the ownership prompts. Buildin
 their own: they're edited from a cage's page and added from the cage list.
 Birds and shipments have richer rules (species, band uniqueness, status follow-ups, files), so they
 keep their own endpoints and forms, with the same ✎ pencil and Delete-with-confirmation:
-- **Bird** (`api/birds/[id].js`, form = the Add Bird form in edit mode): everything except the band
-  number, which is fixed because a bird's id comes from it and other records point at that id. Marking
+- **Bird** (`api/birds/[id].js`, form = the Add Bird form in edit mode): every field, including the band
+  number (see below). Marking
   a bird Sold from the form asks the usual shipping / hand-over / ownership questions. Deleting a bird
   also deletes its health records and clears it from its offspring's parents, shipments, accounting
   entries, transfers and owners; its photos stay in the Media library.
@@ -432,3 +432,13 @@ The Vercel Hobby plan allows at most **12 serverless functions** per deployment,
 one (as ownership lives in `api/transfers/index.js` and contacts/transactions/health/buildings live in
 `api/records`) rather than adding a file. The one-time seed endpoint was removed once the species list
 was loaded; `npm run seed:species` still seeds from a computer.
+
+## Bird IDs are their own (band numbers are optional and editable)
+
+Every bird has a permanent ID (`b-…`, generated, meaning nothing) that every other record points at —
+parents, shipments, transfers, accounting entries, health records, files, owners. The **band number is
+just an attribute**: optional (some birds have none), editable, and unique only when present
+(compared ignoring spaces and capitals; `sql/013_bird_ids.sql`). Birds that existed before keep the IDs
+they already had (they happened to be made from the band) — they're simply opaque now. A bird without a
+band shows as "No band". CSV import accepts rows without a band; a row can still name another row's
+band as its parent, and parents are resolved to IDs before anything is saved.

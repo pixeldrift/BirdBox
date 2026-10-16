@@ -1,5 +1,5 @@
 const { neon } = require('@neondatabase/serverless');
-const { WITH_SPECIES, toBird } = require('../_lib/birds');
+const { WITH_SPECIES, toBird, bandKey } = require('../_lib/birds');
 
 const sql = neon(process.env.DATABASE_URL);
 
@@ -7,10 +7,9 @@ const SEXES = ['Male', 'Female', 'Unsexed'];
 const STATUSES = ['Available', 'Reserved', 'Sold', 'Deceased'];
 
 // Fields that can be changed through this endpoint (camelCase from the app -> DB column).
-// The band number is deliberately not one of them: a bird's id is made from it and other records
-// (parents, shipments, files, transfers…) point at that id.
+// The band number can be added, corrected or removed: a bird's id is its own and doesn't depend on it.
 const COLUMNS = {
-  name: 'name', sex: 'sex', speciesCode: 'species_code', subspecies: 'subspecies', mutation: 'mutation',
+  band: 'band', name: 'name', sex: 'sex', speciesCode: 'species_code', subspecies: 'subspecies', mutation: 'mutation',
   hatchDate: 'hatch_date', status: 'status', cage: 'cage', motherId: 'mother_id', fatherId: 'father_id',
   pairedId: 'paired_id', cost: 'cost', price: 'price', registryPublic: 'registry_public', notes: 'notes',
 };
@@ -34,7 +33,14 @@ async function clean(id, body) {
     const col = COLUMNS[key];
     if (!col) continue;
     const v = body[key];
-    if (key === 'sex') {
+    if (key === 'band') {
+      const t = blankToNull(v);
+      if (t) {
+        const clash = await sql`select id from birds where upper(regexp_replace(band, '[[:space:]]+', '', 'g')) = ${bandKey(t)} and id <> ${id}`;
+        if (clash.length) return { error: 'Another bird already has that band number' };
+      }
+      values[col] = t ? t.replace(/\s+/g, ' ').slice(0, 60) : null;
+    } else if (key === 'sex') {
       if (!SEXES.includes(v)) return { error: 'Sex must be Male, Female, or Unsexed' };
       values[col] = v;
     } else if (key === 'status') {

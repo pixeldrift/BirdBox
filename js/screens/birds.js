@@ -114,7 +114,7 @@ const BirdsScreen = (function () {
     var sexWord = document.createElement('span');
     sexWord.className = sexTextClass(bird.sex);
     sexWord.textContent = bird.sex;
-    sub.appendChild(document.createTextNode(bird.band + ' · '));
+    sub.appendChild(document.createTextNode(birdBandLabel(bird) + ' · '));
     sub.appendChild(sexWord);
     if (bird.mutation) sub.appendChild(document.createTextNode(' · ' + bird.mutation));
 
@@ -155,7 +155,7 @@ const BirdsScreen = (function () {
       return;
     }
 
-    setTitle(bird.name || bird.band);
+    setTitle(bird.name || bird.band || birdTypeLabel(bird));
 
     var wrap = document.createElement('div');
     wrap.className = 'detail-screen';
@@ -184,7 +184,7 @@ const BirdsScreen = (function () {
     var factsGrid = document.createElement('div');
     factsGrid.className = 'fact-grid';
     [
-      ['Band #', bird.band],
+      ['Band #', birdBandLabel(bird)],
       ['Sex', bird.sex, sexTextClass(bird.sex)],
     ].concat(speciesFacts(bird)).concat([
       ['Mutation', bird.mutation || '—'],
@@ -459,7 +459,7 @@ const BirdsScreen = (function () {
         del.setAttribute('aria-label', 'Remove photo');
         del.addEventListener('click', function (e) {
           e.stopPropagation();
-          if (!window.confirm('Remove this photo from ' + (bird.name || bird.band) + '? It stays in the Media library.')) return;
+          if (!window.confirm('Remove this photo from ' + (bird.name || bird.band || 'this bird') + '? It stays in the Media library.')) return;
           unlinkMedia(photo.id, 'bird', bird.id).then(refresh).catch(function () {});
         });
         tile.appendChild(del);

@@ -58,4 +58,14 @@ function money(v) {
   return Number.isFinite(n) ? n : NaN;
 }
 
-module.exports = { WITH_SPECIES, isoDate, toBird, text, money };
+// A band number compared ignoring spaces and capitals ("AR 10002 CA" = "ar10002ca").
+function bandKey(band) {
+  return String(band || '').replace(/\s+/g, '').toUpperCase();
+}
+
+// A new bird's permanent ID. It carries no meaning — nothing is encoded from the band or name.
+function newBirdId() {
+  return 'b-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+}
+
+module.exports = { WITH_SPECIES, isoDate, toBird, text, money, bandKey, newBirdId };

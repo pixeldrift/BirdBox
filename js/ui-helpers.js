@@ -131,7 +131,7 @@ function fillThumb(container, spec) {
 // Band number and sex, with the sex word tinted — what tells two "Sun Conure"s apart.
 function birdSubLine(bird) {
   var wrap = document.createElement('span');
-  wrap.appendChild(document.createTextNode(bird.band + ' · '));
+  wrap.appendChild(document.createTextNode(birdBandLabel(bird) + ' · '));
   var sex = document.createElement('span');
   sex.className = sexTextClass(bird.sex);
   sex.textContent = bird.sex;

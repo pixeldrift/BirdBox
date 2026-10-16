@@ -196,11 +196,11 @@ function mediaTargetInfo(link) {
   var t = link.targetType, id = link.targetId;
   if (t === 'bird') {
     var b = getBird(id);
-    return b ? { text: birdShortLabel(b) + ' · ' + b.band, hash: '#/mybirds/birds/' + id, kind: 'Bird' } : null;
+    return b ? { text: birdShortLabel(b) + ' · ' + birdBandLabel(b), hash: '#/mybirds/birds/' + id, kind: 'Bird' } : null;
   }
   if (t === 'health') {
     var r = getHealthRecord(id), rb = r ? getBird(r.birdId) : null;
-    return r ? { text: r.type + (rb ? ' · ' + rb.band : ''), hash: '#/mybirds/health/' + id, kind: 'Health record' } : null;
+    return r ? { text: r.type + (rb ? ' · ' + birdBandLabel(rb) : ''), hash: '#/mybirds/health/' + id, kind: 'Health record' } : null;
   }
   if (t === 'waybill') {
     var w = WAYBILLS_SAMPLE.filter(function (x) { return x.id === id; })[0];
@@ -264,7 +264,7 @@ function mediaLinkedSummary(m, exceptType, exceptId) {
 function mediaLinkCandidates() {
   var out = [];
   BIRDS_SAMPLE.forEach(function (b) {
-    out.push({ targetType: 'bird', targetId: b.id, kind: 'Bird', text: birdShortLabel(b) + ' · ' + b.band, hay: [b.band, b.name, birdShortLabel(b), b.mutation, b.sex].filter(Boolean).join(' ') });
+    out.push({ targetType: 'bird', targetId: b.id, kind: 'Bird', text: birdShortLabel(b) + ' · ' + birdBandLabel(b), hay: [b.band, b.name, birdShortLabel(b), b.mutation, b.sex].filter(Boolean).join(' ') });
   });
   CONTACTS_SAMPLE.forEach(function (c) {
     out.push({ targetType: 'contact', targetId: c.id, kind: 'Contact', text: c.name, hay: [c.name, c.company, c.city].filter(Boolean).join(' ') });
@@ -272,7 +272,7 @@ function mediaLinkCandidates() {
   WAYBILLS_SAMPLE.forEach(function (w) {
     var info = mediaTargetInfo({ targetType: 'waybill', targetId: w.id });
     var birds = (w.birdIds || []).map(getBird).filter(Boolean);
-    out.push({ targetType: 'waybill', targetId: w.id, kind: 'Shipment', text: info.text, hay: [info.text, w.waybillNumber, w.carrier].concat(birds.map(function (b) { return b.band + ' ' + birdShortLabel(b); })).join(' ') });
+    out.push({ targetType: 'waybill', targetId: w.id, kind: 'Shipment', text: info.text, hay: [info.text, w.waybillNumber, w.carrier].concat(birds.map(function (b) { return (b.band || '') + ' ' + birdShortLabel(b); })).join(' ') });
   });
   TRANSACTIONS_SAMPLE.forEach(function (t) {
     out.push({ targetType: 'transaction', targetId: t.id, kind: 'Accounting', text: t.item, hay: t.item });
@@ -280,7 +280,7 @@ function mediaLinkCandidates() {
   HEALTH_RECORDS_SAMPLE.forEach(function (r) {
     var info = mediaTargetInfo({ targetType: 'health', targetId: r.id });
     var b = getBird(r.birdId);
-    out.push({ targetType: 'health', targetId: r.id, kind: 'Health record', text: info.text, hay: info.text + ' ' + (b ? b.band + ' ' + birdShortLabel(b) : '') });
+    out.push({ targetType: 'health', targetId: r.id, kind: 'Health record', text: info.text, hay: info.text + ' ' + (b ? (b.band || '') + ' ' + birdShortLabel(b) : '') });
   });
   return out.map(function (c) { c.hay = c.hay.toLowerCase(); return c; });
 }

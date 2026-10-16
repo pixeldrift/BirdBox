@@ -108,7 +108,7 @@ const HealthScreen = (function () {
 
     var title = document.createElement('span');
     title.className = 'list-row-title';
-    title.textContent = bird ? birdShortLabel(bird) + ' (' + bird.band + ')' : 'Unknown bird';
+    title.textContent = bird ? birdShortLabel(bird) + (bird.band ? ' (' + bird.band + ')' : '') : 'Unknown bird';
 
     var sub = document.createElement('span');
     sub.className = 'list-row-sub';
@@ -249,7 +249,7 @@ const HealthScreen = (function () {
     BIRDS_SAMPLE.forEach(function (b) {
       var opt = document.createElement('option');
       opt.value = b.id;
-      opt.textContent = birdShortLabel(b) + ' (' + b.band + ')';
+      opt.textContent = birdShortLabel(b) + (b.band ? ' (' + b.band + ')' : '');
       if (b.id === presetBirdId) opt.selected = true;
       birdSelect.appendChild(opt);
     });

@@ -13,7 +13,7 @@ const BirdsAddScreen = (function () {
     ['AR 20001 CA', 'Pepper', 'Female', 'Green-cheeked Conure', '', 'Cinnamon', '2024-03-15', 'Available', 'F2-004', '', '', '', '250', '650', 'no', 'Example row — replace or delete me'],
     ['AR 20002 CA', '', 'Male', 'Cockatiel', '', 'Lutino', '3/2/2024', 'Reserved', '', '', '', 'AR 20001 CA', '', '120', 'yes', ''],
   ];
-  var REQUIRED_COLUMNS = ['band', 'sex'];
+  var REQUIRED_COLUMNS = ['sex'];
 
   function distinct(values) {
     var seen = {};
@@ -54,8 +54,7 @@ const BirdsAddScreen = (function () {
   // Friendly validation shared by the form and the CSV preview. `raw` uses the same keys
   // as the API; parent fields are bird ids (already resolved by the caller).
   function check(raw, extraIds) {
-    var band = (raw.band || '').trim().replace(/\s+/g, ' ');
-    if (!band) return { error: 'Band number is required' };
+    var band = (raw.band || '').trim().replace(/\s+/g, ' '); // optional: some birds have no band
     if (!raw.speciesCode) return { error: 'Choose a species' };
     var sex = matchOption(raw.sex, SEXES);
     if (!sex) return { error: 'Sex must be Male, Female, or Unsexed' };
@@ -66,10 +65,10 @@ const BirdsAddScreen = (function () {
     var cost = (raw.cost || '').toString().replace(/[$,\s]/g, '');
     var price = (raw.price || '').toString().replace(/[$,\s]/g, '');
     if ((cost && isNaN(Number(cost))) || (price && isNaN(Number(price)))) return { error: 'Cost and price must be numbers' };
-    var id = birdIdFromBand(band);
-    if (getBird(id)) return { error: 'A bird with band ' + band + ' already exists' };
+    if (band && findBirdByBand(band)) return { error: 'A bird with band ' + band + ' already exists' };
+    var id = raw.id || newBirdId();
     var bird = {
-      band: band, name: (raw.name || '').trim(), sex: sex, speciesCode: raw.speciesCode, speciesName: raw.speciesName || '',
+      id: id, band: band, name: (raw.name || '').trim(), sex: sex, speciesCode: raw.speciesCode, speciesName: raw.speciesName || '',
       subspecies: (raw.subspecies || '').trim(), mutation: (raw.mutation || '').trim(),
       hatchDate: date.value, status: status, cage: (raw.cage || '').trim(),
       motherId: raw.motherId || '', fatherId: raw.fatherId || '', pairedId: raw.pairedId || '',
@@ -135,7 +134,7 @@ const BirdsAddScreen = (function () {
   }
 
   function birdOptions() {
-    return BIRDS_SAMPLE.map(function (b) { return { value: b.id, label: birdShortLabel(b) + ' (' + b.band + ')' }; });
+    return BIRDS_SAMPLE.map(function (b) { return { value: b.id, label: birdShortLabel(b) + (b.band ? ' (' + b.band + ')' : '') }; });
   }
 
   function message(kind, text) {
@@ -156,7 +155,7 @@ const BirdsAddScreen = (function () {
     var form = document.createElement('form');
     form.className = 'detail-section record-form';
 
-    var band = input('text', { placeholder: 'e.g. AR 20001 CA', required: true });
+    var band = input('text', { placeholder: 'e.g. AR 20001 CA' });
     var name = input('text', { placeholder: 'Optional' });
     var sex = select(SEXES.map(function (s) { return { value: s, label: s }; }));
     sex.value = 'Unsexed';
@@ -201,8 +200,7 @@ const BirdsAddScreen = (function () {
     saveBtn.textContent = editing ? 'Save Changes' : 'Add Bird';
 
     if (editing) {
-      band.value = editing.band;
-      band.disabled = true;
+      band.value = editing.band || '';
       name.value = editing.name || '';
       sex.value = editing.sex;
       subspecies.value = editing.subspecies || '';
@@ -222,7 +220,7 @@ const BirdsAddScreen = (function () {
       notes.value = editing.notes || '';
     }
 
-    [field('Band number', band, editing ? 'The band number can’t be changed — other records are linked to it.' : undefined), field('Name', name), field('Sex', sex), field('Species', speciesPicker.el, 'Search by any name you know — common, trade, or scientific.', true),
+    [field('Band number', band, 'Optional — leave blank if this bird has no band.'), field('Name', name), field('Sex', sex), field('Species', speciesPicker.el, 'Search by any name you know — common, trade, or scientific.', true),
       field('Subspecies / form', subspecies), field('Mutation', mutation), field('Hatch date', hatch),
       field('Status', status), field('Cage', cage), field('Mother', mother), field('Father', father),
       field('Paired with', paired), field('Cost', cost), field('Asking price', price), field('Notes', notes),
@@ -274,7 +272,7 @@ const BirdsAddScreen = (function () {
       saveBtn.disabled = true;
       saveBtn.textContent = 'Saving…';
       editBird(editing.id, {
-        name: name.value, sex: sex.value, speciesCode: picked.code, subspecies: subspecies.value, mutation: mutation.value,
+        band: band.value, name: name.value, sex: sex.value, speciesCode: picked.code, subspecies: subspecies.value, mutation: mutation.value,
         hatchDate: date.value, status: status.value, cage: cage.value, motherId: mother.value, fatherId: father.value,
         pairedId: paired.value, cost: cost.value, price: price.value, notes: notes.value,
       }).then(function (bird) {
@@ -311,7 +309,7 @@ const BirdsAddScreen = (function () {
       var delMsg = document.createElement('div');
       del.addEventListener('click', function () {
         var records = HEALTH_RECORDS_SAMPLE.filter(function (r) { return r.birdId === editing.id; }).length;
-        var text = 'Delete ' + birdShortLabel(editing) + ' (' + editing.band + ')?' +
+        var text = 'Delete ' + birdShortLabel(editing) + (editing.band ? ' (' + editing.band + ')' : '') + '?' +
           (records ? ' Its ' + records + ' health record' + (records === 1 ? '' : 's') + ' will be deleted too.' : '') +
           ' Photos stay in the Media library. Shipments, accounting entries and its offspring keep their records but no longer link to it. This can’t be undone.';
         if (!window.confirm(text)) return;
@@ -377,17 +375,22 @@ const BirdsAddScreen = (function () {
   }
 
   function build(body, headers, cell, byInput) {
-    var fileIds = {};
+    // Each row gets its bird's ID up front, so a row can name another row's band as its parent.
+    var fileIds = {};   // band key -> new ID, for rows in this file
+    var rowIds = [];
     body.forEach(function (r) {
+      var id = newBirdId() + Math.random().toString(36).slice(2, 4);
+      rowIds.push(id);
       var b = cell(r, 'band');
-      if (b && b.trim()) fileIds[birdIdFromBand(b)] = true;
+      if (b && b.trim() && !fileIds[bandKey(b)]) fileIds[bandKey(b)] = id;
     });
 
     function parent(r, name) {
       var v = cell(r, name).trim();
       if (!v) return { id: '' };
-      var id = birdIdFromBand(v);
-      if (getBird(id) || fileIds[id]) return { id: id };
+      var existing = findBirdByBand(v);
+      if (existing) return { id: existing.id };
+      if (fileIds[bandKey(v)]) return { id: fileIds[bandKey(v)] };
       return { error: name.replace('_band', '') + ' band ' + v + ' isn’t in your flock or in this file' };
     }
 
@@ -414,7 +417,7 @@ const BirdsAddScreen = (function () {
       }
 
       var result = check({
-        band: cell(r, 'band'), name: cell(r, 'name'), sex: cell(r, 'sex'), speciesCode: code, speciesName: spName,
+        id: rowIds[i], band: cell(r, 'band'), name: cell(r, 'name'), sex: cell(r, 'sex'), speciesCode: code, speciesName: spName,
         subspecies: cell(r, 'subspecies'), mutation: cell(r, 'mutation'), hatchDate: cell(r, 'hatch_date'),
         status: cell(r, 'status'), cage: cell(r, 'cage'), motherId: mother.id, fatherId: father.id,
         pairedId: paired.id, cost: cell(r, 'cost'), price: cell(r, 'price'),
@@ -423,8 +426,8 @@ const BirdsAddScreen = (function () {
       if (speciesError && (!result.error || result.error === 'Choose a species')) problems.push({ line: line, error: speciesError });
       else if (result.error) problems.push({ line: line, error: result.error });
       else if (parentError) problems.push({ line: line, error: parentError });
-      else if (seen[result.id]) problems.push({ line: line, error: 'Band ' + result.bird.band + ' appears more than once in this file' });
-      else { seen[result.id] = true; ready.push({ line: line, bird: result.bird, from: from }); }
+      else if (result.bird.band && seen[bandKey(result.bird.band)]) problems.push({ line: line, error: 'Band ' + result.bird.band + ' appears more than once in this file' });
+      else { if (result.bird.band) seen[bandKey(result.bird.band)] = true; ready.push({ line: line, bird: result.bird, from: from }); }
     });
     return { ready: ready, problems: problems };
   }
@@ -443,7 +446,7 @@ const BirdsAddScreen = (function () {
     var steps = document.createElement('p');
     steps.className = 'notes-text';
     steps.textContent = 'Download the template, fill in one row per bird, save it as a CSV, then upload it here. ' +
-      'Only band, sex, and species are required. For species, use the name you know the bird by — Sun Conure, African Grey, Goffin’s Cockatoo — and we’ll match it to the standard species list. You’ll see a preview before anything is added.';
+      'Only sex and species are required — a band number is optional, for birds that don’t have one. For species, use the name you know the bird by — Sun Conure, African Grey, Goffin’s Cockatoo — and we’ll match it to the standard species list. You’ll see a preview before anything is added.';
     var tplBtn = document.createElement('button');
     tplBtn.type = 'button';
     tplBtn.className = 'add-record-btn';
@@ -500,7 +503,7 @@ const BirdsAddScreen = (function () {
     analysis.ready.slice(0, 8).forEach(function (r) {
       var p = document.createElement('p');
       p.className = 'notes-text';
-      p.textContent = r.bird.band + ' · ' + r.bird.sex + ' · ' + (r.bird.speciesName || r.bird.speciesCode) +
+      p.textContent = (r.bird.band || 'No band') + ' · ' + r.bird.sex + ' · ' + (r.bird.speciesName || r.bird.speciesCode) +
         (r.from ? ' (from “' + r.from + '”)' : '');
       section.appendChild(p);
     });

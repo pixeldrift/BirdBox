@@ -9,7 +9,7 @@ const RegistrySearchScreen = (function () {
   // notes, cost/price never appear here even though this screen can see the full object.
   function publicFacts(bird) {
     return [
-      ['Band #', bird.band],
+      ['Band #', birdBandLabel(bird)],
     ].concat(speciesFacts(bird)).concat([
       ['Mutation', bird.mutation || '—'],
       ['Sex', bird.sex, sexTextClass(bird.sex)],
@@ -104,7 +104,7 @@ const RegistrySearchScreen = (function () {
     var q = query.trim().toLowerCase();
     if (!q) return null;
     return BIRDS_SAMPLE.filter(function (b) {
-      return b.registryPublic && b.band.toLowerCase().replace(/\s+/g, '') === q.replace(/\s+/g, '');
+      return b.registryPublic && b.band && b.band.toLowerCase().replace(/\s+/g, '') === q.replace(/\s+/g, '');
     })[0] || null;
   }
 
@@ -180,7 +180,7 @@ const RegistryManageScreen = (function () {
       title.textContent = birdShortLabel(bird);
       var sub = document.createElement('span');
       sub.className = 'list-row-sub';
-      sub.textContent = bird.band;
+      sub.textContent = birdBandLabel(bird);
       info.appendChild(title);
       info.appendChild(sub);
 
