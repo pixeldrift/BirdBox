@@ -445,7 +445,7 @@ const BirdsScreen = (function () {
         }
         tile.addEventListener('click', function () {
           if (photo.isPrimary) return;
-          makePhotoPrimary(bird, photo.id).then(refresh).catch(function () {});
+          setMainPhoto(bird.id, photo.id).then(refresh).catch(function () {});
         });
         var del = document.createElement('span');
         del.className = 'file-remove';
@@ -454,8 +454,8 @@ const BirdsScreen = (function () {
         del.setAttribute('aria-label', 'Remove photo');
         del.addEventListener('click', function (e) {
           e.stopPropagation();
-          if (!window.confirm('Remove this photo?')) return;
-          removeFile(photo.id).then(refresh).catch(function () {});
+          if (!window.confirm('Remove this photo from ' + (bird.name || bird.band) + '? It stays in the Media library.')) return;
+          unlinkMedia(photo.id, 'bird', bird.id).then(refresh).catch(function () {});
         });
         tile.appendChild(del);
         grid.appendChild(tile);
@@ -490,6 +490,7 @@ const BirdsScreen = (function () {
     fileLabel.appendChild(fileInput);
     section.appendChild(fileLabel);
     section.appendChild(photoMessage);
+    section.appendChild(FilesUI.chooseExisting({ type: 'photo', label: 'Choose from library', ownerType: 'bird', ownerId: bird.id, refresh: refresh }));
 
     var note = document.createElement('p');
     note.className = 'form-note';

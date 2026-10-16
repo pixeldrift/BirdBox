@@ -387,13 +387,22 @@ the app also asks whether to mark the bird Sold (it left while still Available/R
 Available again (it came back to you while still Sold). Never automatic: boarding and breeder loans
 change possession without a sale.
 
-## Files (one store for everything uploaded)
+## Media library (files are linked, not owned)
 
-Bird photos, health-record documents (DNA certificates, immunizations, reports), shipment photos /
-receipts / waybills, and invoices / receipts on accounting entries are all rows in `attachments`
-(sql/012_attachments.sql): `owner_type` (bird | health | waybill | transaction), `owner_id`, `kind`,
-filename, type, size and the bytes. API: `/api/files` (list, fetch, upload, make-main-photo, delete).
-Pictures are shrunk in the browser; files are capped at 3 MB and may be photos or PDFs (bird photos:
-images only). `js/data/files.js` loads the list at startup and hangs each file on its record;
-`js/files-ui.js` is the shared "files on this record" section. The service worker never caches
-`/api/` responses, so records and files are always current.
+Every uploaded file — bird photos, receipts, waybills, invoices, DNA certificates and other
+documents — is its own record in `media` (sql/012_attachments.sql) and is **linked** to the records it
+belongs to through `media_links` (target: bird | health | waybill | transaction | contact). One receipt
+can be linked to an accounting entry *and* a shipment; a photo can belong to several birds. Removing a
+file from a record only unlinks it; deleting it in **Business → Media** removes it everywhere.
+
+- API: `/api/media` — list the library with links, fetch bytes, upload (optionally linking), rename,
+  link, unlink, make a bird's main photo (a property of the bird–photo link), delete.
+- Records still show their files: `js/data/files.js` loads the library once and keeps a copy on each
+  linked record (bird.photos, health attachments, shipment/transaction files, contact.photoUrl).
+- Every record that takes files offers **Upload new** or **Choose existing** (search the library).
+- The **Media** screen is the master gallery: search by file name or by anything it's linked to
+  (a bird's band or name, a client, a shipment…), filter by type, link/unlink, delete.
+- Files are shrunk in the browser, capped at 3 MB, photos or PDFs (bird photos: images only), and
+  stored in Postgres. The service worker never caches `/api/` responses.
+- Direction of travel: everything is linked data (media today; birds, contacts, shipments,
+  transactions already reference each other by id) rather than strict parent/child ownership.

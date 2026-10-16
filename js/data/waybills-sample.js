@@ -75,7 +75,7 @@ function addWaybillFile(wb, kind, file) {
 }
 
 function removeWaybillFile(wb, fileId) {
-  return removeFile(fileId);
+  return unlinkMedia(fileId, 'waybill', wb.id);
 }
 
 // Marks a pending shipment as having happened.

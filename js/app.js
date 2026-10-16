@@ -23,6 +23,7 @@
     'business/contacts': typeof ContactsScreen !== 'undefined' ? ContactsScreen : null,
     'business/accounting': typeof AccountingScreen !== 'undefined' ? AccountingScreen : null,
     'business/shipping': typeof ShippingScreen !== 'undefined' ? ShippingScreen : null,
+    'business/media': typeof MediaScreen !== 'undefined' ? MediaScreen : null,
     'account/settings': typeof SettingsScreen !== 'undefined' ? SettingsScreen : null,
     'account/about': typeof AboutScreen !== 'undefined' ? AboutScreen : null,
     'account/credits': typeof CreditsScreen !== 'undefined' ? CreditsScreen : null,

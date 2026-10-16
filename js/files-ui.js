@@ -37,11 +37,11 @@ const FilesUI = (function () {
     function removeButton(file) {
       var x = el('button', 'file-remove', '✕');
       x.type = 'button';
-      x.setAttribute('aria-label', 'Remove ' + (file.filename || 'file'));
+      x.setAttribute('aria-label', 'Remove ' + (file.filename || 'file') + ' from this record');
       x.addEventListener('click', function (e) {
         e.stopPropagation();
-        if (!window.confirm('Remove this file?')) return;
-        removeFile(file.id).then(opts.refresh).catch(function (err) { fail(err.message); });
+        if (!window.confirm('Remove this file from this record? It stays in the Media library.')) return;
+        unlinkMedia(file.id, opts.ownerType, opts.ownerId).then(opts.refresh).catch(function (err) { fail(err.message); });
       });
       return x;
     }
@@ -111,6 +111,7 @@ const FilesUI = (function () {
         if (!items.length && k.empty) section.appendChild(el('p', 'form-note', k.empty));
       }
       section.appendChild(addButton(k));
+      section.appendChild(chooseExisting({ type: k.kind, label: 'Choose existing ' + mediaTypeInfo(k.kind).one.toLowerCase(), ownerType: opts.ownerType, ownerId: opts.ownerId, refresh: opts.refresh }));
     });
 
     section.appendChild(message);
@@ -118,5 +119,50 @@ const FilesUI = (function () {
     return section;
   }
 
-  return { render: render };
+  // "Choose existing": pick a file that's already in the Media library and link it to this record
+  // instead of uploading another copy. The list is searchable by anything the file is linked to.
+  function chooseExisting(o) {
+    var wrap = el('div', 'choose-existing');
+    var open = el('button', 'pick-link', o.label);
+    open.type = 'button';
+    var panel = el('div', 'pick-results');
+    panel.hidden = true;
+    wrap.appendChild(open);
+    wrap.appendChild(panel);
+
+    function draw(q) {
+      clearEl(panel);
+      var search = el('input', 'form-input');
+      search.type = 'search';
+      search.placeholder = 'Search by name, bird, client…';
+      search.value = q || '';
+      search.addEventListener('input', function () { draw(search.value); search.focus(); });
+      panel.appendChild(search);
+      var words = (q || '').trim().toLowerCase().split(/\s+/).filter(Boolean);
+      var found = MEDIA.filter(function (m) {
+        if (m.type !== o.type || mediaLinkedTo(m, o.ownerType, o.ownerId)) return false;
+        var hay = mediaSearchText(m);
+        return words.every(function (w) { return hay.indexOf(w) !== -1; });
+      }).slice(0, 8);
+      if (!found.length) panel.appendChild(el('p', 'pick-empty', MEDIA.some(function (m) { return m.type === o.type; }) ? 'Nothing else matches.' : 'The library has nothing of this kind yet.'));
+      found.forEach(function (m) {
+        var row = el('button', 'pick-option');
+        row.type = 'button';
+        row.appendChild(pickLead(makeThumb(mediaThumbSpec(m)), m.title || m.filename || mediaTypeInfo(m.type).one, mediaLinkedSummary(m, o.ownerType, o.ownerId)));
+        row.addEventListener('click', function () {
+          row.disabled = true;
+          linkMedia(m.id, o.ownerType, o.ownerId).then(o.refresh).catch(function () { row.disabled = false; });
+        });
+        panel.appendChild(row);
+      });
+    }
+
+    open.addEventListener('click', function () {
+      panel.hidden = !panel.hidden;
+      if (!panel.hidden) draw('');
+    });
+    return wrap;
+  }
+
+  return { render: render, chooseExisting: chooseExisting };
 })();
