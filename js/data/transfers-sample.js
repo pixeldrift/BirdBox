@@ -43,7 +43,7 @@ function birdOwner(birdId) {
 
 // ownerId = a contact id (they own the birds now) or null (you own them).
 function setBirdsOwner(birdIds, ownerId) {
-  return fetch('/api/ownership', {
+  return fetch('/api/transfers?action=ownership', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ birdIds: birdIds, ownerId: ownerId || null }),

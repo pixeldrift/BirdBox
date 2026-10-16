@@ -260,10 +260,7 @@ and eBird name differently). A species with no art falls back through its genus,
 Dove node) before the generic bird, so any species in the list gets a sensible icon.
 
 **Setup order:** run `sql/007_species.sql` in Neon; load the species with `DATABASE_URL=... npm run seed:species`
-— or, with no computer, set a `SEED_TOKEN` environment variable in Vercel, redeploy, open
-`/api/admin/seed-species?token=<SEED_TOKEN>` once (`api/admin/seed-species.js`: off unless the variable
-is set, downloads the public eBird taxonomy and upserts it, safe to repeat; delete the variable
-afterwards to switch it off); then
+(the temporary phone-friendly seed endpoint was removed once the list was loaded — see the hosting note at the end); then
 `sql/008_birds_species.sql`, which links the existing birds by matching their old
 Species + Subspecies text against species names (and clears the subspecies it consumed) and ends by
 listing any birds it could not link. Until 007 and 008 are run the birds API still serves birds
@@ -374,7 +371,7 @@ the ledger of record is Accounting.
   sql/011_transfers.sql): went to / came from a contact, with a method of Local pick up, Local meet,
   Delivery or Shipped (from the Airtable "Delivery" field), plus date and notes.
 - Either one means **possession** moved, so the app then *asks* whether **ownership** changes too
-  (`api/ownership`, `js/ownership-prompt.js`). It is never automatic — boarding and breeder loans
+  (`POST /api/transfers?action=ownership`, `js/ownership-prompt.js`). It is never automatic — boarding and breeder loans
   change possession only. Ownership lives on the contact (`contacts.birds_owned`); a bird nobody
   lists as owned is yours. A bird's page shows its Owner and its transfer/shipment history.
 
@@ -406,3 +403,11 @@ file from a record only unlinks it; deleting it in **Business → Media** remove
   stored in Postgres. The service worker never caches `/api/` responses.
 - Direction of travel: everything is linked data (media today; birds, contacts, shipments,
   transactions already reference each other by id) rather than strict parent/child ownership.
+
+## Hosting note: keep API files to 12 or fewer
+
+The Vercel Hobby plan allows at most **12 serverless functions** per deployment, and every file in
+`api/` (outside `_lib/`) counts. There are 11 now. When adding an endpoint, fold it into an existing
+one (as ownership lives in `api/transfers/index.js`) rather than adding a file. The one-time seed
+endpoint was removed once the species list was loaded; `npm run seed:species` still seeds from a
+computer.
