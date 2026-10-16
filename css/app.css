@@ -1355,8 +1355,8 @@ input[type="date"].form-input::-webkit-date-and-time-value {
 .chip-thumb.avatar-framed.avatar-female { border-color: #E58FB0; }
 .chip-thumb.avatar-framed.avatar-unsexed { border-color: #C9C6C2; }
 .pick-option .chip-thumb { width: 30px; height: 30px; }
-.pick-option .pick-text { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; flex: 1; min-width: 0; }
-.pick-option .pick-lead { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; text-align: left; }
+.pick-text { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; flex: 1; min-width: 0; }
+.pick-lead { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; text-align: left; }
 
 /* Media library */
 .media-preview { display: block; text-align: center; margin-bottom: 12px; }
@@ -1371,3 +1371,17 @@ input[type="date"].form-input::-webkit-date-and-time-value {
 }
 .edit-btn:hover { background: #F5E4DC; }
 .danger-btn { color: #A6543D; border-color: #E5B8AC; }
+
+/* Picker */
+.picker .picker-chosen { align-items: center; gap: 12px; flex-wrap: nowrap; }
+.picker-chosen .pick-link { flex: 0 0 auto; }
+.picker .picker-lead { flex: 1; min-width: 0; }
+.pick-option.active { border-color: #4C6B45; background: #F1F5EE; }
+
+.group-heading {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 2px; width: 100%;
+  margin: 14px 0 8px; padding: 8px 4px; background: none; border: 0; border-bottom: 1px solid #E9DCC9;
+  font: inherit; color: inherit; text-align: left; cursor: pointer;
+}
+.group-heading:disabled { cursor: default; }
+.list-actions.list-actions-3 { grid-template-columns: repeat(3, 1fr); }

@@ -47,10 +47,25 @@ const SCHEMAS = {
       notes: { col: 'notes', type: 'text', max: 4000 },
     },
   },
+  locations: {
+    table: 'locations', pk: 'id', idPrefix: 'loc-', order: 'name',
+    fields: {
+      name: { col: 'name', type: 'text', required: true, max: 120 },
+      description: { col: 'description', type: 'text', max: 400 },
+    },
+  },
   buildings: {
     table: 'buildings', pk: 'code', idPrefix: '', order: 'code',
     fields: {
       nickname: { col: 'nickname', type: 'text', required: true, max: 80 },
+      description: { col: 'description', type: 'text', max: 400 },
+      locationId: { col: 'location_id', type: 'text', ref: 'location' },
+    },
+  },
+  cages: {
+    table: 'cages', pk: 'code', idPrefix: '', order: 'code',
+    fields: {
+      buildingCode: { col: 'building_code', type: 'text', ref: 'building' },
       description: { col: 'description', type: 'text', max: 400 },
     },
   },

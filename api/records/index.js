@@ -82,8 +82,8 @@ async function checkRefs(schema, values) {
     const f = schema.fields[key];
     const v = values[f.col];
     if (!f.ref || !v) continue;
-    const table = f.ref === 'contact' ? 'contacts' : 'birds';
-    const found = await sql(`select 1 from ${table} where id = $1`, [v]);
+    const target = { contact: ['contacts', 'id'], bird: ['birds', 'id'], location: ['locations', 'id'], building: ['buildings', 'code'] }[f.ref];
+    const found = await sql(`select 1 from ${target[0]} where ${target[1]} = $1`, [v]);
     if (!found.length) return 'That ' + f.ref + ' isn’t in your records';
   }
   return null;
@@ -99,6 +99,9 @@ async function cleanupAfterDelete(type, id) {
     steps.push(['update waybills set client_id = null where client_id = $1', [id]]);
     steps.push(['update bird_transfers set contact_id = null where contact_id = $1', [id]]);
   }
+  if (type === 'cages') steps.push(['update birds set cage = null where cage = $1', [id]]);
+  if (type === 'buildings') steps.push(['update cages set building_code = null where building_code = $1', [id]]);
+  if (type === 'locations') steps.push(['update buildings set location_id = null where location_id = $1', [id]]);
   for (const [text, params] of steps) {
     try { await sql(text, params); } catch (err) { /* that table may not exist yet */ }
   }
@@ -125,11 +128,11 @@ module.exports = async function handler(req, res) {
       const refError = await checkRefs(schema, result.values);
       if (refError) { res.status(400).json({ error: refError }); return; }
       let newId;
-      if (schema.pk === 'code') { // buildings are identified by a short code the person chooses
-        newId = String(body.code || '').trim().toUpperCase().replace(/[^A-Z0-9-]/g, '').slice(0, 12);
-        if (!newId) { res.status(400).json({ error: 'Code is required (letters and numbers, e.g. F7)' }); return; }
+      if (schema.pk === 'code') { // buildings and cages are identified by a short code the person chooses
+        newId = String(body.code || '').trim().toUpperCase().replace(/[^A-Z0-9-]/g, '').slice(0, 20);
+        if (!newId) { res.status(400).json({ error: 'Code is required (letters and numbers, e.g. F7 or F2-010)' }); return; }
         const taken = await sql(`select 1 from ${schema.table} where code = $1`, [newId]);
-        if (taken.length) { res.status(409).json({ error: 'There is already a building with that code' }); return; }
+        if (taken.length) { res.status(409).json({ error: 'There is already one with that code' }); return; }
       } else {
         newId = schema.idPrefix + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
       }

@@ -53,13 +53,35 @@ var RECORD_TYPES_UI = {
     ],
     defaults: { type: 'DNA Certificate' },
   },
+  locations: {
+    singular: 'location', pk: 'id', hash: '#/aviary/caging/',
+    list: function () { return LOCATIONS_SAMPLE; },
+    nameOf: function (r) { return r.name; },
+    fields: [
+      { key: 'name', label: 'Name', type: 'text', required: true, hint: 'A site — e.g. Home farm, Fallbrook, Rental barn.' },
+      { key: 'description', label: 'Description', type: 'text' },
+    ],
+    defaults: {},
+  },
   buildings: {
     singular: 'building', pk: 'code', hash: '#/aviary/caging/',
     list: function () { return BUILDINGS_SAMPLE; },
     nameOf: function (r) { return r.nickname; },
     fields: [
-      { key: 'code', label: 'Code', type: 'text', required: true, createOnly: true, hint: 'The letters at the start of a cage number — F2 for cages like F2-001.' },
+      { key: 'code', label: 'Code', type: 'text', required: true, createOnly: true, hint: 'The letters at the start of its cage numbers — F2 for cages like F2-001. Can’t be changed later.' },
       { key: 'nickname', label: 'Name', type: 'text', required: true },
+      { key: 'description', label: 'Description', type: 'text' },
+      { key: 'locationId', label: 'Location', type: 'text', ref: 'location', hint: 'Optional — which site it’s on.' },
+    ],
+    defaults: {},
+  },
+  cages: {
+    singular: 'cage', pk: 'code', hash: '#/aviary/caging/',
+    list: function () { return CAGES_SAMPLE; },
+    nameOf: function (r) { return r.code; },
+    fields: [
+      { key: 'code', label: 'Cage number', type: 'text', required: true, createOnly: true, hint: 'e.g. F2-010. Can’t be changed later.' },
+      { key: 'buildingCode', label: 'Building', type: 'text', ref: 'building', hint: 'Optional — which building it’s in.' },
       { key: 'description', label: 'Description', type: 'text' },
     ],
     defaults: {},

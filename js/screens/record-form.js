@@ -9,55 +9,7 @@ const RecordForm = (function () {
     return e;
   }
 
-  // Search-and-pick for a linked record (a contact or a bird). Returns { el, get }.
-  function refPicker(kind, initialId, onChange) {
-    var value = initialId || '';
-    var box = el('div');
-    var search = el('input', 'form-input');
-    search.type = 'search';
-    search.placeholder = kind === 'contact' ? 'Search contacts…' : 'Search by band, name or species…';
-    var out = el('div', 'pick-results');
-    box.appendChild(search);
-    box.appendChild(out);
-
-    function find(id) { return kind === 'contact' ? getContact(id) : getBird(id); }
-
-    function draw() {
-      clearEl(out);
-      var chosen = value ? find(value) : null;
-      if (chosen) {
-        search.hidden = true;
-        var row = el('div', 'pick-selected');
-        row.style.alignItems = 'center';
-        row.appendChild(kind === 'contact' ? contactChip(chosen, null) : birdChip(chosen, null));
-        var change = el('button', 'pick-link', 'Change');
-        change.type = 'button';
-        change.addEventListener('click', function () { value = ''; search.value = ''; onChange(''); draw(); });
-        row.appendChild(change);
-        out.appendChild(row);
-        return;
-      }
-      search.hidden = false;
-      var words = search.value.trim().toLowerCase().split(/\s+/).filter(Boolean);
-      if (!words.length) return;
-      var pool = kind === 'contact' ? CONTACTS_SAMPLE : BIRDS_SAMPLE;
-      var found = pool.filter(function (r) {
-        var hay = (kind === 'contact' ? [r.name, r.company, r.city] : [r.band, r.name, birdShortLabel(r), r.mutation]).filter(Boolean).join(' ').toLowerCase();
-        return words.every(function (w) { return hay.indexOf(w) !== -1; });
-      }).slice(0, 6);
-      if (!found.length) out.appendChild(el('p', 'pick-empty', 'No matches.'));
-      found.forEach(function (r) {
-        var o = el('button', 'pick-option');
-        o.type = 'button';
-        o.appendChild(kind === 'contact' ? contactPickLead(r) : birdPickLead(r));
-        o.addEventListener('click', function () { value = r.id; onChange(value); draw(); });
-        out.appendChild(o);
-      });
-    }
-    search.addEventListener('input', draw);
-    draw();
-    return { el: box, get: function () { return value; } };
-  }
+  var PICKERS = { contact: 'contacts', bird: 'birds', location: 'locations', building: 'buildings' };
 
   // Handles the "new" and "edit~<id>" routes for a screen. Returns true if it took over.
   function route(main, id, type, navigate, setTitle) {
@@ -75,9 +27,9 @@ const RecordForm = (function () {
     if (editing && !rec) { main.appendChild(el('p', '', 'That ' + def.singular + ' wasn’t found.')); return; }
     opts.setTitle((editing ? 'Edit ' : 'Add ') + def.singular.replace(/^./, function (c) { return c.toUpperCase(); }));
 
-    // Buildings don't have a page of their own — go back to the cage list instead.
+    // Where to go after saving: the caller's choice, else that record's own page.
     function goTo(recId) {
-      if (opts.type === 'buildings') location.hash = def.hash.replace(/\/$/, ''); else opts.navigate(recId);
+      if (opts.after) opts.after(recId); else opts.navigate(recId);
     }
 
     var base = Object.assign({}, def.defaults, opts.prefill || {}, rec || {});
@@ -90,7 +42,7 @@ const RecordForm = (function () {
       var control, get;
       var current = base[f.key] === null || base[f.key] === undefined ? '' : base[f.key];
       if (f.ref) {
-        var rp = refPicker(f.ref, current, function () {});
+        var rp = Picker[PICKERS[f.ref]]({ value: current, allowClear: !f.required });
         control = rp.el;
         get = rp.get;
       } else if (f.type === 'enum') {
@@ -128,7 +80,7 @@ const RecordForm = (function () {
     var cancel = el('button', 'add-record-btn', 'Cancel');
     cancel.type = 'button';
     cancel.addEventListener('click', function () {
-      if (editing) goTo(opts.id); else location.hash = def.hash.replace(/\/$/, '');
+      if (opts.onCancel) opts.onCancel(); else if (editing) goTo(opts.id); else location.hash = def.hash.replace(/\/$/, '');
     });
     form.appendChild(cancel);
 
@@ -158,12 +110,15 @@ const RecordForm = (function () {
       del.type = 'button';
       var delMsg = el('div');
       del.addEventListener('click', function () {
+        var inCage = opts.type === 'cages' ? birdsInCage(opts.id).length : 0;
         var note = opts.type === 'contacts' ? ' Their shipments and accounting entries stay, just no longer linked to them.' :
-          opts.type === 'buildings' ? ' Birds in its cages keep their cage numbers.' : '';
+          opts.type === 'buildings' ? ' Its cages stay, just no longer filed under it.' :
+          opts.type === 'locations' ? ' Its buildings stay, just no longer on a location.' :
+          opts.type === 'cages' ? (inCage ? ' The ' + inCage + ' bird' + (inCage === 1 ? '' : 's') + ' in it will be left with no cage.' : '') : '';
         if (!window.confirm('Delete “' + def.nameOf(rec) + '”?' + note + ' This can’t be undone.')) return;
         del.disabled = true;
         deleteRecord(opts.type, opts.id).then(function () {
-          location.hash = def.hash.replace(/\/$/, '');
+          if (opts.afterDelete) opts.afterDelete(); else location.hash = def.hash.replace(/\/$/, '');
         }).catch(function (err) {
           del.disabled = false;
           clearEl(delMsg);

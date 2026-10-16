@@ -133,55 +133,25 @@ const BirdsAddScreen = (function () {
     return dl;
   }
 
-  // A cage is chosen from the list of cages already in use (grouped by building), or a new one is
-  // added with the last option. Returns { el, get() } — get() is the cage code, or '' for none.
-  function cageSelect(initial) {
-    var NEW = '__new__';
-    var cages = distinct(BIRDS_SAMPLE.map(function (b) { return b.cage; }));
-    if (initial && cages.indexOf(initial) === -1) cages.push(initial);
-    var box = document.createElement('div');
-    var sel = document.createElement('select');
-    sel.className = 'form-input';
-    var none = document.createElement('option');
-    none.value = '';
-    none.textContent = 'No cage';
-    sel.appendChild(none);
-    var groups = {};
-    cages.forEach(function (c) {
-      var b = buildingForCage(c);
-      var label = b ? 'Building ' + b.nickname + (b.description ? ' — ' + b.description : '') : 'Other';
-      (groups[label] = groups[label] || []).push(c);
+  // The cage picker: search the cages you have (with their building and location), or add one.
+  // A cage added here is created right away as a real cage, filed under the building its number
+  // starts with if there is one.
+  function cagePicker(initial) {
+    return Picker.cages({
+      value: initial || '', allowClear: true, placeholder: 'Search cages — or type a new number…',
+      addNew: {
+        needsText: true,
+        label: function (typed) { return typed ? '+ Add cage “' + typed.toUpperCase() + '”' : '+ New cage — type its number above'; },
+        onClick: function (typed, done) {
+          var code = typed.toUpperCase().replace(/[^A-Z0-9-]/g, '');
+          if (!code) return;
+          if (getCage(code)) { done(code); return; }
+          var guess = buildingForCage(code);
+          createRecord('cages', { code: code, buildingCode: guess ? guess.code : '' }).then(function () { done(code); })
+            .catch(function (err) { window.alert(err.message); });
+        },
+      },
     });
-    Object.keys(groups).sort().forEach(function (label) {
-      var og = document.createElement('optgroup');
-      og.label = label;
-      groups[label].sort().forEach(function (c) {
-        var o = document.createElement('option');
-        o.value = c;
-        o.textContent = c;
-        og.appendChild(o);
-      });
-      sel.appendChild(og);
-    });
-    var add = document.createElement('option');
-    add.value = NEW;
-    add.textContent = '+ New cage…';
-    sel.appendChild(add);
-    sel.value = initial || '';
-    var fresh = input('text', { placeholder: 'New cage number, e.g. F2-010' });
-    fresh.hidden = true;
-    fresh.style.marginTop = '8px';
-    sel.addEventListener('change', function () {
-      fresh.hidden = sel.value !== NEW;
-      if (!fresh.hidden) fresh.focus();
-    });
-    box.appendChild(sel);
-    box.appendChild(fresh);
-    return { el: box, get: function () { return sel.value === NEW ? fresh.value.trim() : sel.value; } };
-  }
-
-  function birdOptions() {
-    return BIRDS_SAMPLE.map(function (b) { return { value: b.id, label: birdShortLabel(b) + (b.band ? ' (' + b.band + ')' : '') }; });
   }
 
   function message(kind, text) {
@@ -226,10 +196,11 @@ const BirdsAddScreen = (function () {
     var mutation = input('text', { placeholder: 'Optional' });
     var hatch = input('date');
     var status = select(STATUSES.map(function (s) { return { value: s, label: s }; }));
-    var cageCtl = cageSelect(editing ? editing.cage : '');
-    var mother = select(birdOptions(), 'Unknown');
-    var father = select(birdOptions(), 'Unknown');
-    var paired = select(birdOptions(), 'Not paired');
+    var cageCtl = cagePicker(editing ? editing.cage : '');
+    var selfIds = editing ? [editing.id] : [];
+    var mother = Picker.birds({ value: editing ? editing.motherId : '', exclude: selfIds, allowClear: true, placeholder: 'Unknown — search to choose…' });
+    var father = Picker.birds({ value: editing ? editing.fatherId : '', exclude: selfIds, allowClear: true, placeholder: 'Unknown — search to choose…' });
+    var paired = Picker.birds({ value: editing ? editing.pairedId : '', exclude: selfIds, allowClear: true, placeholder: 'Not paired — search to choose…' });
     var cost = input('number', { min: '0', step: '0.01', placeholder: '0.00' });
     var price = input('number', { min: '0', step: '0.01', placeholder: '0.00' });
     var notes = document.createElement('textarea');
@@ -252,13 +223,6 @@ const BirdsAddScreen = (function () {
       mutation.value = editing.mutation || '';
       hatch.value = editing.hatchDate || '';
       status.value = editing.status;
-      [mother, father, paired].forEach(function (s) {
-        // a bird can't be its own parent or partner
-        Array.prototype.slice.call(s.options).forEach(function (o) { if (o.value === editing.id) s.removeChild(o); });
-      });
-      mother.value = editing.motherId || '';
-      father.value = editing.fatherId || '';
-      paired.value = editing.pairedId || '';
       cost.value = editing.cost === null || editing.cost === undefined ? '' : editing.cost;
       price.value = editing.price === null || editing.price === undefined ? '' : editing.price;
       notes.value = editing.notes || '';
@@ -266,8 +230,8 @@ const BirdsAddScreen = (function () {
 
     [field('Band number', band, 'Optional — leave blank if this bird has no band.'), field('Name', name), field('Sex', sex), field('Species', speciesPicker.el, 'Search by any name you know — common, trade, or scientific.', true),
       field('Subspecies / form', subspecies), field('Mutation', mutation), field('Hatch date', hatch),
-      field('Status', status), field('Cage', cageCtl.el, 'Pick one of your cages, or choose “New cage…” to add one.', true), field('Mother', mother), field('Father', father),
-      field('Paired with', paired), field('Cost', cost), field('Asking price', price), field('Notes', notes),
+      field('Status', status), field('Cage', cageCtl.el, 'Search your cages, or add a new one.', true), field('Mother', mother.el, undefined, true), field('Father', father.el, undefined, true),
+      field('Paired with', paired.el, undefined, true), field('Cost', cost), field('Asking price', price), field('Notes', notes),
       dlSub, errorBox, saveBtn].forEach(function (el) { form.appendChild(el); });
 
     form.addEventListener('submit', function (e) {
@@ -278,8 +242,8 @@ const BirdsAddScreen = (function () {
         band: band.value, name: name.value, sex: sex.value,
         speciesCode: picked ? picked.code : '', speciesName: picked ? picked.name : '',
         subspecies: subspecies.value, mutation: mutation.value, hatchDate: hatch.value,
-        status: status.value, cage: cageCtl.get(), motherId: mother.value, fatherId: father.value,
-        pairedId: paired.value, cost: cost.value, price: price.value, notes: notes.value,
+        status: status.value, cage: cageCtl.get(), motherId: mother.get(), fatherId: father.get(),
+        pairedId: paired.get(), cost: cost.value, price: price.value, notes: notes.value,
       });
       if (result.error) {
         errorBox.appendChild(message('error', result.error));
@@ -317,8 +281,8 @@ const BirdsAddScreen = (function () {
       saveBtn.textContent = 'Saving…';
       editBird(editing.id, {
         band: band.value, name: name.value, sex: sex.value, speciesCode: picked.code, subspecies: subspecies.value, mutation: mutation.value,
-        hatchDate: date.value, status: status.value, cage: cageCtl.get(), motherId: mother.value, fatherId: father.value,
-        pairedId: paired.value, cost: cost.value, price: price.value, notes: notes.value,
+        hatchDate: date.value, status: status.value, cage: cageCtl.get(), motherId: mother.get(), fatherId: father.get(),
+        pairedId: paired.get(), cost: cost.value, price: price.value, notes: notes.value,
       }).then(function (bird) {
         if (status.value === 'Sold' && !wasSold) {
           // Newly marked Sold: ask about shipping / a hand-over / ownership, like the status chips do.

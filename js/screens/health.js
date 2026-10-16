@@ -236,24 +236,11 @@ const HealthScreen = (function () {
     var form = document.createElement('form');
     form.className = 'detail-section record-form';
 
-    var birdField = document.createElement('label');
+    var birdField = document.createElement('div');
     birdField.className = 'form-field';
     birdField.innerHTML = '<span class="form-label">Bird</span>';
-    var birdSelect = document.createElement('select');
-    birdSelect.className = 'form-input';
-    birdSelect.required = true;
-    var blankOpt = document.createElement('option');
-    blankOpt.value = '';
-    blankOpt.textContent = 'Select a bird…';
-    birdSelect.appendChild(blankOpt);
-    BIRDS_SAMPLE.forEach(function (b) {
-      var opt = document.createElement('option');
-      opt.value = b.id;
-      opt.textContent = birdShortLabel(b) + (b.band ? ' (' + b.band + ')' : '');
-      if (b.id === presetBirdId) opt.selected = true;
-      birdSelect.appendChild(opt);
-    });
-    birdField.appendChild(birdSelect);
+    var birdPicker = Picker.birds({ value: presetBirdId || '' });
+    birdField.appendChild(birdPicker.el);
 
     var typeField = document.createElement('label');
     typeField.className = 'form-field';
@@ -324,13 +311,13 @@ const HealthScreen = (function () {
 
     form.addEventListener('submit', function (e) {
       e.preventDefault();
-      if (!birdSelect.value) {
-        birdSelect.focus();
+      if (!birdPicker.get()) {
+        alert('Choose a bird first');
         return;
       }
       var chosenFiles = Array.prototype.slice.call(fileInput.files);
       var record = {
-        birdId: birdSelect.value,
+        birdId: birdPicker.get(),
         type: typeSelect.value,
         date: dateInput.value || new Date().toISOString().slice(0, 10),
         provider: providerInput.value.trim(),

@@ -62,6 +62,9 @@ function deleteRecord(type, id) {
       WAYBILLS_SAMPLE.forEach(function (w) { if (w.clientId === id) w.clientId = null; });
       TRANSFERS_SAMPLE.forEach(function (t) { if (t.contactId === id) t.contactId = null; });
     }
+    if (type === 'cages') BIRDS_SAMPLE.forEach(function (b) { if (b.cage === id) b.cage = null; });
+    if (type === 'buildings') CAGES_SAMPLE.forEach(function (c) { if (c.buildingCode === id) c.buildingCode = null; });
+    if (type === 'locations') BUILDINGS_SAMPLE.forEach(function (b) { if (b.locationId === id) b.locationId = null; });
     MEDIA.forEach(function (m) {
       var target = { contacts: 'contact', transactions: 'transaction', health: 'health' }[type];
       if (target) m.links = m.links.filter(function (l) { return !(l.targetType === target && l.targetId === id); });

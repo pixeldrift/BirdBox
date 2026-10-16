@@ -425,6 +425,28 @@ keep their own endpoints and forms, with the same ✎ pencil and Delete-with-con
 - **Shipment** (`api/waybills`, form = the Add Shipment form in edit mode): all fields except files,
   which are managed on the shipment's page. Deleting leaves its files in the Media library.
 
+## Where birds live: Location > Building > Cage
+
+`locations` (a site), `buildings` (filed under a location, optional) and `cages` (filed under a
+building, optional) — `sql/014_locations_cages.sql`. Every level is optional, so a small breeder can
+ignore locations and even buildings. A bird still points at its cage by the cage's code (`birds.cage`);
+cages already on birds are turned into cage records by the migration, and a code on a bird with no cage
+record still shows (as "not set up yet"). All three are served by `/api/records` and edited with the
+shared form (`js/data/record-schemas.js`). **Caging** shows every cage flat, grouped by building, or
+grouped by location, sorted by cage number or by bird count, filtered by location and building; each
+building and location has its own page; "+ Cage / + Building / + Location" add them. Deleting a level
+keeps what's below it, just unfiled (a deleted cage leaves its birds with no cage). Adding a cage from a
+bird's form creates it as a real cage, filed under the building its number starts with.
+
+## The picker (`js/picker.js`)
+
+One searchable single-choice picker used everywhere a record is chosen — birds (mother, father,
+partner, health record, accounting), contacts (client, buyer, transfers), cages, buildings, locations.
+It's a search box that narrows the list as you type (the suggestions appear when you tap in), shows the
+chosen record with Change / Clear, supports arrow keys and Enter, and can offer a "+ Add new" row.
+`Picker.birds / contacts / cages / buildings / locations` are presets; `Picker.create` takes any list.
+Plain dropdowns are no longer used for records. (Still to come: our own date picker — see the roadmap.)
+
 ## Hosting note: keep API files to 12 or fewer
 
 The Vercel Hobby plan allows at most **12 serverless functions** per deployment, and every file in

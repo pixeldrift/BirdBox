@@ -112,10 +112,9 @@ const ShippingAddScreen = (function () {
 
     // Client -> their birds.
     var clientBox = section('Who is it going to / coming from?', 'Choose a contact to see the birds linked to them. (Or just fill in From / To below.)');
-    var clientSearch = input('search', { placeholder: 'Search clients…' });
-    var clientOut = el('div', 'pick-results');
-    clientBox.appendChild(clientSearch);
-    clientBox.appendChild(clientOut);
+    var clientPicker = Picker.contacts({ value: draft.clientId, allowClear: true, placeholder: 'Search clients…',
+      onChange: function (id) { draft.clientId = id; drawBirds(); } });
+    clientBox.appendChild(clientPicker.el);
 
     // Birds: what's chosen, the client's birds, then a search whose last option adds a new bird.
     var birdBox = section('Birds', 'Required — at least one.');
@@ -142,37 +141,6 @@ const ShippingAddScreen = (function () {
       var i = draft.birdIds.indexOf(id);
       if (i === -1) draft.birdIds.push(id); else draft.birdIds.splice(i, 1);
       drawBirds();
-    }
-
-    function drawClient() {
-      clearEl(clientOut);
-      var client = draft.clientId ? getContact(draft.clientId) : null;
-      if (client) {
-        clientSearch.hidden = true;
-        var row = el('div', 'pick-selected');
-        row.style.alignItems = 'center';
-        row.appendChild(el('strong', '', client.name));
-        var change = el('button', 'pick-link', 'Change');
-        change.type = 'button';
-        change.addEventListener('click', function () { draft.clientId = ''; clientSearch.value = ''; drawClient(); drawBirds(); });
-        row.appendChild(change);
-        clientOut.appendChild(row);
-        return;
-      }
-      clientSearch.hidden = false;
-      var q = clientSearch.value.trim().toLowerCase();
-      if (!q) return;
-      var found = CONTACTS_SAMPLE.filter(function (c) {
-        return [c.name, c.company, c.city].filter(Boolean).join(' ').toLowerCase().indexOf(q) !== -1;
-      }).slice(0, 6);
-      if (!found.length) clientOut.appendChild(el('p', 'pick-empty', 'No clients match that.'));
-      found.forEach(function (c) {
-        var o = el('button', 'pick-option');
-        o.type = 'button';
-        o.appendChild(contactPickLead(c));
-        o.addEventListener('click', function () { draft.clientId = c.id; drawClient(); drawBirds(); });
-        clientOut.appendChild(o);
-      });
     }
 
     function addNewBird() {
@@ -214,7 +182,6 @@ const ShippingAddScreen = (function () {
       }
     }
 
-    clientSearch.addEventListener('input', drawClient);
     birdSearch.addEventListener('input', drawBirds);
 
     // How it travelled and who handled it — all optional.
@@ -341,7 +308,6 @@ const ShippingAddScreen = (function () {
       });
     });
 
-    drawClient();
     drawBirds();
     if (!editing) drawAttach();
     wrap.appendChild(form);

@@ -56,47 +56,11 @@ const TransferScreen = (function () {
     dirField.appendChild(dirWrap);
 
     var contactLabel = el('span', 'form-label');
-    var contactSearch = el('input', 'form-input');
-    contactSearch.type = 'search';
-    contactSearch.placeholder = 'Search contacts…';
-    var contactOut = el('div', 'pick-results');
+    var contactPicker = Picker.contacts({ value: state.contactId, onChange: function (id) { state.contactId = id; } });
     var contactField = el('div', 'form-field');
     contactField.appendChild(contactLabel);
-    contactField.appendChild(contactSearch);
-    contactField.appendChild(contactOut);
+    contactField.appendChild(contactPicker.el);
     function drawContactLabel() { contactLabel.textContent = state.direction === 'Out' ? 'Who has it now?' : 'Who did it come from?'; }
-
-    function drawContact() {
-      clearEl(contactOut);
-      var picked = state.contactId ? getContact(state.contactId) : null;
-      if (picked) {
-        contactSearch.hidden = true;
-        var row = el('div', 'pick-selected');
-        row.style.alignItems = 'center';
-        row.appendChild(el('strong', '', picked.name));
-        var change = el('button', 'pick-link', 'Change');
-        change.type = 'button';
-        change.addEventListener('click', function () { state.contactId = ''; contactSearch.value = ''; drawContact(); });
-        row.appendChild(change);
-        contactOut.appendChild(row);
-        return;
-      }
-      contactSearch.hidden = false;
-      var q = contactSearch.value.trim().toLowerCase();
-      if (!q) return;
-      var found = CONTACTS_SAMPLE.filter(function (c) {
-        return [c.name, c.company, c.city].filter(Boolean).join(' ').toLowerCase().indexOf(q) !== -1;
-      }).slice(0, 6);
-      if (!found.length) contactOut.appendChild(el('p', 'pick-empty', 'No contacts match that.'));
-      found.forEach(function (c) {
-        var o = el('button', 'pick-option');
-        o.type = 'button';
-        o.appendChild(contactPickLead(c));
-        o.addEventListener('click', function () { state.contactId = c.id; drawContact(); });
-        contactOut.appendChild(o);
-      });
-    }
-    contactSearch.addEventListener('input', drawContact);
 
     var method = el('select', 'form-input');
     TRANSFER_METHODS.forEach(function (m) {
@@ -164,7 +128,6 @@ const TransferScreen = (function () {
 
     drawDir();
     drawContactLabel();
-    drawContact();
     wrap.appendChild(form);
     main.appendChild(wrap);
   }

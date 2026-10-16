@@ -20,46 +20,9 @@ const SoldFollowUp = (function () {
     // Who bought it (optional, but it pre-fills everything below).
     var buyerField = el('div', 'form-field');
     buyerField.appendChild(el('span', 'form-label', 'Who bought it?'));
-    var search = el('input', 'form-input');
-    search.type = 'search';
-    search.placeholder = 'Search contacts…';
-    var results = el('div', 'pick-results');
-    buyerField.appendChild(search);
-    buyerField.appendChild(results);
     var actions = el('div');
     var message = el('div');
-
-    function drawBuyer() {
-      clearEl(results);
-      var buyer = buyerId ? getContact(buyerId) : null;
-      if (buyer) {
-        search.hidden = true;
-        var row = el('div', 'pick-selected');
-        row.style.alignItems = 'center';
-        row.appendChild(el('strong', '', buyer.name));
-        var change = el('button', 'pick-link', 'Change');
-        change.type = 'button';
-        change.addEventListener('click', function () { buyerId = ''; search.value = ''; drawBuyer(); drawActions(); });
-        row.appendChild(change);
-        results.appendChild(row);
-        return;
-      }
-      search.hidden = false;
-      var q = search.value.trim().toLowerCase();
-      if (!q) return;
-      var found = CONTACTS_SAMPLE.filter(function (c) {
-        return [c.name, c.company, c.city].filter(Boolean).join(' ').toLowerCase().indexOf(q) !== -1;
-      }).slice(0, 6);
-      if (!found.length) results.appendChild(el('p', 'pick-empty', 'No contacts match that.'));
-      found.forEach(function (c) {
-        var o = el('button', 'pick-option');
-        o.type = 'button';
-        o.appendChild(contactPickLead(c));
-        o.addEventListener('click', function () { buyerId = c.id; drawBuyer(); drawActions(); });
-        results.appendChild(o);
-      });
-    }
-    search.addEventListener('input', drawBuyer);
+    buyerField.appendChild(Picker.contacts({ placeholder: 'Search contacts…', allowClear: true, onChange: function (id) { buyerId = id; drawActions(); } }).el);
 
     function button(label, primary, onClick) {
       var b = el('button', primary ? 'save-btn' : 'add-record-btn', label);
@@ -90,7 +53,6 @@ const SoldFollowUp = (function () {
     box.appendChild(actions);
     box.appendChild(message);
     container.appendChild(box);
-    drawBuyer();
     drawActions();
   }
 
