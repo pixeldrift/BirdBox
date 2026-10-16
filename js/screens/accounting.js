@@ -100,6 +100,15 @@ const AccountingScreen = (function () {
 
     draw();
 
+    var txActions = document.createElement('div');
+    txActions.className = 'list-actions';
+    var addTx = document.createElement('button');
+    addTx.type = 'button';
+    addTx.className = 'add-record-btn';
+    addTx.textContent = '+ Add Entry';
+    addTx.addEventListener('click', function () { navigate('new'); });
+    txActions.appendChild(addTx);
+    wrap.appendChild(txActions);
     wrap.appendChild(summary);
     wrap.appendChild(searchInput);
     wrap.appendChild(chipsWrap);
@@ -148,6 +157,8 @@ const AccountingScreen = (function () {
   }
 
   function renderDetail(main, id, navigate, setTitle) {
+    clearEl(main);
+    if (RecordForm.route(main, id, 'transactions', navigate, setTitle)) return;
     var tx = TRANSACTIONS_SAMPLE.filter(function (t) { return t.id === id; })[0];
     if (!tx) {
       var missing = document.createElement('p');
@@ -183,6 +194,7 @@ const AccountingScreen = (function () {
 
     header.appendChild(avatar);
     header.appendChild(titleWrap);
+    header.appendChild(makeEditButton(function () { navigate('edit~' + tx.id); }));
 
     var factsGrid = document.createElement('div');
     factsGrid.className = 'fact-grid';

@@ -4,7 +4,7 @@
 // (sale/deposit). clientId / birdId reference contacts-sample.js / birds-sample.js.
 var TRANSACTIONS_SAMPLE = [];
 
-var transactionsLoaded = fetch('/api/transactions')
+var transactionsLoaded = fetch('/api/records?type=transactions')
   .then(function (res) {
     if (!res.ok) throw new Error('Failed to load transactions');
     return res.json();

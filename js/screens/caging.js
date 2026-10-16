@@ -71,6 +71,15 @@ const CagingScreen = (function () {
 
     draw();
 
+    var cageActions = document.createElement('div');
+    cageActions.className = 'list-actions';
+    var addBuilding = document.createElement('button');
+    addBuilding.type = 'button';
+    addBuilding.className = 'add-record-btn';
+    addBuilding.textContent = '+ Add Building';
+    addBuilding.addEventListener('click', function () { navigate('new'); });
+    cageActions.appendChild(addBuilding);
+    wrap.appendChild(cageActions);
     wrap.appendChild(searchInput);
     wrap.appendChild(countLabel);
     wrap.appendChild(listWrap);
@@ -116,6 +125,8 @@ const CagingScreen = (function () {
   }
 
   function renderDetail(main, id, navigate, setTitle) {
+    clearEl(main);
+    if (RecordForm.route(main, id, 'buildings', navigate, setTitle)) return;
     var groups = cageGroups();
     var group = groups.filter(function (g) { return g.code === id; })[0];
     if (!group) {
@@ -160,6 +171,12 @@ const CagingScreen = (function () {
       factsGrid.appendChild(factRow('Building', group.building.nickname));
       factsGrid.appendChild(factRow('Description', group.building.description));
       wrap.appendChild(factsGrid);
+      var editBuilding = document.createElement('button');
+      editBuilding.type = 'button';
+      editBuilding.className = 'add-record-btn';
+      editBuilding.textContent = '✎ Edit building ' + group.building.code;
+      editBuilding.addEventListener('click', function () { navigate('edit~' + group.building.code); });
+      wrap.appendChild(editBuilding);
     }
 
     var birdsSection = document.createElement('div');

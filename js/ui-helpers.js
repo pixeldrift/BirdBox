@@ -264,3 +264,15 @@ function fillBirdAvatar(container, bird) {
   }
   container.appendChild(img);
 }
+
+// The little pencil in a record's header that opens its edit form.
+function makeEditButton(onClick) {
+  var b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'edit-btn';
+  b.setAttribute('aria-label', 'Edit');
+  b.title = 'Edit';
+  b.textContent = '✎';
+  b.addEventListener('click', onClick);
+  return b;
+}

@@ -10,7 +10,7 @@ const RECORD_TYPES = ['DNA Certificate', 'Immunization', 'Surgical Sexing', 'Vet
 
 var HEALTH_RECORDS_SAMPLE = [];
 
-var healthLoaded = fetch('/api/health')
+var healthLoaded = fetch('/api/records?type=health')
   .then(function (res) {
     if (!res.ok) throw new Error('Failed to load health records');
     return res.json();
@@ -31,21 +31,11 @@ function getHealthRecord(id) {
   return HEALTH_RECORDS_SAMPLE.filter(function (r) { return r.id === id; })[0] || null;
 }
 
-var _healthRecordSeq = 0;
-function nextHealthRecordId() {
-  _healthRecordSeq += 1;
-  return 'hr-' + Date.now().toString(36) + '-' + _healthRecordSeq;
-}
-
-// Posts a new record to the server, then adds it to the local array on
-// success so the caller can navigate straight to it.
+// Saves a new health record (the server chooses its id) and adds it to the local list.
+// Resolves to the saved record.
 function addHealthRecord(record) {
-  return fetch('/api/health', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(record),
-  }).then(function (res) {
-    if (!res.ok) throw new Error('Save failed');
-    HEALTH_RECORDS_SAMPLE.push(record);
+  return createRecord('health', {
+    birdId: record.birdId, type: record.type, date: record.date,
+    provider: record.provider, notes: record.notes,
   });
 }

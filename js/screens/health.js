@@ -137,6 +137,8 @@ const HealthScreen = (function () {
       return;
     }
 
+    if (RecordForm.route(main, id, 'health', navigate, setTitle)) return;
+
     var record = getHealthRecord(id);
     if (!record) {
       var missing = document.createElement('p');
@@ -173,6 +175,7 @@ const HealthScreen = (function () {
 
     header.appendChild(avatar);
     header.appendChild(titleWrap);
+    header.appendChild(makeEditButton(function () { navigate('edit~' + record.id); }));
 
     var factsGrid = document.createElement('div');
     factsGrid.className = 'fact-grid';
@@ -327,7 +330,6 @@ const HealthScreen = (function () {
       }
       var chosenFiles = Array.prototype.slice.call(fileInput.files);
       var record = {
-        id: nextHealthRecordId(),
         birdId: birdSelect.value,
         type: typeSelect.value,
         date: dateInput.value || new Date().toISOString().slice(0, 10),
@@ -337,14 +339,14 @@ const HealthScreen = (function () {
       };
       saveBtn.disabled = true;
       saveBtn.textContent = 'Saving…';
-      addHealthRecord(record).then(function () {
+      addHealthRecord(record).then(function (saved) {
         // The files are saved to the database once the record exists.
         var failed = 0;
         return chosenFiles.reduce(function (chain, f) {
-          return chain.then(function () { return uploadFile('health', record.id, 'document', f).catch(function () { failed += 1; }); });
+          return chain.then(function () { return uploadFile('health', saved.id, 'document', f).catch(function () { failed += 1; }); });
         }, Promise.resolve()).then(function () {
           if (failed) alert(failed + (failed === 1 ? ' file' : ' files') + ' didn’t upload — you can add ' + (failed === 1 ? 'it' : 'them') + ' on the record.');
-          navigate(record.id);
+          navigate(saved.id);
         });
       }).catch(function () {
         saveBtn.disabled = false;

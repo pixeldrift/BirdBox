@@ -74,6 +74,15 @@ const ContactsScreen = (function () {
 
     draw();
 
+    var contactActions = document.createElement('div');
+    contactActions.className = 'list-actions';
+    var addContact = document.createElement('button');
+    addContact.type = 'button';
+    addContact.className = 'add-record-btn';
+    addContact.textContent = '+ Add Contact';
+    addContact.addEventListener('click', function () { navigate('new'); });
+    contactActions.appendChild(addContact);
+    wrap.appendChild(contactActions);
     wrap.appendChild(searchInput);
     wrap.appendChild(chipsWrap);
     wrap.appendChild(countLabel);
@@ -121,6 +130,8 @@ const ContactsScreen = (function () {
   }
 
   function renderDetail(main, id, navigate, setTitle) {
+    clearEl(main);
+    if (RecordForm.route(main, id, 'contacts', navigate, setTitle)) return;
     var contact = getContact(id);
     if (!contact) {
       var missing = document.createElement('p');
@@ -156,6 +167,7 @@ const ContactsScreen = (function () {
 
     header.appendChild(avatar);
     header.appendChild(titleWrap);
+    header.appendChild(makeEditButton(function () { navigate('edit~' + contact.id); }));
 
     var factsGrid = document.createElement('div');
     factsGrid.className = 'fact-grid';

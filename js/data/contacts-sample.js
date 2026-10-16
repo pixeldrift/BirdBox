@@ -9,7 +9,7 @@ function reindexContacts() {
   CONTACTS_SAMPLE.forEach(function (c) { CONTACTS_BY_ID[c.id] = c; });
 }
 
-var contactsLoaded = fetch('/api/contacts')
+var contactsLoaded = fetch('/api/records?type=contacts')
   .then(function (res) {
     if (!res.ok) throw new Error('Failed to load contacts');
     return res.json();

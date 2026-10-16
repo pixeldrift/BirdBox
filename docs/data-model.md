@@ -404,10 +404,24 @@ file from a record only unlinks it; deleting it in **Business → Media** remove
 - Direction of travel: everything is linked data (media today; birds, contacts, shipments,
   transactions already reference each other by id) rather than strict parent/child ownership.
 
+## Editing records (the pencil)
+
+Contacts, accounting entries, health records and buildings share **one endpoint, `/api/records?type=`**
+(list, add, change, delete) and **one edit form**. The field lists live in two matching places:
+`api/_lib/schemas.js` (validation on the server) and `js/data/record-schemas.js` (the form).
+To add a field to one of these: add a line to both lists and a column in the database. The ✎ in a
+record's header opens `…/edit~<id>`; "+ Add" opens `…/new`. Delete is on the edit screen and always
+asks first; deleting a contact leaves their shipments and entries in place but unlinked, and files
+linked to a deleted record are unlinked (they stay in the Media library). Who owns which birds is
+not an editable field — it changes only through the ownership prompts. Buildings have no page of
+their own: they're edited from a cage's page and added from the cage list.
+Birds and shipments have richer rules (species, band uniqueness, status follow-ups, files), so they
+keep their own endpoints and forms.
+
 ## Hosting note: keep API files to 12 or fewer
 
 The Vercel Hobby plan allows at most **12 serverless functions** per deployment, and every file in
-`api/` (outside `_lib/`) counts. There are 11 now. When adding an endpoint, fold it into an existing
-one (as ownership lives in `api/transfers/index.js`) rather than adding a file. The one-time seed
-endpoint was removed once the species list was loaded; `npm run seed:species` still seeds from a
-computer.
+`api/` (outside `_lib/`) counts. There are 8 now. When adding an endpoint, fold it into an existing
+one (as ownership lives in `api/transfers/index.js` and contacts/transactions/health/buildings live in
+`api/records`) rather than adding a file. The one-time seed endpoint was removed once the species list
+was loaded; `npm run seed:species` still seeds from a computer.

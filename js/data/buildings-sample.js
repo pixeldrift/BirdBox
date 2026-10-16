@@ -6,7 +6,7 @@
 // use" by the Caging screen.
 var BUILDINGS_SAMPLE = [];
 
-var buildingsLoaded = fetch('/api/buildings')
+var buildingsLoaded = fetch('/api/records?type=buildings')
   .then(function (res) {
     if (!res.ok) throw new Error('Failed to load buildings');
     return res.json();
