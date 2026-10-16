@@ -721,6 +721,28 @@ textarea.form-input {
   resize: vertical;
 }
 
+/* Date, number and select boxes size themselves from the browser's own widget, which can be wider
+   than the card on phones. Keep every box the same width as the rest. */
+.form-input {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+}
+
+input[type="date"].form-input,
+input[type="number"].form-input {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  min-height: 42px;
+  text-align: left;
+}
+
+input[type="date"].form-input::-webkit-date-and-time-value {
+  text-align: left;
+  min-width: 0;
+}
+
 .form-note {
   margin: -4px 0 0;
   font-size: 0.78rem;

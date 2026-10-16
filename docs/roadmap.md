@@ -202,6 +202,15 @@ file when plans change** — it is the simplified public version of this roadmap
 makes no privacy claim beyond "the public Registry only shows birds you choose to include", because
 there are no accounts or logins yet.
 
+## Our own pickers (instead of the phone's)
+
+Date boxes (and later dropdowns) currently use the phone/browser's built-in pickers, which look
+different on every device and sized themselves wider than our forms on some phones (fixed with CSS for
+now). Eventually build BirdBox's own date picker — and match our own select/dropdown styling — so
+every form looks and behaves the same everywhere. One shared date component used by every form
+(`js/screens/record-form.js`, the bird, shipment, health and transfer forms), with quick choices like
+Today / Yesterday and a way to leave it blank ("I don't remember").
+
 ## Persistent storage / backend
 
 Everything built so far (Birds, Contacts, Accounting, Health) lives in in-memory sample arrays
