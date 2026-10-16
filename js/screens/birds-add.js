@@ -145,9 +145,11 @@ const BirdsAddScreen = (function () {
     return p;
   }
 
-  function renderForm(main, navigate, setTitle) {
+  // `editing` (optional): a bird to change instead of adding a new one. Its band number stays fixed
+  // because other records (parents, shipments, files…) point at it.
+  function renderForm(main, navigate, setTitle, editing) {
     clearEl(main);
-    setTitle('Add Bird');
+    setTitle(editing ? 'Edit Bird' : 'Add Bird');
 
     var wrap = document.createElement('div');
     wrap.className = 'detail-screen';
@@ -158,8 +160,9 @@ const BirdsAddScreen = (function () {
     var name = input('text', { placeholder: 'Optional' });
     var sex = select(SEXES.map(function (s) { return { value: s, label: s }; }));
     sex.value = 'Unsexed';
-    var picked = null;
+    var picked = editing && editing.speciesCode ? { code: editing.speciesCode, name: editing.speciesName, scientificName: editing.scientificName } : null;
     var speciesPicker = SpeciesPicker.create({
+      value: picked,
       onChange: function (s) {
         picked = s;
         clearEl(dlSub);
@@ -195,9 +198,31 @@ const BirdsAddScreen = (function () {
     var saveBtn = document.createElement('button');
     saveBtn.type = 'submit';
     saveBtn.className = 'save-btn';
-    saveBtn.textContent = 'Add Bird';
+    saveBtn.textContent = editing ? 'Save Changes' : 'Add Bird';
 
-    [field('Band number', band), field('Name', name), field('Sex', sex), field('Species', speciesPicker.el, 'Search by any name you know — common, trade, or scientific.', true),
+    if (editing) {
+      band.value = editing.band;
+      band.disabled = true;
+      name.value = editing.name || '';
+      sex.value = editing.sex;
+      subspecies.value = editing.subspecies || '';
+      mutation.value = editing.mutation || '';
+      hatch.value = editing.hatchDate || '';
+      status.value = editing.status;
+      cage.value = editing.cage || '';
+      [mother, father, paired].forEach(function (s) {
+        // a bird can't be its own parent or partner
+        Array.prototype.slice.call(s.options).forEach(function (o) { if (o.value === editing.id) s.removeChild(o); });
+      });
+      mother.value = editing.motherId || '';
+      father.value = editing.fatherId || '';
+      paired.value = editing.pairedId || '';
+      cost.value = editing.cost === null || editing.cost === undefined ? '' : editing.cost;
+      price.value = editing.price === null || editing.price === undefined ? '' : editing.price;
+      notes.value = editing.notes || '';
+    }
+
+    [field('Band number', band, editing ? 'The band number can’t be changed — other records are linked to it.' : undefined), field('Name', name), field('Sex', sex), field('Species', speciesPicker.el, 'Search by any name you know — common, trade, or scientific.', true),
       field('Subspecies / form', subspecies), field('Mutation', mutation), field('Hatch date', hatch),
       field('Status', status), field('Cage', cage), field('Mother', mother), field('Father', father),
       field('Paired with', paired), field('Cost', cost), field('Asking price', price), field('Notes', notes),
@@ -206,6 +231,7 @@ const BirdsAddScreen = (function () {
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       clearEl(errorBox);
+      if (editing) { saveEdit(); return; }
       var result = check({
         band: band.value, name: name.value, sex: sex.value,
         speciesCode: picked ? picked.code : '', speciesName: picked ? picked.name : '',
@@ -235,7 +261,74 @@ const BirdsAddScreen = (function () {
       });
     });
 
+    // Saving changes to an existing bird.
+    function saveEdit() {
+      if (!picked) { errorBox.appendChild(message('error', 'Choose a species')); return; }
+      var date = normalizeDate(hatch.value);
+      if (date.error) { errorBox.appendChild(message('error', date.error)); return; }
+      if ((cost.value && isNaN(Number(cost.value))) || (price.value && isNaN(Number(price.value)))) {
+        errorBox.appendChild(message('error', 'Cost and price must be numbers'));
+        return;
+      }
+      var wasSold = editing.status === 'Sold';
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Saving…';
+      editBird(editing.id, {
+        name: name.value, sex: sex.value, speciesCode: picked.code, subspecies: subspecies.value, mutation: mutation.value,
+        hatchDate: date.value, status: status.value, cage: cage.value, motherId: mother.value, fatherId: father.value,
+        pairedId: paired.value, cost: cost.value, price: price.value, notes: notes.value,
+      }).then(function (bird) {
+        if (status.value === 'Sold' && !wasSold) {
+          // Newly marked Sold: ask about shipping / a hand-over / ownership, like the status chips do.
+          clearEl(main);
+          var done = document.createElement('div');
+          done.className = 'detail-screen';
+          done.appendChild(message('info', 'Saved.'));
+          var follow = document.createElement('div');
+          done.appendChild(follow);
+          main.appendChild(done);
+          SoldFollowUp.render(follow, bird, function () { navigate(bird.id); });
+          return;
+        }
+        navigate(bird.id);
+      }).catch(function (err) {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Save Changes';
+        errorBox.appendChild(message('error', err.message));
+      });
+    }
+
     wrap.appendChild(form);
+
+    // Deleting a bird — always asks first, and says what goes with it.
+    if (editing) {
+      var danger = document.createElement('div');
+      danger.className = 'detail-section';
+      var del = document.createElement('button');
+      del.type = 'button';
+      del.className = 'add-record-btn danger-btn';
+      del.textContent = 'Delete this bird';
+      var delMsg = document.createElement('div');
+      del.addEventListener('click', function () {
+        var records = HEALTH_RECORDS_SAMPLE.filter(function (r) { return r.birdId === editing.id; }).length;
+        var text = 'Delete ' + birdShortLabel(editing) + ' (' + editing.band + ')?' +
+          (records ? ' Its ' + records + ' health record' + (records === 1 ? '' : 's') + ' will be deleted too.' : '') +
+          ' Photos stay in the Media library. Shipments, accounting entries and its offspring keep their records but no longer link to it. This can’t be undone.';
+        if (!window.confirm(text)) return;
+        del.disabled = true;
+        deleteBird(editing.id).then(function () {
+          location.hash = '#/mybirds/birds';
+        }).catch(function (err) {
+          del.disabled = false;
+          clearEl(delMsg);
+          delMsg.appendChild(message('error', err.message));
+        });
+      });
+      danger.appendChild(del);
+      danger.appendChild(delMsg);
+      wrap.appendChild(danger);
+    }
+
     main.appendChild(wrap);
   }
 

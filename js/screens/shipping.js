@@ -181,6 +181,10 @@ const ShippingScreen = (function () {
   function renderDetail(main, id, navigate, setTitle) {
     clearEl(main);
     if (id === 'new') return ShippingAddScreen.renderForm(main, navigate, setTitle);
+    if (id.indexOf('edit~') === 0) {
+      var editTarget = WAYBILLS_SAMPLE.filter(function (w) { return w.id === id.slice(5); })[0];
+      if (editTarget) return ShippingAddScreen.renderForm(main, navigate, setTitle, editTarget);
+    }
     var wb = WAYBILLS_SAMPLE.filter(function (w) { return w.id === id; })[0];
     if (!wb) {
       var missing = document.createElement('p');
@@ -215,6 +219,7 @@ const ShippingScreen = (function () {
 
     header.appendChild(avatar);
     header.appendChild(titleWrap);
+    header.appendChild(makeEditButton(function () { navigate('edit~' + wb.id); }));
     wrap.appendChild(header);
 
     var factsGrid = document.createElement('div');

@@ -121,3 +121,54 @@ function nextPhotoId() {
   _photoSeq += 1;
   return 'photo-' + _photoSeq;
 }
+
+// Saves changes to a bird (name, sex, species, parents, status, cage, price…) and updates the
+// local copy from what the server returns. Resolves to the updated bird.
+function editBird(id, changes) {
+  return fetch('/api/birds/' + encodeURIComponent(id), {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(changes),
+  }).then(function (res) {
+    return res.json().then(function (data) {
+      if (!res.ok) throw new Error(data.error || 'Save failed');
+      var bird = getBird(id);
+      var photos = bird ? bird.photos : [];
+      if (bird) Object.assign(bird, data, { photos: photos });
+      reindexBirds();
+      return bird || data;
+    });
+  });
+}
+
+// Deletes a bird and clears everything that pointed at it, here and on the server.
+function deleteBird(id) {
+  return fetch('/api/birds/' + encodeURIComponent(id), { method: 'DELETE' }).then(function (res) {
+    return res.json().then(function (data) {
+      if (!res.ok) throw new Error(data.error || 'Delete failed');
+      for (var i = BIRDS_SAMPLE.length - 1; i >= 0; i--) if (BIRDS_SAMPLE[i].id === id) BIRDS_SAMPLE.splice(i, 1);
+      BIRDS_SAMPLE.forEach(function (b) {
+        if (b.motherId === id) b.motherId = null;
+        if (b.fatherId === id) b.fatherId = null;
+        if (b.pairedId === id) b.pairedId = null;
+      });
+      TRANSACTIONS_SAMPLE.forEach(function (t) { if (t.birdId === id) t.birdId = null; });
+      WAYBILLS_SAMPLE.forEach(function (w) { w.birdIds = w.birdIds.filter(function (b) { return b !== id; }); });
+      CONTACTS_SAMPLE.forEach(function (c) {
+        c.birdsOwned = (c.birdsOwned || []).filter(function (b) { return b !== id; });
+        c.birdsPurchasing = (c.birdsPurchasing || []).filter(function (b) { return b !== id; });
+      });
+      var gone = HEALTH_RECORDS_SAMPLE.filter(function (r) { return r.birdId === id; }).map(function (r) { return r.id; });
+      for (var j = HEALTH_RECORDS_SAMPLE.length - 1; j >= 0; j--) if (HEALTH_RECORDS_SAMPLE[j].birdId === id) HEALTH_RECORDS_SAMPLE.splice(j, 1);
+      for (var k = TRANSFERS_SAMPLE.length - 1; k >= 0; k--) if (TRANSFERS_SAMPLE[k].birdId === id) TRANSFERS_SAMPLE.splice(k, 1);
+      MEDIA.forEach(function (m) {
+        m.links = m.links.filter(function (l) {
+          return !((l.targetType === 'bird' && l.targetId === id) || (l.targetType === 'health' && gone.indexOf(l.targetId) !== -1));
+        });
+      });
+      reindexBirds();
+      reindexContacts();
+      reindexMedia();
+    });
+  });
+}

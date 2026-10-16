@@ -62,10 +62,32 @@ const ShippingAddScreen = (function () {
     return q.split(/\s+/).every(function (w) { return hay.indexOf(w) !== -1; });
   }
 
-  function renderForm(main, navigate, setTitle) {
+  // A draft pre-filled from an existing shipment, for editing.
+  function draftFromWaybill(wb) {
+    var d = newDraft();
+    d.editingId = wb.id;
+    d.direction = wb.direction;
+    d.pending = wb.status === 'Pending';
+    d.method = wb.method || '';
+    d.carrier = wb.carrier || '';
+    d.date = wb.date ? String(wb.date).slice(0, 10) : '';
+    d.from = wb.departingAirport || '';
+    d.to = wb.arrivingAirport || '';
+    d.waybill = wb.waybillNumber || '';
+    d.cost = wb.cost === null || wb.cost === undefined ? '' : wb.cost;
+    d.notes = wb.notes || '';
+    d.clientId = wb.clientId || '';
+    d.birdIds = (wb.birdIds || []).slice();
+    return d;
+  }
+
+  // `editing` (optional): a shipment to change instead of adding a new one.
+  function renderForm(main, navigate, setTitle, editing) {
     clearEl(main);
-    setTitle('Add Shipment');
-    if (!draft) draft = newDraft();
+    setTitle(editing ? 'Edit Shipment' : 'Add Shipment');
+    // Keep a draft that survives the trip to "Add New Bird" and back, but never mix an edit with a new one.
+    if (editing) { if (!draft || draft.editingId !== editing.id) draft = draftFromWaybill(editing); }
+    else if (!draft || draft.editingId) draft = newDraft();
     BirdsAddScreen.afterAdd = null;
 
     var wrap = el('div', 'detail-screen');
@@ -157,7 +179,7 @@ const ShippingAddScreen = (function () {
       keepDetails();
       BirdsAddScreen.afterAdd = function (bird) {
         if (draft.birdIds.indexOf(bird.id) === -1) draft.birdIds.push(bird.id);
-        location.hash = '#/business/shipping/new';
+        location.hash = editing ? '#/business/shipping/edit~' + editing.id : '#/business/shipping/new';
       };
       location.hash = '#/mybirds/birds/new';
     }
@@ -252,14 +274,14 @@ const ShippingAddScreen = (function () {
     attachBox.appendChild(attachList);
 
     var errorBox = el('div');
-    var saveBtn = el('button', 'save-btn', 'Save Shipment');
+    var saveBtn = el('button', 'save-btn', editing ? 'Save Changes' : 'Save Shipment');
     saveBtn.type = 'submit';
 
     [typeField, clientBox, birdBox, field('How did it travel?', method), field('Handled by', carrier, 'Courier, airline, or the person who carried it.'),
       field('From', from, 'Optional — a place, airport or person, as much as you know.'), field('To', to),
       field('Date', date, 'Leave blank if you don’t remember. For a pending shipment, the planned day.'),
-      field('Waybill / tracking #', waybill), attachBox, field('Notes', notes),
-      field('Cost', cost, 'Optional — the cost is also tracked in Accounting.'), errorBox, saveBtn].forEach(function (e) { form.appendChild(e); });
+      field('Waybill / tracking #', waybill)].concat(editing ? [] : [attachBox]).concat([field('Notes', notes),
+      field('Cost', cost, 'Optional — the cost is also tracked in Accounting.'), errorBox, saveBtn]).forEach(function (e) { form.appendChild(e); });
 
     form.addEventListener('submit', function (e) {
       e.preventDefault();
@@ -273,6 +295,21 @@ const ShippingAddScreen = (function () {
       }
       saveBtn.disabled = true;
       saveBtn.textContent = 'Saving…';
+      if (editing) {
+        editWaybill(editing, {
+          direction: draft.direction, status: draft.pending ? 'Pending' : 'Complete', date: draft.date || null,
+          method: draft.method, carrier: draft.carrier, clientId: draft.clientId || null, birdIds: draft.birdIds,
+          departingAirport: draft.from, arrivingAirport: draft.to, waybillNumber: draft.waybill, cost: draft.cost, notes: draft.notes,
+        }).then(function (wb) {
+          draft = null;
+          navigate(wb.id);
+        }).catch(function (err) {
+          saveBtn.disabled = false;
+          saveBtn.textContent = 'Save Changes';
+          note('error', err.message);
+        });
+        return;
+      }
       addWaybill({
         direction: draft.direction, status: draft.pending ? 'Pending' : 'Complete', date: draft.date || null,
         method: draft.method, carrier: draft.carrier, clientId: draft.clientId || null, birdIds: draft.birdIds,
@@ -306,8 +343,37 @@ const ShippingAddScreen = (function () {
 
     drawClient();
     drawBirds();
-    drawAttach();
+    if (!editing) drawAttach();
     wrap.appendChild(form);
+
+    if (editing) {
+      var cancel = el('button', 'add-record-btn', 'Cancel');
+      cancel.type = 'button';
+      cancel.addEventListener('click', function () { draft = null; navigate(editing.id); });
+      form.appendChild(cancel);
+
+      // Delete — asks first; its files stay in the Media library.
+      var danger = el('div', 'detail-section');
+      var del = el('button', 'add-record-btn danger-btn', 'Delete this shipment');
+      del.type = 'button';
+      var delMsg = el('div');
+      del.addEventListener('click', function () {
+        if (!window.confirm('Delete this shipment? Its photos, receipt and waybill stay in the Media library, just unlinked. The birds are not affected. This can’t be undone.')) return;
+        del.disabled = true;
+        deleteWaybill(editing).then(function () {
+          draft = null;
+          location.hash = '#/business/shipping';
+        }).catch(function (err) {
+          del.disabled = false;
+          clearEl(delMsg);
+          delMsg.appendChild(el('p', 'form-message error', err.message));
+        });
+      });
+      danger.appendChild(del);
+      danger.appendChild(delMsg);
+      wrap.appendChild(danger);
+    }
+
     main.appendChild(wrap);
   }
 

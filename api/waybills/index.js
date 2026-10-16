@@ -132,6 +132,30 @@ module.exports = async function handler(req, res) {
   if (req.method === 'PATCH') {
     const id = String((req.query && req.query.id) || '');
     const b = req.body || {};
+    // Editing a shipment: all the fields are sent, and they're checked like a new shipment's.
+    if (b.full === true) {
+      const result = cleanNewWaybill(b);
+      if (result.error) { res.status(400).json({ error: result.error }); return; }
+      const w = result.waybill;
+      try {
+        if (w.clientId) {
+          const c = await sql`select 1 from contacts where id = ${w.clientId}`;
+          if (!c.length) { res.status(400).json({ error: 'That client isn’t in your contacts' }); return; }
+        }
+        const found = await sql`select id from birds where id = any(${w.birdIds})`;
+        if (found.length !== w.birdIds.length) { res.status(400).json({ error: 'One of the birds isn’t in your flock' }); return; }
+        const rows = await sql`
+          update waybills set waybill_number = ${w.waybillNumber}, direction = ${w.direction}, status = ${w.status},
+            method = ${w.method}, carrier = ${w.carrier}, date = ${w.date}, client_id = ${w.clientId}, bird_ids = ${w.birdIds},
+            departing_airport = ${w.departingAirport}, arriving_airport = ${w.arrivingAirport}, cost = ${w.cost}, notes = ${w.notes}
+          where id = ${id} returning *`;
+        if (!rows.length) { res.status(404).json({ error: 'Shipment not found' }); return; }
+        res.status(200).json(toWaybill(rows[0]));
+      } catch (err) {
+        res.status(500).json({ error: 'Failed to update shipment' });
+      }
+      return;
+    }
     const date = String(b.date || '').trim() || null;
     if (b.status !== 'Complete') { res.status(400).json({ error: 'Only marking a shipment complete is supported' }); return; }
     if (date && !isRealDate(date)) { res.status(400).json({ error: 'Enter a real date' }); return; }
@@ -141,6 +165,20 @@ module.exports = async function handler(req, res) {
       res.status(200).json(toWaybill(rows[0]));
     } catch (err) {
       res.status(500).json({ error: 'Failed to update shipment' });
+    }
+    return;
+  }
+
+  // Delete a shipment (its files stay in the Media library, just unlinked).
+  if (req.method === 'DELETE') {
+    const id = String((req.query && req.query.id) || '');
+    try {
+      const rows = await sql`delete from waybills where id = ${id} returning id`;
+      if (!rows.length) { res.status(404).json({ error: 'Shipment not found' }); return; }
+      try { await sql`delete from media_links where target_type = 'waybill' and target_id = ${id}`; } catch (err) { /* no media table yet */ }
+      res.status(200).json({ ok: true });
+    } catch (err) {
+      res.status(500).json({ error: 'Failed to delete shipment' });
     }
     return;
   }

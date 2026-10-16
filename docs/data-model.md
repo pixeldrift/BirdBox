@@ -416,7 +416,14 @@ linked to a deleted record are unlinked (they stay in the Media library). Who ow
 not an editable field — it changes only through the ownership prompts. Buildings have no page of
 their own: they're edited from a cage's page and added from the cage list.
 Birds and shipments have richer rules (species, band uniqueness, status follow-ups, files), so they
-keep their own endpoints and forms.
+keep their own endpoints and forms, with the same ✎ pencil and Delete-with-confirmation:
+- **Bird** (`api/birds/[id].js`, form = the Add Bird form in edit mode): everything except the band
+  number, which is fixed because a bird's id comes from it and other records point at that id. Marking
+  a bird Sold from the form asks the usual shipping / hand-over / ownership questions. Deleting a bird
+  also deletes its health records and clears it from its offspring's parents, shipments, accounting
+  entries, transfers and owners; its photos stay in the Media library.
+- **Shipment** (`api/waybills`, form = the Add Shipment form in edit mode): all fields except files,
+  which are managed on the shipment's page. Deleting leaves its files in the Media library.
 
 ## Hosting note: keep API files to 12 or fewer
 

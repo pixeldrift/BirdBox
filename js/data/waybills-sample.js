@@ -93,3 +93,30 @@ function completeWaybill(wb, date) {
     });
   });
 }
+
+// Saves changes to a shipment (all its fields) and updates the local copy.
+function editWaybill(wb, data) {
+  return fetch('/api/waybills?id=' + encodeURIComponent(wb.id), {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(Object.assign({ full: true }, data)),
+  }).then(function (res) {
+    return res.json().then(function (body) {
+      if (!res.ok) throw new Error(body.error || 'Save failed');
+      var files = wb.files;
+      Object.assign(wb, body, { files: files });
+      return wb;
+    });
+  });
+}
+
+function deleteWaybill(wb) {
+  return fetch('/api/waybills?id=' + encodeURIComponent(wb.id), { method: 'DELETE' }).then(function (res) {
+    return res.json().then(function (body) {
+      if (!res.ok) throw new Error(body.error || 'Delete failed');
+      for (var i = WAYBILLS_SAMPLE.length - 1; i >= 0; i--) if (WAYBILLS_SAMPLE[i].id === wb.id) WAYBILLS_SAMPLE.splice(i, 1);
+      MEDIA.forEach(function (m) { m.links = m.links.filter(function (l) { return !(l.targetType === 'waybill' && l.targetId === wb.id); }); });
+      reindexMedia();
+    });
+  });
+}

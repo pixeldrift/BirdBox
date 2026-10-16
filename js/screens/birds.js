@@ -142,6 +142,10 @@ const BirdsScreen = (function () {
     if (id === 'new') return BirdsAddScreen.renderForm(main, navigate, setTitle);
     if (id === 'import') return BirdsAddScreen.renderImport(main, navigate, setTitle);
     if (id === 'transfer') return TransferScreen.renderForm(main, navigate, setTitle);
+    if (id.indexOf('edit~') === 0) {
+      var editTarget = getBird(id.slice(5));
+      if (editTarget) return BirdsAddScreen.renderForm(main, navigate, setTitle, editTarget);
+    }
 
     var bird = getBird(id);
     if (!bird) {
@@ -175,6 +179,7 @@ const BirdsScreen = (function () {
 
     header.appendChild(avatar);
     header.appendChild(titleWrap);
+    header.appendChild(makeEditButton(function () { navigate('edit~' + bird.id); }));
 
     var factsGrid = document.createElement('div');
     factsGrid.className = 'fact-grid';
