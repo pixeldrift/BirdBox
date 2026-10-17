@@ -315,6 +315,12 @@ const BirdsScreen = (function () {
       location.hash = '#/mybirds/health/new';
     });
     healthSection.appendChild(addHealthBtn);
+    healthSection.appendChild(Relations.addPicker({
+      placeholder: '+ Assign an existing health record — search…',
+      candidates: function () { return Picker.listItems('health', function (r) { return r.birdId !== bird.id; }); },
+      link: function (recId) { return updateRecord('health', recId, { birdId: bird.id }); },
+      refresh: function () { renderDetail(main, id, navigate, setTitle); },
+    }));
 
     var transferSection = document.createElement('div');
     transferSection.className = 'detail-section';
@@ -370,6 +376,15 @@ const BirdsScreen = (function () {
     transferNote.className = 'form-note';
     transferNote.textContent = 'For a local pick up, a local meet or a delivery. Shipped birds get a Shipment record under Business → Shipping.';
     transferSection.appendChild(transferNote);
+    transferSection.appendChild(Relations.addPicker({
+      placeholder: '+ Add this bird to an existing shipment — search…',
+      candidates: function () { return Picker.listItems('waybills', function (w) { return w.birdIds.indexOf(bird.id) === -1; }); },
+      link: function (wbId) {
+        var wb = WAYBILLS_SAMPLE.filter(function (w) { return w.id === wbId; })[0];
+        return editWaybill(wb, waybillPayload(wb, { birdIds: wb.birdIds.concat([bird.id]) }));
+      },
+      refresh: function () { renderDetail(main, id, navigate, setTitle); },
+    }));
 
     var moneySection = document.createElement('div');
     moneySection.className = 'detail-section';
@@ -386,11 +401,13 @@ const BirdsScreen = (function () {
     wrap.appendChild(buildPhotosSection(bird, function () { renderDetail(main, id, navigate, setTitle); }));
     wrap.appendChild(factsGrid);
     wrap.appendChild(statusSection);
+    appendBirdLinks(wrap, bird, function () { renderDetail(main, id, navigate, setTitle); }, 'place');
     wrap.appendChild(familySection);
     wrap.appendChild(registrySection);
     wrap.appendChild(healthSection);
     wrap.appendChild(transferSection);
     wrap.appendChild(moneySection);
+    appendBirdLinks(wrap, bird, function () { renderDetail(main, id, navigate, setTitle); }, 'accounting');
 
     if (bird.notes) {
       var notesSection = document.createElement('div');
@@ -406,6 +423,39 @@ const BirdsScreen = (function () {
     }
 
     main.appendChild(wrap);
+  }
+
+  // Links you can set from the bird's side: where it lives, who owns it, and the accounting entries,
+  // shipments and health records it belongs to. (The same links can be set from the other record.)
+  function appendBirdLinks(wrap, bird, again, part) {
+    if (part === 'place') appendBirdPlace(wrap, bird, again); else appendBirdAccounting(wrap, bird, again);
+  }
+
+  function appendBirdPlace(wrap, bird, again) {
+    wrap.appendChild(Relations.one({
+      title: 'Cage', value: bird.cage || '', find: function (code) { return code ? { code: code } : null; },
+      render: function (c) { return cageLinkRow(c.code); },
+      picker: function (cfg) { return Picker.cages(Object.assign({ placeholder: 'Assign a cage — browse or search…' }, cfg)); },
+      set: function (code) { return editBird(bird.id, { cage: code || '' }); }, refresh: again,
+    }));
+    var owner = birdOwner(bird.id);
+    wrap.appendChild(Relations.one({
+      title: 'Owner', value: owner ? owner.id : '', find: getContact,
+      render: function (c) { return contactChip(c, function () { location.hash = '#/business/contacts/' + c.id; }); },
+      picker: function (cfg) { return Picker.contacts(Object.assign({ placeholder: 'Assign an owner — search contacts…' }, cfg)); },
+      set: function (id) { return setBirdsOwner([bird.id], id || null); }, refresh: again,
+    }));
+  }
+
+  function appendBirdAccounting(wrap, bird, again) {
+    wrap.appendChild(Relations.many({
+      title: 'Accounting', related: TRANSACTIONS_SAMPLE.filter(function (t) { return t.birdId === bird.id; }), render: transactionRow,
+      parentName: 'bird', empty: 'No accounting entries linked to this bird.', refresh: again,
+      unlink: function (t) { return updateRecord('transactions', t.id, { birdId: '' }); },
+      candidates: function () { return Picker.listItems('transactions', function (t) { return t.birdId !== bird.id; }); },
+      link: function (txId) { return updateRecord('transactions', txId, { birdId: bird.id }); },
+      addPlaceholder: '+ Link an accounting entry — search…',
+    }));
   }
 
   function makeRelChip(label, relBird, navigate) {

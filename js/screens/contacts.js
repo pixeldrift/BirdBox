@@ -184,41 +184,44 @@ const ContactsScreen = (function () {
     var owned = contact.birdsOwned.map(getBird).filter(Boolean);
     var purchasing = contact.birdsPurchasing.map(getBird).filter(Boolean);
 
-    if (owned.length || purchasing.length) {
-      var birdsSection = document.createElement('div');
-      birdsSection.className = 'detail-section';
-      var birdsTitle = document.createElement('h3');
-      birdsTitle.textContent = 'Birds';
-      birdsSection.appendChild(birdsTitle);
-
-      if (owned.length) {
-        var ownedLabel = document.createElement('p');
-        ownedLabel.className = 'subsection-label';
-        ownedLabel.textContent = 'Owns (' + owned.length + ')';
-        birdsSection.appendChild(ownedLabel);
-        var ownedRow = document.createElement('div');
-        ownedRow.className = 'chip-row';
-        owned.forEach(function (b) {
-          ownedRow.appendChild(birdChip(b, function () { goToBird(b.id); }));
-        });
-        birdsSection.appendChild(ownedRow);
-      }
-
-      if (purchasing.length) {
-        var purchasingLabel = document.createElement('p');
-        purchasingLabel.className = 'subsection-label';
-        purchasingLabel.textContent = 'Purchasing (' + purchasing.length + ')';
-        birdsSection.appendChild(purchasingLabel);
-        var purchasingRow = document.createElement('div');
-        purchasingRow.className = 'chip-row';
-        purchasing.forEach(function (b) {
-          purchasingRow.appendChild(birdChip(b, function () { goToBird(b.id); }));
-        });
-        birdsSection.appendChild(purchasingRow);
-      }
-
-      wrap.appendChild(birdsSection);
+    var again = function () { clearEl(main); renderDetail(main, id, navigate, setTitle); };
+    // Birds they own — add one here (or set the owner from the bird's page); remove to take it back.
+    wrap.appendChild(Relations.many({
+      title: 'Owns', related: owned, render: function (b) { return birdChip(b, function () { goToBird(b.id); }); },
+      parentName: 'contact', empty: 'No birds owned.', refresh: again,
+      unlink: function (b) { return setBirdsOwner([b.id], null); },
+      candidates: function () { return Picker.listItems('birds', function (b) { return (contact.birdsOwned || []).indexOf(b.id) === -1; }); },
+      link: function (birdId) { return setBirdsOwner([birdId], contact.id); },
+      addPlaceholder: '+ This contact owns a bird — search…',
+    }));
+    if (purchasing.length) {
+      var purchasingSection = document.createElement('div');
+      purchasingSection.className = 'detail-section';
+      var purchasingTitle = document.createElement('h3');
+      purchasingTitle.textContent = 'Purchasing (' + purchasing.length + ')';
+      purchasingSection.appendChild(purchasingTitle);
+      var purchasingRow = document.createElement('div');
+      purchasingRow.className = 'chip-row';
+      purchasing.forEach(function (b) { purchasingRow.appendChild(birdChip(b, function () { goToBird(b.id); })); });
+      purchasingSection.appendChild(purchasingRow);
+      wrap.appendChild(purchasingSection);
     }
+    wrap.appendChild(Relations.many({
+      title: 'Accounting', related: TRANSACTIONS_SAMPLE.filter(function (t) { return t.clientId === contact.id; }), render: transactionRow,
+      parentName: 'contact', empty: 'No accounting entries linked to this contact.', refresh: again,
+      unlink: function (t) { return updateRecord('transactions', t.id, { clientId: '' }); },
+      candidates: function () { return Picker.listItems('transactions', function (t) { return t.clientId !== contact.id; }); },
+      link: function (txId) { return updateRecord('transactions', txId, { clientId: contact.id }); },
+      addPlaceholder: '+ Link an accounting entry — search…',
+    }));
+    wrap.appendChild(Relations.many({
+      title: 'Shipments', related: WAYBILLS_SAMPLE.filter(function (w) { return w.clientId === contact.id; }), render: waybillRow,
+      parentName: 'contact', empty: 'No shipments linked to this contact.', refresh: again,
+      unlink: function (w) { return editWaybill(w, waybillPayload(w, { clientId: null })); },
+      candidates: function () { return Picker.listItems('waybills', function (w) { return w.clientId !== contact.id; }); },
+      link: function (wbId) { var w = WAYBILLS_SAMPLE.filter(function (x) { return x.id === wbId; })[0]; return editWaybill(w, waybillPayload(w, { clientId: contact.id })); },
+      addPlaceholder: '+ Link a shipment — search…',
+    }));
 
     if (contact.notes) {
       var notesSection = document.createElement('div');

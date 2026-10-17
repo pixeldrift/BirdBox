@@ -447,6 +447,22 @@ chosen record with Change / Clear, supports arrow keys and Enter, and can offer 
 `Picker.birds / contacts / cages / buildings / locations` are presets; `Picker.create` takes any list.
 Plain dropdowns are no longer used for records. (Still to come: our own date picker — see the roadmap.)
 
+## Links work from both ends (`js/relations.js`)
+
+Everything is linked data, and a link can be made or removed from either record:
+- **Cage ↔ bird:** a cage page lists its birds and adds one ("+ Put a bird in this cage"); a bird page
+  assigns its cage. **Building ↔ cage** and **location ↔ building** the same way.
+- **Bird ↔ owner:** a bird page assigns its owner; a contact page adds a bird it owns. (Both go through
+  the ownership change.)
+- **Accounting ↔ bird / contact:** the entry assigns its client and bird; bird and contact pages link
+  entries. **Shipment ↔ bird / contact**, **health record ↔ bird** likewise.
+- **Files ↔ any record:** upload a new receipt/invoice/photo or choose one from the Media library on
+  the record; or open the file in Business → Media and link records to it.
+Two helpers build every one of these: `Relations.many` (a list with ✕ and an "add an existing…"
+picker) and `Relations.one` (shown with Change / Remove, or a picker to assign). The ✕ only unlinks;
+nothing is deleted. The picker's hierarchy (`tree: true`) lets cages and buildings be browsed
+Location › Building › Cage or searched.
+
 ## Hosting note: keep API files to 12 or fewer
 
 The Vercel Hobby plan allows at most **12 serverless functions** per deployment, and every file in

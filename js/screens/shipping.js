@@ -265,23 +265,21 @@ const ShippingScreen = (function () {
       wrap.appendChild(pendingBox);
     }
 
-    var client = waybillClient(wb);
-    if (client || birds.length) {
-      var linksSection = document.createElement('div');
-      linksSection.className = 'detail-section';
-      var linksTitle = document.createElement('h3');
-      linksTitle.textContent = 'Linked to';
-      linksSection.appendChild(linksTitle);
-
-      var linksRow = document.createElement('div');
-      linksRow.className = 'chip-row';
-      if (client) linksRow.appendChild(contactChip(client, function () { goToContact(client.id); }, 'Client'));
-      birds.forEach(function (b) {
-        linksRow.appendChild(birdChip(b, function () { goToBird(b.id); }));
-      });
-      linksSection.appendChild(linksRow);
-      wrap.appendChild(linksSection);
-    }
+    var again = function () { renderDetail(main, id, navigate, setTitle); };
+    wrap.appendChild(Relations.one({
+      title: wb.direction === 'Incoming' ? 'Received from' : 'Sent to', value: wb.clientId || '', find: getContact,
+      render: function (c) { return contactChip(c, function () { goToContact(c.id); }); },
+      picker: function (cfg) { return Picker.contacts(Object.assign({ placeholder: 'Assign a contact — search…' }, cfg)); },
+      set: function (cid) { return editWaybill(wb, waybillPayload(wb, { clientId: cid || null })); }, refresh: again,
+    }));
+    wrap.appendChild(Relations.many({
+      title: 'Birds', related: birds, render: function (b) { return birdChip(b, function () { goToBird(b.id); }); },
+      parentName: 'shipment', empty: 'No birds in this shipment.', refresh: again,
+      unlink: function (b) { return editWaybill(wb, waybillPayload(wb, { birdIds: wb.birdIds.filter(function (x) { return x !== b.id; }) })); },
+      candidates: function () { return Picker.listItems('birds', function (b) { return wb.birdIds.indexOf(b.id) === -1; }); },
+      link: function (birdId) { return editWaybill(wb, waybillPayload(wb, { birdIds: wb.birdIds.concat([birdId]) })); },
+      addPlaceholder: '+ Add a bird to this shipment — search…',
+    }));
 
     if (wb.notes) {
       var notesSection = document.createElement('div');

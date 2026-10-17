@@ -207,26 +207,19 @@ const AccountingScreen = (function () {
     wrap.appendChild(header);
     wrap.appendChild(factsGrid);
 
-    var client = txClient(tx);
-    var bird = txBird(tx);
-    if (client || bird) {
-      var linksSection = document.createElement('div');
-      linksSection.className = 'detail-section';
-      var linksTitle = document.createElement('h3');
-      linksTitle.textContent = 'Linked to';
-      linksSection.appendChild(linksTitle);
-
-      var linksRow = document.createElement('div');
-      linksRow.className = 'chip-row';
-      if (client) {
-        linksRow.appendChild(contactChip(client, function () { goToContact(client.id); }, 'Client'));
-      }
-      if (bird) {
-        linksRow.appendChild(birdChip(bird, function () { goToBird(bird.id); }));
-      }
-      linksSection.appendChild(linksRow);
-      wrap.appendChild(linksSection);
-    }
+    var again = function () { clearEl(main); renderDetail(main, id, navigate, setTitle); };
+    wrap.appendChild(Relations.one({
+      title: 'Client', value: tx.clientId || '', find: getContact,
+      render: function (c) { return contactChip(c, function () { goToContact(c.id); }); },
+      picker: function (cfg) { return Picker.contacts(Object.assign({ placeholder: 'Assign a client — search contacts…' }, cfg)); },
+      set: function (cid) { return updateRecord('transactions', tx.id, { clientId: cid || '' }); }, refresh: again,
+    }));
+    wrap.appendChild(Relations.one({
+      title: 'Bird', value: tx.birdId || '', find: getBird,
+      render: function (b) { return birdChip(b, function () { goToBird(b.id); }); },
+      picker: function (cfg) { return Picker.birds(Object.assign({ placeholder: 'Assign a bird — search…' }, cfg)); },
+      set: function (bid) { return updateRecord('transactions', tx.id, { birdId: bid || '' }); }, refresh: again,
+    }));
 
     if (tx.notes) {
       var notesSection = document.createElement('div');

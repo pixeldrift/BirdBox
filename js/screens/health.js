@@ -185,16 +185,13 @@ const HealthScreen = (function () {
     wrap.appendChild(header);
     wrap.appendChild(factsGrid);
 
-    var birdSection = document.createElement('div');
-    birdSection.className = 'detail-section';
-    var birdTitle = document.createElement('h3');
-    birdTitle.textContent = 'Bird';
-    birdSection.appendChild(birdTitle);
-    var birdChips = document.createElement('div');
-    birdChips.className = 'chip-row';
-    birdChips.appendChild(bird ? birdChip(bird, function () { goToBird(bird.id); }) : makeChip(null, 'Unknown', null));
-    birdSection.appendChild(birdChips);
-    wrap.appendChild(birdSection);
+    wrap.appendChild(Relations.one({
+      title: 'Bird', value: record.birdId || '', find: getBird,
+      render: function (b) { return birdChip(b, function () { goToBird(b.id); }); },
+      picker: function (cfg) { return Picker.birds(Object.assign({ placeholder: 'Assign to a bird — search…' }, cfg)); },
+      set: function (bid) { return bid ? updateRecord('health', record.id, { birdId: bid }) : Promise.reject(new Error('A health record needs a bird — choose another to move it.')); },
+      refresh: function () { clearEl(main); renderDetail(main, id, navigate, setTitle); },
+    }));
 
     if (record.notes) {
       var notesSection = document.createElement('div');

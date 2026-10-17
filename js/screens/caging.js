@@ -256,38 +256,64 @@ const CagingScreen = (function () {
     return btn;
   }
 
+  function buildingRow(b, navigate) {
+    var n = allCages().filter(function (c) { var bb = buildingForCage(c.code); return bb && bb.code === b.code; }).length;
+    var btn = el('button', 'list-row');
+    btn.type = 'button';
+    btn.appendChild(avatar());
+    var info = el('span', 'list-row-info');
+    info.appendChild(el('span', 'list-row-title', 'Building ' + b.nickname));
+    info.appendChild(el('span', 'list-row-sub', b.description || b.code));
+    btn.appendChild(info);
+    btn.appendChild(el('span', 'type-badge type-breeder', n + (n === 1 ? ' cage' : ' cages')));
+    btn.addEventListener('click', function () { navigate('building~' + b.code); });
+    return btn;
+  }
+
   function renderCage(main, id, navigate, setTitle) {
     var isLoose = id === UNASSIGNED;
     var birds = isLoose ? BIRDS_SAMPLE.filter(function (b) { return !b.cage; }) : birdsInCage(id);
     var rec = isLoose ? null : getCage(id);
     if (!isLoose && !rec && !birds.length) { main.appendChild(el('p', '', 'Cage not found.')); return; }
     setTitle(isLoose ? 'Unassigned' : id);
+    var again = function () { clearEl(main); renderCage(main, id, navigate, setTitle); };
 
     var wrap = el('div', 'detail-screen');
     wrap.appendChild(header(isLoose ? 'Unassigned' : id, isLoose ? 'No cage' : cagePlaceLabel(id), rec ? function () { navigate('edit~cage~' + id); } : null));
 
     if (!isLoose) {
-      var b = buildingForCage(id);
-      var loc = buildingLocation(b);
-      var facts = el('div', 'fact-grid');
-      if (b) facts.appendChild(factRow('Building', b.nickname));
-      if (loc) facts.appendChild(factRow('Location', loc.name));
-      if (rec && rec.description) facts.appendChild(factRow('Description', rec.description));
-      if (facts.children.length) wrap.appendChild(facts);
-      if (b) wrap.appendChild(addButton('Open building ' + b.nickname, function () { navigate('building~' + b.code); }));
-      if (!rec) {
-        wrap.appendChild(el('p', 'form-note', 'This cage number is on some birds but hasn’t been set up yet. Set it up to file it under a building.'));
-        wrap.appendChild(addButton('Set up this cage', function () { navigate('new~cage~' + id); }));
-      }
+      if (rec && rec.description) { var facts = el('div', 'fact-grid'); facts.appendChild(factRow('Description', rec.description)); wrap.appendChild(facts); }
+      // Which building this cage is in — assign or change it from here (or from the building's page).
+      wrap.appendChild(Relations.one({
+        title: 'Building', value: (buildingForCage(id) || {}).code || '', find: getBuilding,
+        render: function (b) { return buildingRow(b, navigate); },
+        picker: function (cfg) { return Picker.buildings(Object.assign({ placeholder: 'Assign to a building — browse or search…' }, cfg)); },
+        set: function (code) { return assignCageToBuilding(id, code || ''); }, refresh: again,
+      }));
     }
 
-    var section = el('div', 'detail-section');
-    section.appendChild(el('h3', '', 'Birds (' + birds.length + ')'));
-    var row = el('div', 'chip-row');
-    birds.forEach(function (bd) { row.appendChild(birdChip(bd, function () { goToBird(bd.id); })); });
-    if (!birds.length) section.appendChild(el('p', 'form-note', 'No birds in this cage.'));
-    section.appendChild(row);
-    wrap.appendChild(section);
+    // The birds in this cage — add one from here (it moves out of its old cage) or remove one.
+    wrap.appendChild(Relations.many({
+      title: 'Birds', related: birds, render: function (bd) { return birdChip(bd, function () { goToBird(bd.id); }); },
+      parentName: 'cage', empty: 'No birds in this cage.', refresh: again,
+      unlink: isLoose ? null : function (bd) { return editBird(bd.id, { cage: '' }); },
+      candidates: isLoose ? null : function () {
+        return Picker.listItems('birds', function (bd) { return bd.cage !== id; }).map(function (it) {
+          var bd = getBird(it.id);
+          if (bd && bd.cage) it.hay = (it.hay || '') + ' ' + bd.cage;
+          return it;
+        });
+      },
+      link: function (birdId) { return editBird(birdId, { cage: id }); },
+      addPlaceholder: '+ Put a bird in this cage — search…',
+    }));
+
+    if (!isLoose && !rec) {
+      var note = el('div', 'detail-section');
+      note.appendChild(el('p', 'form-note', 'This cage number is on some birds but hasn’t been set up yet. Set it up to give it a description.'));
+      note.appendChild(addButton('Set up this cage', function () { navigate('new~cage~' + id); }));
+      wrap.appendChild(note);
+    }
     main.appendChild(wrap);
   }
 
@@ -295,6 +321,7 @@ const CagingScreen = (function () {
     var b = getBuilding(code);
     if (!b) { main.appendChild(el('p', '', 'Building not found.')); return; }
     setTitle('Building ' + b.nickname);
+    var again = function () { clearEl(main); renderBuilding(main, code, navigate, setTitle); };
     var cages = allCages().filter(function (c) { var bb = buildingForCage(c.code); return bb && bb.code === code; });
     var loc = buildingLocation(b);
     var wrap = el('div', 'detail-screen');
@@ -302,16 +329,24 @@ const CagingScreen = (function () {
     var facts = el('div', 'fact-grid');
     facts.appendChild(factRow('Code', b.code));
     if (b.description) facts.appendChild(factRow('Description', b.description));
-    if (loc) facts.appendChild(factRow('Location', loc.name));
     wrap.appendChild(facts);
-    var section = el('div', 'detail-section');
-    section.appendChild(el('h3', '', 'Cages (' + cages.length + ')'));
-    var list = el('div', 'list-rows');
-    cages.forEach(function (c) { list.appendChild(cageRowSimple(c, navigate)); });
-    if (!cages.length) section.appendChild(el('p', 'form-note', 'No cages in this building yet.'));
-    section.appendChild(list);
-    section.appendChild(addButton('+ Add a cage here', function () { navigate('new~cage~~' + code); }));
-    wrap.appendChild(section);
+
+    wrap.appendChild(Relations.one({
+      title: 'Location', value: b.locationId || '', find: getLocation,
+      render: function (l) { var r = el('button', 'list-row'); r.type = 'button'; r.appendChild(avatar()); var i = el('span', 'list-row-info'); i.appendChild(el('span', 'list-row-title', l.name)); i.appendChild(el('span', 'list-row-sub', l.description || 'Location')); r.appendChild(i); r.addEventListener('click', function () { navigate('location~' + l.id); }); return r; },
+      picker: function (cfg) { return Picker.locations(Object.assign({ placeholder: 'Put this building on a location — search…' }, cfg)); },
+      set: function (id) { return updateRecord('buildings', code, { locationId: id || '' }); }, refresh: again,
+    }));
+
+    wrap.appendChild(Relations.many({
+      title: 'Cages', related: cages, render: function (c) { return cageRowSimple(c, navigate); }, parentName: 'building',
+      empty: 'No cages in this building yet.', refresh: again,
+      unlink: function (c) { return assignCageToBuilding(c.code, ''); },
+      candidates: function () { return Picker.listItems('cages', function (c) { var bb = buildingForCage(c.code); return !(bb && bb.code === code); }); },
+      link: function (cageCode) { return assignCageToBuilding(cageCode, code); },
+      addPlaceholder: '+ Add an existing cage — search…',
+      addNew: { label: '+ Add a new cage to this building', onClick: function () { navigate('new~cage~~' + code); } },
+    }));
     main.appendChild(wrap);
   }
 
@@ -319,30 +354,20 @@ const CagingScreen = (function () {
     var l = getLocation(id);
     if (!l) { main.appendChild(el('p', '', 'Location not found.')); return; }
     setTitle(l.name);
+    var again = function () { clearEl(main); renderLocation(main, id, navigate, setTitle); };
     var buildings = BUILDINGS_SAMPLE.filter(function (b) { return b.locationId === id; });
     var wrap = el('div', 'detail-screen');
     wrap.appendChild(header(l.name, buildings.length + (buildings.length === 1 ? ' building' : ' buildings'), function () { navigate('edit~location~' + id); }));
     if (l.description) { var f = el('div', 'fact-grid'); f.appendChild(factRow('Description', l.description)); wrap.appendChild(f); }
-    var section = el('div', 'detail-section');
-    section.appendChild(el('h3', '', 'Buildings (' + buildings.length + ')'));
-    var list = el('div', 'list-rows');
-    buildings.forEach(function (b) {
-      var n = allCages().filter(function (c) { var bb = buildingForCage(c.code); return bb && bb.code === b.code; }).length;
-      var btn = el('button', 'list-row');
-      btn.type = 'button';
-      btn.appendChild(avatar());
-      var info = el('span', 'list-row-info');
-      info.appendChild(el('span', 'list-row-title', 'Building ' + b.nickname));
-      info.appendChild(el('span', 'list-row-sub', b.description || b.code));
-      btn.appendChild(info);
-      btn.appendChild(el('span', 'type-badge type-breeder', n + (n === 1 ? ' cage' : ' cages')));
-      btn.addEventListener('click', function () { navigate('building~' + b.code); });
-      list.appendChild(btn);
-    });
-    if (!buildings.length) section.appendChild(el('p', 'form-note', 'No buildings on this location yet.'));
-    section.appendChild(list);
-    section.appendChild(addButton('+ Add a building here', function () { navigate('new~building~' + id); }));
-    wrap.appendChild(section);
+    wrap.appendChild(Relations.many({
+      title: 'Buildings', related: buildings, render: function (b) { return buildingRow(b, navigate); }, parentName: 'location',
+      empty: 'No buildings on this location yet.', refresh: again,
+      unlink: function (b) { return updateRecord('buildings', b.code, { locationId: '' }); },
+      candidates: function () { return Picker.listItems('buildings', function (b) { return b.locationId !== id; }); },
+      link: function (code) { return updateRecord('buildings', code, { locationId: id }); },
+      addPlaceholder: '+ Add an existing building — search…',
+      addNew: { label: '+ Add a new building here', onClick: function () { navigate('new~building~' + id); } },
+    }));
     main.appendChild(wrap);
   }
 
