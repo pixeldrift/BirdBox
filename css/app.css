@@ -1460,3 +1460,15 @@ body.modal-open { overflow: hidden; }
   font-size: 0.8rem; display: none; align-items: center; justify-content: center;
 }
 .media-tile.selected .media-check { display: flex; }
+
+/* Taxonomy funnel */
+.funnel { text-align: center; }
+.funnel-common { margin: 0 0 8px; font-size: 1.85rem; color: #E8912D; line-height: 1.15; }
+.funnel-label { font-weight: 700; color: #E8912D; font-size: 0.8rem; }
+.funnel-row { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin: 2px 0 6px; }
+.funnel-main { flex: 1; font-size: 1.3rem; font-weight: 800; color: #111; overflow-wrap: anywhere; }
+.funnel-main.sci { font-style: normal; }
+.funnel-arrow { border: 0; background: none; color: #E8912D; font-size: 1.4rem; padding: 6px 8px; cursor: pointer; }
+.funnel-arrow:disabled { color: #D8D3CB; cursor: default; }
+.funnel-svg { width: 100%; max-width: 340px; height: auto; }
+.funnel-note { display: flex; flex-direction: column; align-items: center; gap: 4px; margin-top: 4px; }

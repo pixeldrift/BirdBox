@@ -458,60 +458,19 @@ const BirdsScreen = (function () {
     return cell;
   }
 
-  // The species box: the common name first (with the mutation when it's part of how the bird is
-  // named, e.g. "Lutino Cockatiel"), the scientific name under it, the taxonomy path (tap to browse),
-  // and a link to Birds of the World at the bottom.
+  // The species box: the taxonomy funnel — the common name (with the mutation in front when there is
+  // one, e.g. "Red Factor Sun Conure"), the scientific name with ◀ ▶ to step to neighbouring groups,
+  // the Ord · Fam · Gen · Spe · Sub · Mut circles, and a Birds of the World link (js/taxonomy-funnel.js).
   function buildSpeciesCard(bird) {
     var card = document.createElement('div');
     card.className = 'detail-section species-card';
-    var base = bird.speciesName || bird.species || 'Unknown species';
-    var common = (bird.mutation ? bird.mutation + ' ' : '') + base;
-    var name = document.createElement('h3');
-    name.className = 'species-common';
-    name.textContent = common;
-    card.appendChild(name);
-    if (bird.scientificName) {
-      var sci = document.createElement('p');
-      sci.className = 'species-sci';
-      sci.textContent = bird.scientificName + (bird.subspecies ? ' · ' + bird.subspecies : '');
-      card.appendChild(sci);
-    } else if (bird.subspecies) {
-      var sub = document.createElement('p');
-      sub.className = 'species-sci';
-      sub.textContent = bird.subspecies;
-      card.appendChild(sub);
-    }
-    // Order › Family › Genus — each opens the taxonomy navigator at that spot.
-    if (bird.order || bird.family) {
-      var path = document.createElement('div');
-      path.className = 'taxon-path';
-      var genus = bird.scientificName ? bird.scientificName.split(' ')[0] : '';
-      [['Order', bird.order, { order: bird.order }], ['Family', bird.family, { order: bird.order, family: bird.family }],
-        ['Genus', genus, { order: bird.order, family: bird.family, genus: genus }]].forEach(function (lv) {
-        if (!lv[1]) return;
-        var chip = document.createElement('button');
-        chip.type = 'button';
-        chip.className = 'taxon-chip';
-        var lab = document.createElement('span');
-        lab.className = 'taxon-level';
-        lab.textContent = lv[0];
-        var val = document.createElement('span');
-        val.textContent = lv[1];
-        chip.appendChild(lab);
-        chip.appendChild(val);
-        chip.addEventListener('click', function () { TaxonomyNavigator.open({ title: 'Taxonomy', start: lv[2] }); });
-        path.appendChild(chip);
-      });
-      card.appendChild(path);
-    }
-    if (bird.birdsOfTheWorldUrl) {
-      var link = document.createElement('a');
-      link.className = 'ext-link';
-      link.href = bird.birdsOfTheWorldUrl;
-      link.target = '_blank';
-      link.rel = 'noopener noreferrer';
-      link.textContent = 'Learn more at Birds of the World ↗';
-      card.appendChild(link);
+    if (bird.speciesCode) {
+      card.appendChild(TaxonomyFunnel.create(bird));
+    } else {
+      var name = document.createElement('h3');
+      name.className = 'funnel-common';
+      name.textContent = (bird.mutation ? bird.mutation + ' ' : '') + (bird.species || 'Unknown species');
+      card.appendChild(name);
     }
     return card;
   }
