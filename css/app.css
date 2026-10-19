@@ -1400,3 +1400,63 @@ input[type="date"].form-input::-webkit-date-and-time-value {
 .relation-body { flex: 1; min-width: 0; }
 .relation-body .chip, .relation-body .list-row { max-width: 100%; }
 .relation-add { margin-top: 10px; }
+
+/* Popup sheets */
+body.modal-open { overflow: hidden; }
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 1000; background: rgba(60, 46, 34, 0.45);
+  display: flex; align-items: flex-end; justify-content: center;
+}
+.modal-sheet {
+  width: 100%; max-width: 560px; max-height: 92vh; display: flex; flex-direction: column;
+  background: var(--card-bg, #FFFDF8); border-radius: 22px 22px 0 0; box-shadow: 0 -6px 30px rgba(60, 46, 34, 0.25);
+}
+@media (min-width: 640px) {
+  .modal-overlay { align-items: center; }
+  .modal-sheet { border-radius: 22px; max-height: 86vh; }
+}
+.modal-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px 8px; }
+.modal-head h2 { margin: 0; font-size: 1.05rem; }
+.modal-close { border: 0; background: #F1E9DD; width: 34px; height: 34px; border-radius: 50%; font-size: 1rem; cursor: pointer; color: #7A6552; }
+.modal-body { padding: 8px 18px 18px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.modal-foot { position: sticky; bottom: 0; padding: 12px 0 2px; background: linear-gradient(to top, var(--card-bg, #FFFDF8) 70%, transparent); }
+
+/* Bird page */
+.fact-grid-3 { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.fact-tap { text-align: left; background: none; border: 0; padding: 0; font: inherit; color: inherit; cursor: pointer; }
+.fact-tap .fact-value { text-decoration: underline; text-decoration-color: #D9C8B2; text-underline-offset: 3px; overflow-wrap: anywhere; }
+.fact-select {
+  width: 100%; padding: 4px 6px; border-radius: 10px; border: 1px solid #E9DCC9; background: var(--bg);
+  font: inherit; font-size: 0.88rem; font-weight: 700; min-width: 0; box-sizing: border-box;
+}
+.species-card .species-common { margin: 0; font-size: 1.15rem; }
+.species-card .species-sci { margin: 2px 0 12px; font-style: italic; color: var(--muted); }
+.taxon-path { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.taxon-chip {
+  display: flex; flex-direction: column; align-items: flex-start; padding: 6px 10px; border-radius: 12px;
+  border: 1px solid #E9DCC9; background: #FBF6EF; font: inherit; cursor: pointer; text-align: left; min-width: 0;
+}
+.taxon-chip .taxon-level { font-size: 0.62rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.03em; }
+.photo-add-tile {
+  aspect-ratio: 1; border-radius: 14px; border: 2px dashed #D9C8B2; background: none; color: #B79E83;
+  font-size: 2rem; cursor: pointer;
+}
+.media-sources { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 6px 0 12px; }
+.media-source {
+  display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 16px 8px; border-radius: 16px;
+  border: 1px solid #E9DCC9; background: #FBF6EF; font-weight: 700; cursor: pointer; text-align: center;
+}
+.media-source-icon { font-size: 1.6rem; }
+.media-lib-title { margin: 14px 0 8px; font-size: 0.95rem; }
+.media-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 10px 0; }
+.media-tile {
+  position: relative; aspect-ratio: 1; border-radius: 12px; overflow: hidden; border: 2px solid transparent; padding: 0;
+  background: #F5E4DC; cursor: pointer; display: flex; align-items: center; justify-content: center;
+}
+.media-tile img.thumb-photo { width: 100%; height: 100%; object-fit: cover; }
+.media-tile.selected { border-color: #4C6B45; }
+.media-check {
+  position: absolute; top: 4px; right: 4px; width: 22px; height: 22px; border-radius: 50%; background: #4C6B45; color: #fff;
+  font-size: 0.8rem; display: none; align-items: center; justify-content: center;
+}
+.media-tile.selected .media-check { display: flex; }

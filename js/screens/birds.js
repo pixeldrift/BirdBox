@@ -171,28 +171,63 @@ const BirdsScreen = (function () {
     titleWrap.className = 'detail-title';
     var h2 = document.createElement('h2');
     h2.textContent = birdIdentifier(bird);
-    var statusBadge = document.createElement('span');
-    statusBadge.className = 'status-badge ' + statusClass(bird.status);
-    statusBadge.textContent = bird.status;
     titleWrap.appendChild(h2);
-    titleWrap.appendChild(statusBadge);
 
     header.appendChild(avatar);
     header.appendChild(titleWrap);
     header.appendChild(makeEditButton(function () { navigate('edit~' + bird.id); }));
 
-    var factsGrid = document.createElement('div');
-    factsGrid.className = 'fact-grid';
+    var again = function () { renderDetail(main, id, navigate, setTitle); };
+
+    // Band, sex and hatch date belong together.
+    var vitalsGrid = document.createElement('div');
+    vitalsGrid.className = 'fact-grid fact-grid-3';
     [
       ['Band #', birdBandLabel(bird)],
       ['Sex', bird.sex, sexTextClass(bird.sex)],
-    ].concat(speciesFacts(bird)).concat([
-      ['Mutation', bird.mutation || '—'],
-      ['Hatch Date', formatDate(bird.hatchDate)],
-      ['Location', bird.cage || '—'],
-      ['Owner', (birdOwner(bird.id) || { name: 'You' }).name],
-    ]).forEach(function (f) { factsGrid.appendChild(factRow(f[0], f[1], f[2])); });
-    appendSpeciesLink(factsGrid, bird);
+      ['Hatch date', formatDate(bird.hatchDate)],
+    ].forEach(function (f) { vitalsGrid.appendChild(factRow(f[0], f[1], f[2])); });
+
+    // Owner, location and status belong together too. Owner and location open a chooser; status is a dropdown.
+    var placeGrid = document.createElement('div');
+    placeGrid.className = 'fact-grid fact-grid-3';
+    var ownerNow = birdOwner(bird.id);
+    placeGrid.appendChild(tappableFact('Owner', ownerNow ? ownerNow.name : 'You', function () { BirdPopups.openOwner(bird, again); }));
+    placeGrid.appendChild(tappableFact('Location', BirdPopups.locationLabel(bird) || 'Not set', function () { BirdPopups.openLocation(bird, again); }));
+    var followUp = document.createElement('div');
+    var statusFact = document.createElement('div');
+    statusFact.className = 'fact';
+    var statusLabel = document.createElement('span');
+    statusLabel.className = 'fact-label';
+    statusLabel.textContent = 'Status';
+    var statusSelect = document.createElement('select');
+    statusSelect.className = 'fact-select ' + statusClass(bird.status);
+    STATUSES.filter(function (st) { return st !== 'All'; }).forEach(function (st) {
+      var o = document.createElement('option');
+      o.value = st;
+      o.textContent = st;
+      statusSelect.appendChild(o);
+    });
+    statusSelect.value = bird.status;
+    statusSelect.addEventListener('change', function () {
+      var st = statusSelect.value;
+      updateBird(bird.id, { status: st }).then(function () {
+        statusSelect.className = 'fact-select ' + statusClass(bird.status);
+        clearEl(followUp);
+        // Sold means it's leaving: ask about shipping / a hand-over / ownership.
+        if (st === 'Sold') SoldFollowUp.render(followUp, bird, function () { clearEl(followUp); });
+      }).catch(function () {
+        statusSelect.value = bird.status;
+        clearEl(followUp);
+        var p = document.createElement('p');
+        p.className = 'form-message error';
+        p.textContent = 'Could not change the status — try again.';
+        followUp.appendChild(p);
+      });
+    });
+    statusFact.appendChild(statusLabel);
+    statusFact.appendChild(statusSelect);
+    placeGrid.appendChild(statusFact);
 
     var familySection = document.createElement('div');
     familySection.className = 'detail-section';
@@ -236,49 +271,6 @@ const BirdsScreen = (function () {
       ? 'Band #, species, sex, hatch date, and public parents/offspring are searchable in Registry → Search. Owner, notes, and money fields stay private.'
       : 'Off by default — turn on to make this bird searchable in the public Registry.';
     registrySection.appendChild(registryNote);
-
-    var statusSection = document.createElement('div');
-    statusSection.className = 'detail-section';
-    var statusTitle = document.createElement('h3');
-    statusTitle.textContent = 'Status';
-    statusSection.appendChild(statusTitle);
-    var statusChips = document.createElement('div');
-    statusChips.className = 'filter-chips';
-    var followUp = document.createElement('div');
-    function drawStatus() {
-      clearEl(statusChips);
-      STATUSES.filter(function (st) { return st !== 'All'; }).forEach(function (st) {
-        var chip = document.createElement('button');
-        chip.type = 'button';
-        chip.className = 'filter-chip' + (bird.status === st ? ' active' : '');
-        chip.textContent = st;
-        chip.addEventListener('click', function () {
-          if (bird.status === st) return;
-          updateBird(bird.id, { status: st }).then(function () {
-            statusBadge.className = 'status-badge ' + statusClass(bird.status);
-            statusBadge.textContent = bird.status;
-            drawStatus();
-            clearEl(followUp);
-            // Sold means it's leaving: ask about shipping / a hand-over / ownership.
-            if (st === 'Sold') SoldFollowUp.render(followUp, bird, function () { clearEl(followUp); });
-          }).catch(function () {
-            clearEl(followUp);
-            var p = document.createElement('p');
-            p.className = 'form-message error';
-            p.textContent = 'Could not change the status — try again.';
-            followUp.appendChild(p);
-          });
-        });
-        statusChips.appendChild(chip);
-      });
-    }
-    drawStatus();
-    statusSection.appendChild(statusChips);
-    var statusNote = document.createElement('p');
-    statusNote.className = 'form-note';
-    statusNote.textContent = 'Only Available birds appear in the Available list. Marking a bird Sold will ask about shipping or handing it over.';
-    statusSection.appendChild(statusNote);
-    statusSection.appendChild(followUp);
 
     var healthSection = document.createElement('div');
     healthSection.className = 'detail-section';
@@ -399,15 +391,16 @@ const BirdsScreen = (function () {
 
     wrap.appendChild(header);
     wrap.appendChild(buildPhotosSection(bird, function () { renderDetail(main, id, navigate, setTitle); }));
-    wrap.appendChild(factsGrid);
-    wrap.appendChild(statusSection);
-    appendBirdLinks(wrap, bird, function () { renderDetail(main, id, navigate, setTitle); }, 'place');
+    wrap.appendChild(vitalsGrid);
+    wrap.appendChild(placeGrid);
+    wrap.appendChild(followUp);
+    wrap.appendChild(buildSpeciesCard(bird));
     wrap.appendChild(familySection);
     wrap.appendChild(registrySection);
     wrap.appendChild(healthSection);
     wrap.appendChild(transferSection);
     wrap.appendChild(moneySection);
-    appendBirdLinks(wrap, bird, function () { renderDetail(main, id, navigate, setTitle); }, 'accounting');
+    appendBirdAccounting(wrap, bird, again);
 
     if (bird.notes) {
       var notesSection = document.createElement('div');
@@ -425,28 +418,7 @@ const BirdsScreen = (function () {
     main.appendChild(wrap);
   }
 
-  // Links you can set from the bird's side: where it lives, who owns it, and the accounting entries,
-  // shipments and health records it belongs to. (The same links can be set from the other record.)
-  function appendBirdLinks(wrap, bird, again, part) {
-    if (part === 'place') appendBirdPlace(wrap, bird, again); else appendBirdAccounting(wrap, bird, again);
-  }
-
-  function appendBirdPlace(wrap, bird, again) {
-    wrap.appendChild(Relations.one({
-      title: 'Cage', value: bird.cage || '', find: function (code) { return code ? { code: code } : null; },
-      render: function (c) { return cageLinkRow(c.code); },
-      picker: function (cfg) { return Picker.cages(Object.assign({ placeholder: 'Assign a cage — browse or search…' }, cfg)); },
-      set: function (code) { return editBird(bird.id, { cage: code || '' }); }, refresh: again,
-    }));
-    var owner = birdOwner(bird.id);
-    wrap.appendChild(Relations.one({
-      title: 'Owner', value: owner ? owner.id : '', find: getContact,
-      render: function (c) { return contactChip(c, function () { location.hash = '#/business/contacts/' + c.id; }); },
-      picker: function (cfg) { return Picker.contacts(Object.assign({ placeholder: 'Assign an owner — search contacts…' }, cfg)); },
-      set: function (id) { return setBirdsOwner([bird.id], id || null); }, refresh: again,
-    }));
-  }
-
+  // Links you can set from the bird's side: its accounting entries (the same links can be set from the entry).
   function appendBirdAccounting(wrap, bird, again) {
     wrap.appendChild(Relations.many({
       title: 'Accounting', related: TRANSACTIONS_SAMPLE.filter(function (t) { return t.birdId === bird.id; }), render: transactionRow,
@@ -469,89 +441,135 @@ const BirdsScreen = (function () {
     });
   }
 
+  // A fact cell that opens a chooser when tapped.
+  function tappableFact(labelText, valueText, onClick) {
+    var cell = document.createElement('button');
+    cell.type = 'button';
+    cell.className = 'fact fact-tap';
+    var l = document.createElement('span');
+    l.className = 'fact-label';
+    l.textContent = labelText;
+    var v = document.createElement('span');
+    v.className = 'fact-value';
+    v.textContent = valueText;
+    cell.appendChild(l);
+    cell.appendChild(v);
+    cell.addEventListener('click', onClick);
+    return cell;
+  }
+
+  // The species box: the common name first (with the mutation when it's part of how the bird is
+  // named, e.g. "Lutino Cockatiel"), the scientific name under it, the taxonomy path (tap to browse),
+  // and a link to Birds of the World at the bottom.
+  function buildSpeciesCard(bird) {
+    var card = document.createElement('div');
+    card.className = 'detail-section species-card';
+    var base = bird.speciesName || bird.species || 'Unknown species';
+    var common = (bird.mutation ? bird.mutation + ' ' : '') + base;
+    var name = document.createElement('h3');
+    name.className = 'species-common';
+    name.textContent = common;
+    card.appendChild(name);
+    if (bird.scientificName) {
+      var sci = document.createElement('p');
+      sci.className = 'species-sci';
+      sci.textContent = bird.scientificName + (bird.subspecies ? ' · ' + bird.subspecies : '');
+      card.appendChild(sci);
+    } else if (bird.subspecies) {
+      var sub = document.createElement('p');
+      sub.className = 'species-sci';
+      sub.textContent = bird.subspecies;
+      card.appendChild(sub);
+    }
+    // Order › Family › Genus — each opens the taxonomy navigator at that spot.
+    if (bird.order || bird.family) {
+      var path = document.createElement('div');
+      path.className = 'taxon-path';
+      var genus = bird.scientificName ? bird.scientificName.split(' ')[0] : '';
+      [['Order', bird.order, { order: bird.order }], ['Family', bird.family, { order: bird.order, family: bird.family }],
+        ['Genus', genus, { order: bird.order, family: bird.family, genus: genus }]].forEach(function (lv) {
+        if (!lv[1]) return;
+        var chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = 'taxon-chip';
+        var lab = document.createElement('span');
+        lab.className = 'taxon-level';
+        lab.textContent = lv[0];
+        var val = document.createElement('span');
+        val.textContent = lv[1];
+        chip.appendChild(lab);
+        chip.appendChild(val);
+        chip.addEventListener('click', function () { TaxonomyNavigator.open({ title: 'Taxonomy', start: lv[2] }); });
+        path.appendChild(chip);
+      });
+      card.appendChild(path);
+    }
+    if (bird.birdsOfTheWorldUrl) {
+      var link = document.createElement('a');
+      link.className = 'ext-link';
+      link.href = bird.birdsOfTheWorldUrl;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      link.textContent = 'Learn more at Birds of the World ↗';
+      card.appendChild(link);
+    }
+    return card;
+  }
+
+  // Photos: the bird's pictures, and a dashed box with a + that opens the photo chooser (camera,
+  // album, or the BirdBox library).
   function buildPhotosSection(bird, refresh) {
     var section = document.createElement('div');
     section.className = 'detail-section';
-    var title = document.createElement('h3');
-    title.textContent = 'Photos';
-    section.appendChild(title);
-
-    if (bird.photos.length === 0) {
-      var empty = document.createElement('p');
-      empty.className = 'notes-text';
-      empty.textContent = 'No photos yet — falling back to a generic icon for this species.';
-      section.appendChild(empty);
-    } else {
-      var grid = document.createElement('div');
-      grid.className = 'photo-grid';
-      bird.photos.forEach(function (photo) {
-        var tile = document.createElement('button');
-        tile.type = 'button';
-        tile.className = 'photo-tile' + (photo.isPrimary ? ' primary' : '');
-        var img = document.createElement('img');
-        img.src = photo.url;
-        img.alt = '';
-        tile.appendChild(img);
-        if (photo.isPrimary) {
-          var badge = document.createElement('span');
-          badge.className = 'photo-primary-badge';
-          badge.textContent = 'Primary';
-          tile.appendChild(badge);
-        }
-        tile.addEventListener('click', function () {
-          if (photo.isPrimary) return;
-          setMainPhoto(bird.id, photo.id).then(refresh).catch(function () {});
-        });
-        var del = document.createElement('span');
-        del.className = 'file-remove';
-        del.textContent = '✕';
-        del.setAttribute('role', 'button');
-        del.setAttribute('aria-label', 'Remove photo');
-        del.addEventListener('click', function (e) {
-          e.stopPropagation();
-          if (!window.confirm('Remove this photo from ' + (bird.name || bird.band || 'this bird') + '? It stays in the Media library.')) return;
-          unlinkMedia(photo.id, 'bird', bird.id).then(refresh).catch(function () {});
-        });
-        tile.appendChild(del);
-        grid.appendChild(tile);
+    var grid = document.createElement('div');
+    grid.className = 'photo-grid';
+    bird.photos.forEach(function (photo) {
+      var tile = document.createElement('button');
+      tile.type = 'button';
+      tile.className = 'photo-tile' + (photo.isPrimary ? ' primary' : '');
+      var img = document.createElement('img');
+      img.src = photo.url;
+      img.alt = '';
+      tile.appendChild(img);
+      if (photo.isPrimary) {
+        var badge = document.createElement('span');
+        badge.className = 'photo-primary-badge';
+        badge.textContent = 'Main';
+        tile.appendChild(badge);
+      }
+      tile.addEventListener('click', function () {
+        if (photo.isPrimary) return;
+        setMainPhoto(bird.id, photo.id).then(refresh).catch(function () {});
       });
-      section.appendChild(grid);
-    }
-
-    var fileLabel = document.createElement('label');
-    fileLabel.className = 'add-record-btn photo-upload-btn';
-    fileLabel.textContent = '+ Add Photos';
-    var fileInput = document.createElement('input');
-    fileInput.type = 'file';
-    fileInput.accept = 'image/*';
-    fileInput.multiple = true;
-    fileInput.hidden = true;
-    var photoMessage = document.createElement('div');
-    fileInput.addEventListener('change', function () {
-      var files = Array.prototype.slice.call(fileInput.files);
-      if (!files.length) return;
-      fileLabel.firstChild.textContent = 'Uploading…';
-      files.reduce(function (chain, f) {
-        return chain.then(function () { return uploadFile('bird', bird.id, 'photo', f); });
-      }, Promise.resolve()).then(refresh).catch(function (err) {
-        fileLabel.firstChild.textContent = '+ Add Photos';
-        clearEl(photoMessage);
-        var p = document.createElement('p');
-        p.className = 'form-message error';
-        p.textContent = err.message || 'Upload failed';
-        photoMessage.appendChild(p);
+      var del = document.createElement('span');
+      del.className = 'file-remove';
+      del.textContent = '✕';
+      del.setAttribute('role', 'button');
+      del.setAttribute('aria-label', 'Remove photo');
+      del.addEventListener('click', function (e) {
+        e.stopPropagation();
+        if (!window.confirm('Remove this photo from ' + (bird.name || bird.band || 'this bird') + '? It stays in the Media library.')) return;
+        unlinkMedia(photo.id, 'bird', bird.id).then(refresh).catch(function () {});
       });
+      tile.appendChild(del);
+      grid.appendChild(tile);
     });
-    fileLabel.appendChild(fileInput);
-    section.appendChild(fileLabel);
-    section.appendChild(photoMessage);
-    section.appendChild(FilesUI.chooseExisting({ type: 'photo', label: 'Choose from library', ownerType: 'bird', ownerId: bird.id, refresh: refresh }));
-
-    var note = document.createElement('p');
-    note.className = 'form-note';
-    note.textContent = 'Tap a photo to make it the main picture on this bird’s profile.';
-    section.appendChild(note);
-
+    var add = document.createElement('button');
+    add.type = 'button';
+    add.className = 'photo-add-tile';
+    add.setAttribute('aria-label', 'Add photos');
+    add.textContent = '+';
+    add.addEventListener('click', function () {
+      MediaPicker.open({ type: 'photo', title: 'Add photos', target: { ownerType: 'bird', ownerId: bird.id }, onDone: refresh });
+    });
+    grid.appendChild(add);
+    section.appendChild(grid);
+    if (bird.photos.length > 1) {
+      var note = document.createElement('p');
+      note.className = 'form-note';
+      note.textContent = 'Tap a photo to make it the main picture.';
+      section.appendChild(note);
+    }
     return section;
   }
 

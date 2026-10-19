@@ -71,6 +71,7 @@ const BirdsAddScreen = (function () {
       id: id, band: band, name: (raw.name || '').trim(), sex: sex, speciesCode: raw.speciesCode, speciesName: raw.speciesName || '',
       subspecies: (raw.subspecies || '').trim(), mutation: (raw.mutation || '').trim(),
       hatchDate: date.value, status: status, cage: (raw.cage || '').trim(),
+      locationContactId: raw.locationContactId || '', locationText: (raw.locationText || '').trim(),
       motherId: raw.motherId || '', fatherId: raw.fatherId || '', pairedId: raw.pairedId || '',
       cost: cost, price: price, registryPublic: !!raw.registryPublic, notes: (raw.notes || '').trim(),
     };
@@ -133,27 +134,6 @@ const BirdsAddScreen = (function () {
     return dl;
   }
 
-  // The cage picker: search the cages you have (with their building and location), or add one.
-  // A cage added here is created right away as a real cage, filed under the building its number
-  // starts with if there is one.
-  function cagePicker(initial) {
-    return Picker.cages({
-      value: initial || '', allowClear: true, placeholder: 'Search cages — or type a new number…',
-      addNew: {
-        needsText: true,
-        label: function (typed) { return typed ? '+ Add cage “' + typed.toUpperCase() + '”' : '+ New cage — type its number above'; },
-        onClick: function (typed, done) {
-          var code = typed.toUpperCase().replace(/[^A-Z0-9-]/g, '');
-          if (!code) return;
-          if (getCage(code)) { done(code); return; }
-          var guess = buildingForCage(code);
-          createRecord('cages', { code: code, buildingCode: guess ? guess.code : '' }).then(function () { done(code); })
-            .catch(function (err) { window.alert(err.message); });
-        },
-      },
-    });
-  }
-
   function message(kind, text) {
     var p = document.createElement('p');
     p.className = 'form-message ' + kind;
@@ -196,7 +176,7 @@ const BirdsAddScreen = (function () {
     var mutation = input('text', { placeholder: 'Optional' });
     var hatch = input('date');
     var status = select(STATUSES.map(function (s) { return { value: s, label: s }; }));
-    var cageCtl = cagePicker(editing ? editing.cage : '');
+    var locCtl = BirdPopups.locationField({ cage: editing ? editing.cage : '', contactId: editing ? editing.locationContactId : '', text: editing ? editing.locationText : '' });
     var selfIds = editing ? [editing.id] : [];
     var mother = Picker.birds({ value: editing ? editing.motherId : '', exclude: selfIds, allowClear: true, placeholder: 'Unknown — search to choose…' });
     var father = Picker.birds({ value: editing ? editing.fatherId : '', exclude: selfIds, allowClear: true, placeholder: 'Unknown — search to choose…' });
@@ -230,7 +210,7 @@ const BirdsAddScreen = (function () {
 
     [field('Band number', band, 'Optional — leave blank if this bird has no band.'), field('Name', name), field('Sex', sex), field('Species', speciesPicker.el, 'Search by any name you know — common, trade, or scientific.', true),
       field('Subspecies / form', subspecies), field('Mutation', mutation), field('Hatch date', hatch),
-      field('Status', status), field('Cage', cageCtl.el, 'Search your cages, or add a new one.', true), field('Mother', mother.el, undefined, true), field('Father', father.el, undefined, true),
+      field('Status', status), field('Location', locCtl.el, undefined, true), field('Mother', mother.el, undefined, true), field('Father', father.el, undefined, true),
       field('Paired with', paired.el, undefined, true), field('Cost', cost), field('Asking price', price), field('Notes', notes),
       dlSub, errorBox, saveBtn].forEach(function (el) { form.appendChild(el); });
 
@@ -242,7 +222,7 @@ const BirdsAddScreen = (function () {
         band: band.value, name: name.value, sex: sex.value,
         speciesCode: picked ? picked.code : '', speciesName: picked ? picked.name : '',
         subspecies: subspecies.value, mutation: mutation.value, hatchDate: hatch.value,
-        status: status.value, cage: cageCtl.get(), motherId: mother.get(), fatherId: father.get(),
+        status: status.value, cage: locCtl.get().cage, locationContactId: locCtl.get().locationContactId, locationText: locCtl.get().locationText, motherId: mother.get(), fatherId: father.get(),
         pairedId: paired.get(), cost: cost.value, price: price.value, notes: notes.value,
       });
       if (result.error) {
@@ -281,7 +261,7 @@ const BirdsAddScreen = (function () {
       saveBtn.textContent = 'Saving…';
       editBird(editing.id, {
         band: band.value, name: name.value, sex: sex.value, speciesCode: picked.code, subspecies: subspecies.value, mutation: mutation.value,
-        hatchDate: date.value, status: status.value, cage: cageCtl.get(), motherId: mother.get(), fatherId: father.get(),
+        hatchDate: date.value, status: status.value, cage: locCtl.get().cage, locationContactId: locCtl.get().locationContactId, locationText: locCtl.get().locationText, motherId: mother.get(), fatherId: father.get(),
         pairedId: paired.get(), cost: cost.value, price: price.value, notes: notes.value,
       }).then(function (bird) {
         if (status.value === 'Sold' && !wasSold) {

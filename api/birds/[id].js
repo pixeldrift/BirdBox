@@ -10,7 +10,7 @@ const STATUSES = ['Available', 'Reserved', 'Sold', 'Deceased'];
 // The band number can be added, corrected or removed: a bird's id is its own and doesn't depend on it.
 const COLUMNS = {
   band: 'band', name: 'name', sex: 'sex', speciesCode: 'species_code', subspecies: 'subspecies', mutation: 'mutation',
-  hatchDate: 'hatch_date', status: 'status', cage: 'cage', motherId: 'mother_id', fatherId: 'father_id',
+  hatchDate: 'hatch_date', status: 'status', cage: 'cage', locationContactId: 'location_contact_id', locationText: 'location_text', motherId: 'mother_id', fatherId: 'father_id',
   pairedId: 'paired_id', cost: 'cost', price: 'price', registryPublic: 'registry_public', notes: 'notes',
 };
 
@@ -65,6 +65,13 @@ async function clean(id, body) {
       const found = await sql`select 1 from species where code = ${code}`;
       if (!found.length) return { error: 'Unknown species — pick one from the list' };
       values[col] = code;
+    } else if (key === 'locationContactId') {
+      const ref = blankToNull(v);
+      if (ref) {
+        const found = await sql`select 1 from contacts where id = ${ref}`;
+        if (!found.length) { return { error: 'That person isn’t in your contacts' }; }
+      }
+      values[col] = ref;
     } else if (key === 'motherId' || key === 'fatherId' || key === 'pairedId') {
       const ref = blankToNull(v);
       if (ref) {

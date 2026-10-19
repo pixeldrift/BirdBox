@@ -13,6 +13,13 @@ var SpeciesApi = (function () {
     return fetch('/api/species?limit=12&q=' + encodeURIComponent(q), { signal: signal }).then(json);
   }
 
+  // One level of the taxonomy: kind = root | order | family | genus. Groups come back as
+  // { name, species, kept }; a genus returns its species.
+  function tree(kind, value, avicultureOnly) {
+    return fetch('/api/species?tree=' + encodeURIComponent(kind) + '&value=' + encodeURIComponent(value || '') +
+      (avicultureOnly ? '&scope=aviculture' : '')).then(json);
+  }
+
   // [{ input, status: exact | ambiguous | close | none, species?, candidates? }, ...]
   function resolve(names) {
     return fetch('/api/species/resolve', {
@@ -72,5 +79,5 @@ var SpeciesApi = (function () {
     }).map(function (x) { return x.s; });
   }
 
-  return { search: search, resolve: resolve, remember: remember, recent: recent, flockSpecies: flockSpecies, personalize: personalize };
+  return { search: search, tree: tree, resolve: resolve, remember: remember, recent: recent, flockSpecies: flockSpecies, personalize: personalize };
 })();

@@ -162,7 +162,18 @@ const SpeciesPicker = (function () {
     }
 
     paintChosen();
-    return { el: root, getValue: function () { return value; }, focus: function () { input.focus(); } };
+    // Or choose by walking down the taxonomy (order › family › genus › species).
+    var browse = el('button', 'pick-link', 'Browse the taxonomy');
+    browse.type = 'button';
+    browse.addEventListener('click', function () {
+      TaxonomyNavigator.open({ title: 'Choose a species', onSelect: function (s) { choose(s); } });
+    });
+    root.appendChild(browse);
+    var paintOrig = paintChosen;
+    paintChosen = function () { paintOrig(); browse.hidden = !!value; };
+    paintChosen();
+
+    return { el: root, getValue: function () { return value; }, focus: function () { input.focus(); }, set: choose };
   }
 
   return { create: create };

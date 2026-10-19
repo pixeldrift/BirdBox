@@ -463,6 +463,26 @@ picker) and `Relations.one` (shown with Change / Remove, or a picker to assign).
 nothing is deleted. The picker's hierarchy (`tree: true`) lets cages and buildings be browsed
 Location › Building › Cage or searched.
 
+## The bird page, and a bird's location
+
+Layout: photos (a dashed **+** box opens the photo chooser: camera, album, or the BirdBox library with
+search and filters, thumbnails multi-selectable), then **Band · Sex · Hatch date** in one row, then
+**Owner · Location · Status** in one row (owner and location open a popup chooser; status is a dropdown
+that asks the Sold questions), then the species box, family, registry, health, transfers, sale,
+accounting and notes.
+
+**Location is one of three things, never more than one** (`sql/015_bird_location.sql`): *in a cage*
+(`birds.cage`, browsed Location › Building › Cage), *with a person* (`birds.location_contact_id` — a
+breeder loan, boarding, a foster home; ownership doesn't change), or *somewhere else*
+(`birds.location_text` — an address or a name). The same chooser is used on the Add/Edit bird form.
+
+**Species box:** the common name first — with the mutation in front when there is one ("Red Factor Sun
+Conure") — then the scientific name, then Order › Family › Genus chips that open the **taxonomy
+navigator** (`js/taxonomy-navigator.js`, served by `/api/species?tree=`), and "Learn more at Birds of
+the World". The navigator walks Order › Family › Genus › Species with counts (commonly kept / all
+species, and how many of your own birds), and is also a way to choose a species on the Add/Edit form
+("Browse the taxonomy"). Popups (`js/modal.js`) slide up from the bottom on a phone.
+
 ## Hosting note: keep API files to 12 or fewer
 
 The Vercel Hobby plan allows at most **12 serverless functions** per deployment, and every file in

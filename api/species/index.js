@@ -66,6 +66,35 @@ async function search(q, limit, avicultureOnly) {
   return rows;
 }
 
+// Browse the taxonomy level by level: orders > families > genera > species.
+//   ?tree=root                  the orders
+//   ?tree=order&value=<order>   its families
+//   ?tree=family&value=<family> its genera
+//   ?tree=genus&value=<genus>   its species
+// Each group carries how many species it holds and how many are commonly kept (aviculture);
+// scope=aviculture limits the counts and the species to the commonly kept ones.
+async function tree(kind, value, avicultureOnly) {
+  const keep = avicultureOnly ? 'and coalesce(aviculture_override, aviculture)' : '';
+  const counts = 'count(*)::int as species, (count(*) filter (where coalesce(aviculture_override, aviculture)))::int as kept';
+  if (kind === 'root') {
+    return sql(`select order_name as name, ${counts} from species where true ${keep} group by order_name order by min(taxon_order)`);
+  }
+  if (kind === 'order') {
+    return sql(`select family_name as name, min(family_scientific) as scientific, ${counts} from species where order_name = $1 ${keep}
+                group by family_name order by min(taxon_order)`, [value]);
+  }
+  if (kind === 'family') {
+    return sql(`select split_part(scientific_name, ' ', 1) as name, ${counts} from species where family_name = $1 ${keep}
+                group by split_part(scientific_name, ' ', 1) order by min(taxon_order)`, [value]);
+  }
+  if (kind === 'genus') {
+    const rows = await sql(`${SELECT} from species s where split_part(s.scientific_name, ' ', 1) = $1 ${avicultureOnly ? 'and coalesce(s.aviculture_override, s.aviculture)' : ''}
+                            order by s.taxon_order limit 300`, [value]);
+    return rows.map(toSpecies);
+  }
+  return null;
+}
+
 module.exports = async function handler(req, res) {
   if (req.method !== 'GET') {
     res.status(405).json({ error: 'Method not allowed' });
@@ -73,6 +102,12 @@ module.exports = async function handler(req, res) {
   }
   const query = req.query || {};
   try {
+    if (query.tree) {
+      const rows = await tree(String(query.tree), String(query.value || ''), query.scope === 'aviculture');
+      if (!rows) { res.status(400).json({ error: 'Unknown level' }); return; }
+      res.status(200).json(rows);
+      return;
+    }
     if (query.code) {
       const rows = await sql(`
         ${SELECT}, s.taxonomy_version,

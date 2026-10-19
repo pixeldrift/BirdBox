@@ -98,6 +98,7 @@ async function cleanupAfterDelete(type, id) {
     steps.push(['update transactions set client_id = null where client_id = $1', [id]]);
     steps.push(['update waybills set client_id = null where client_id = $1', [id]]);
     steps.push(['update bird_transfers set contact_id = null where contact_id = $1', [id]]);
+    steps.push(['update birds set location_contact_id = null where location_contact_id = $1', [id]]);
   }
   if (type === 'cages') steps.push(['update birds set cage = null where cage = $1', [id]]);
   if (type === 'buildings') steps.push(['update cages set building_code = null where building_code = $1', [id]]);

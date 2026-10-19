@@ -37,6 +37,8 @@ function toBird(row) {
     hatchDate: isoDate(row.hatch_date),
     status: row.status,
     cage: row.cage,
+    locationContactId: row.location_contact_id || null,
+    locationText: row.location_text || null,
     motherId: row.mother_id,
     fatherId: row.father_id,
     pairedId: row.paired_id,
