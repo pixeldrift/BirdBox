@@ -1502,3 +1502,13 @@ body.modal-open { overflow: hidden; }
 .nav-up:disabled { opacity: 0.35; cursor: default; }
 .nav-crumbs { flex: 0 0 auto; min-height: 2.6em; margin-top: 8px; }
 .nav-list { flex: 1 1 auto; overflow-y: auto; min-height: 0; margin: 0; }
+
+/* iPhones zoom the page whenever a text box smaller than 16px gets focus (when the keyboard opens)
+   and stay zoomed afterwards. On touch screens every input, dropdown and text area is at least 16px,
+   so it never zooms. (Pinching to zoom still works.) */
+@media (pointer: coarse) {
+  input, select, textarea,
+  .form-input, .search-input, .fact-select {
+    font-size: 16px !important;
+  }
+}
