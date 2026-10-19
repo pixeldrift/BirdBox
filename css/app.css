@@ -1463,12 +1463,14 @@ body.modal-open { overflow: hidden; }
 
 /* Taxonomy funnel */
 .funnel { text-align: center; }
-.funnel-common { margin: 0 0 8px; font-size: 1.85rem; color: #E8912D; line-height: 1.15; }
-.funnel-label { font-weight: 700; color: #E8912D; font-size: 0.8rem; }
-.funnel-row { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin: 2px 0 6px; }
-.funnel-main { flex: 1; font-size: 1.3rem; font-weight: 800; color: #111; overflow-wrap: anywhere; }
-.funnel-main.sci { font-style: normal; }
-.funnel-arrow { border: 0; background: none; color: #E8912D; font-size: 1.4rem; padding: 6px 8px; cursor: pointer; }
-.funnel-arrow:disabled { color: #D8D3CB; cursor: default; }
+.funnel-title { margin: 0 0 12px; font-size: 0.95rem; text-align: left; }
+.funnel-common { margin: 0 0 8px; font-size: 1.5rem; font-weight: 800; line-height: 1.15; color: var(--text); font-family: 'Bree Serif', serif; }
+.funnel-row { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin: 0 0 8px; }
+.funnel-main { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 0; }
+.funnel-value { font-size: 1.1rem; font-weight: 700; color: var(--text); overflow-wrap: anywhere; }
+.funnel-value.sci { font-style: italic; }
+.funnel-label { font-size: 0.72rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #E8912D; }
+.funnel-arrow { border: 0; background: none; color: var(--muted); font-size: 1.15rem; padding: 6px 8px; cursor: pointer; }
+.funnel-arrow:disabled { opacity: 0.3; cursor: default; }
 .funnel-svg { width: 100%; max-width: 340px; height: auto; }
 .funnel-note { display: flex; flex-direction: column; align-items: center; gap: 4px; margin-top: 4px; }

@@ -40,11 +40,14 @@ const TaxonomyFunnel = (function () {
     var level = 'species';
     var siblings = {}; // level -> list, fetched when you step
 
-    var head = el('h3', 'funnel-common');
+    var head = el('div', 'funnel-common');
     var label = el('div', 'funnel-label');
     var row = el('div', 'funnel-row');
     var prev = el('button', 'funnel-arrow', '◀');
+    var value = el('div', 'funnel-value');
     var main = el('div', 'funnel-main');
+    main.appendChild(value);
+    main.appendChild(label);
     var next = el('button', 'funnel-arrow', '▶');
     [prev, next].forEach(function (b) { b.type = 'button'; });
     row.appendChild(prev);
@@ -52,8 +55,8 @@ const TaxonomyFunnel = (function () {
     row.appendChild(next);
     var graphic = el('div', 'funnel-graphic');
     var note = el('div', 'funnel-note');
+    root.appendChild(el('h3', 'funnel-title', 'Taxonomy'));
     root.appendChild(head);
-    root.appendChild(label);
     root.appendChild(row);
     root.appendChild(graphic);
     root.appendChild(note);
@@ -82,9 +85,9 @@ const TaxonomyFunnel = (function () {
       var n = names(level);
       var info = LEVELS.filter(function (l) { return l.key === level; })[0];
       head.textContent = n[0] || '—';
-      label.textContent = info.label + ':';
-      main.textContent = n[1] || '—';
-      main.classList.toggle('sci', level === 'species' || level === 'genus');
+      label.textContent = info.label;
+      value.textContent = n[1] || '—';
+      value.classList.toggle('sci', level === 'species' || level === 'genus');
       var canStep = level !== 'sub' && level !== 'mut';
       prev.disabled = !canStep;
       next.disabled = !canStep;
@@ -119,9 +122,10 @@ const TaxonomyFunnel = (function () {
         var on = available(l.key);
         var sel = l.key === level;
         var g = svg('g', { role: 'button', tabindex: on ? '0' : '-1', 'aria-label': l.label, style: on ? 'cursor:pointer' : '' });
-        g.appendChild(svg('circle', { cx: xs[i], cy: cy, r: l.r, fill: on ? '#fff' : '#F0EDE8', stroke: on ? '#111' : '#D8D3CB', 'stroke-width': l.r > 8 ? 4 : 3 }));
+        // A level with nothing to show is a solid black dot, like the narrow end of the funnel.
+        g.appendChild(svg('circle', { cx: xs[i], cy: cy, r: l.r, fill: on ? '#fff' : '#111', stroke: '#111', 'stroke-width': l.r > 8 ? 4 : 3 }));
         if (sel) g.appendChild(svg('circle', { cx: xs[i], cy: cy, r: Math.max(3, l.r * 0.45), fill: ORANGE }));
-        var t = svg('text', { x: xs[i], y: 68, 'text-anchor': 'middle', 'font-size': 11, 'font-weight': 700, fill: sel ? ORANGE : on ? '#111' : '#C9C3BA' });
+        var t = svg('text', { x: xs[i], y: 68, 'text-anchor': 'middle', 'font-size': 11, 'font-weight': 700, fill: sel ? ORANGE : '#111' });
         t.textContent = l.abbr;
         g.appendChild(t);
         if (on) {

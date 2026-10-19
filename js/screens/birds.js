@@ -467,7 +467,10 @@ const BirdsScreen = (function () {
     if (bird.speciesCode) {
       card.appendChild(TaxonomyFunnel.create(bird));
     } else {
-      var name = document.createElement('h3');
+      var heading = document.createElement('h3');
+      heading.textContent = 'Taxonomy';
+      card.appendChild(heading);
+      var name = document.createElement('div');
       name.className = 'funnel-common';
       name.textContent = (bird.mutation ? bird.mutation + ' ' : '') + (bird.species || 'Unknown species');
       card.appendChild(name);
