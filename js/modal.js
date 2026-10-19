@@ -10,7 +10,7 @@ const Modal = (function () {
     var overlay = document.createElement('div');
     overlay.className = 'modal-overlay';
     var sheet = document.createElement('div');
-    sheet.className = 'modal-sheet';
+    sheet.className = 'modal-sheet' + (opts.fixedHeight ? ' modal-fixed' : '');
     sheet.setAttribute('role', 'dialog');
     sheet.setAttribute('aria-modal', 'true');
     sheet.setAttribute('aria-label', opts.title || 'Dialog');

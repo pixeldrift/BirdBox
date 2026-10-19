@@ -98,7 +98,7 @@ const Picker = (function () {
       root.addEventListener('click', function () { path = []; drawList(); input.focus(); });
       crumbs.appendChild(root);
       path.forEach(function (id, idx) {
-        crumbs.appendChild(el('span', 'form-note', '›'));
+        crumbs.appendChild(el('span', 'crumb-sep', '›'));
         var c = el('button', 'pick-link', byId[id] ? byId[id].title : id);
         c.type = 'button';
         c.addEventListener('click', function () { path = path.slice(0, idx + 1); drawList(); input.focus(); });

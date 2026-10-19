@@ -22,6 +22,15 @@ const TaxonomyNavigator = (function () {
     }).length;
   }
 
+  // A picture for a group or species: the icon the active icon pack uses for that part of the tree.
+  function taxonIcon(kind, g, context) {
+    var fake = { scientificName: 'x x', order: context.order || '', familyScientific: '' };
+    if (kind === 'order') fake.order = g.name;
+    if (kind === 'family') { fake.familyScientific = g.scientific || ''; fake.scientificName = 'x x'; }
+    if (kind === 'genus') fake.scientificName = g.name + ' x';
+    return resolveBirdIcon(fake);
+  }
+
   var NEXT = { root: 'order', order: 'family', family: 'genus', genus: 'species' };
   var LEVEL_LABEL = { order: 'Orders', family: 'Families', genus: 'Genera', species: 'Species' };
 
@@ -35,20 +44,28 @@ const TaxonomyNavigator = (function () {
 
     Modal.open({
       title: opts.title || 'Taxonomy',
+      fixedHeight: true, // the popup keeps its size however many members a level has
       build: function (body, close) {
-        var crumbs = el('div', 'picker-crumbs');
+        var bar = el('div', 'nav-bar');
+        var up = el('button', 'nav-up', '↑ Up one level');
+        up.type = 'button';
         var scope = el('div', 'filter-chips');
-        var list = el('div', 'pick-results');
-        [crumbs, scope, list].forEach(function (e) { body.appendChild(e); });
+        bar.appendChild(up);
+        bar.appendChild(scope);
+        var crumbs = el('div', 'picker-crumbs nav-crumbs');
+        var list = el('div', 'pick-results nav-list');
+        [bar, crumbs, list].forEach(function (e) { body.appendChild(e); });
+        up.addEventListener('click', function () { if (state.path.length) { state.path.pop(); draw(); } });
 
         function drawCrumbs() {
           clearEl(crumbs);
+          up.disabled = !state.path.length;
           var all = el('button', 'pick-link', 'All orders');
           all.type = 'button';
           all.addEventListener('click', function () { state.path = []; draw(); });
           crumbs.appendChild(all);
           state.path.forEach(function (p, i) {
-            crumbs.appendChild(el('span', 'form-note', '›'));
+            crumbs.appendChild(el('span', 'crumb-sep', '›'));
             var c = el('button', 'pick-link', p.value);
             c.type = 'button';
             c.addEventListener('click', function () { state.path = state.path.slice(0, i + 1); draw(); });
@@ -70,11 +87,10 @@ const TaxonomyNavigator = (function () {
           var row = el('button', 'pick-option');
           row.type = 'button';
           var yours = flockCount(kind, g.name);
-          var text = el('span', 'pick-text');
-          text.appendChild(el('span', '', g.name + (g.scientific && g.scientific !== g.name ? ' — ' + g.scientific : '')));
+          var title = g.name + (g.scientific && g.scientific !== g.name ? ' — ' + g.scientific : '');
           var sub = (state.kept ? g.species + ' commonly kept' : g.species + ' species' + (g.kept ? ' · ' + g.kept + ' commonly kept' : '')) + (yours ? ' · ' + yours + ' of yours' : '');
-          text.appendChild(el('small', '', sub));
-          row.appendChild(text);
+          var ctx = { order: (state.path.filter(function (p) { return p.kind === 'order'; })[0] || {}).value };
+          row.appendChild(pickLead(makeThumb({ icon: taxonIcon(kind, g, ctx) }), title, sub));
           row.appendChild(el('span', 'pick-chevron', '›'));
           row.addEventListener('click', function () { state.path.push({ kind: kind, value: g.name }); draw(); });
           return row;
@@ -84,7 +100,7 @@ const TaxonomyNavigator = (function () {
           var row = el('button', 'pick-option');
           row.type = 'button';
           var mine = BIRDS_SAMPLE.filter(function (b) { return b.speciesCode === sp.code; }).length;
-          row.appendChild(pickLead(makeThumb({ icon: 'icons/Birds.png' }), sp.name, sp.scientificName + (mine ? ' · ' + mine + ' of yours' : '')));
+          row.appendChild(pickLead(makeThumb({ icon: resolveBirdIcon({ speciesCode: sp.code, scientificName: sp.scientificName, order: sp.order, species: sp.name }) }), sp.name, sp.scientificName + (mine ? ' · ' + mine + ' of yours' : '')));
           if (opts.onSelect) {
             row.addEventListener('click', function () { opts.onSelect(sp); close(); });
           } else {

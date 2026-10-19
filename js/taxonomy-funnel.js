@@ -31,70 +31,58 @@ const TaxonomyFunnel = (function () {
   function create(bird) {
     var root = el('div', 'funnel');
     var genus = bird.scientificName ? bird.scientificName.split(' ')[0] : '';
-    // What we're looking at. `home` is the bird's own species; stepping to a neighbour leaves it.
-    var focus = {
-      order: bird.order || '', family: bird.family || '', familySci: bird.familyScientific || '', genus: genus,
-      species: bird.speciesCode ? { code: bird.speciesCode, name: bird.speciesName, sci: bird.scientificName, url: bird.birdsOfTheWorldUrl } : null,
-      home: true,
-    };
+    var common = (bird.mutation ? bird.mutation + ' ' : '') + (bird.speciesName || bird.species || '');
     var level = 'species';
-    var siblings = {}; // level -> list, fetched when you step
 
-    var head = el('div', 'funnel-common');
-    var label = el('div', 'funnel-label');
+    var head = el('div', 'funnel-common', common);
     var row = el('div', 'funnel-row');
     var prev = el('button', 'funnel-arrow', '◀');
     var value = el('div', 'funnel-value');
-    var main = el('div', 'funnel-main');
-    main.appendChild(value);
-    main.appendChild(label);
     var next = el('button', 'funnel-arrow', '▶');
     [prev, next].forEach(function (b) { b.type = 'button'; });
     row.appendChild(prev);
-    row.appendChild(main);
+    row.appendChild(value);
     row.appendChild(next);
+    var label = el('div', 'funnel-label');
+    var detail = el('div', 'funnel-detail');
     var graphic = el('div', 'funnel-graphic');
     var note = el('div', 'funnel-note');
-    root.appendChild(el('h3', 'funnel-title', 'Taxonomy'));
-    root.appendChild(head);
-    root.appendChild(row);
-    root.appendChild(graphic);
-    root.appendChild(note);
+    [el('h3', 'funnel-title', 'Taxonomy'), head, row, label, detail, graphic, note].forEach(function (e) { root.appendChild(e); });
 
-    function available(key) {
-      if (key === 'order') return !!focus.order;
-      if (key === 'family') return !!focus.family;
-      if (key === 'genus') return !!focus.genus;
-      if (key === 'species') return !!focus.species;
-      if (key === 'sub') return focus.home && !!bird.subspecies;
-      if (key === 'mut') return focus.home && !!bird.mutation;
-      return false;
+    // What this bird has at each level. Levels it has nothing for are skipped by the arrows.
+    function has(key) {
+      if (key === 'order') return !!bird.order;
+      if (key === 'family') return !!bird.family;
+      if (key === 'genus') return !!genus;
+      if (key === 'species') return !!bird.speciesCode;
+      if (key === 'sub') return !!bird.subspecies;
+      return !!bird.mutation;
     }
-
-    // [common/English name, scientific/main name] for a level.
     function names(key) {
-      if (key === 'order') return [focus.order, focus.order];
-      if (key === 'family') return [focus.family, focus.familySci || focus.family];
-      if (key === 'genus') return [focus.genus, focus.genus];
-      if (key === 'species') return focus.species ? [focus.home ? (bird.mutation ? bird.mutation + ' ' : '') + focus.species.name : focus.species.name, focus.species.sci] : ['', ''];
-      if (key === 'sub') return [bird.subspecies, bird.subspecies];
-      return [bird.mutation, bird.mutation];
+      if (key === 'order') return [bird.order, ''];
+      if (key === 'family') return [bird.familyScientific || bird.family, bird.familyScientific ? bird.family : ''];
+      if (key === 'genus') return [genus, ''];
+      if (key === 'species') return [bird.scientificName, bird.speciesName];
+      if (key === 'sub') return [bird.subspecies, ''];
+      return [bird.mutation, ''];
     }
+    function present() { return LEVELS.filter(function (l) { return has(l.key); }).map(function (l) { return l.key; }); }
 
     function drawText() {
-      var n = names(level);
       var info = LEVELS.filter(function (l) { return l.key === level; })[0];
-      head.textContent = n[0] || '—';
-      label.textContent = info.label;
-      value.textContent = n[1] || '—';
+      var n = names(level);
+      value.textContent = n[0] || '—';
       value.classList.toggle('sci', level === 'species' || level === 'genus');
-      var canStep = level !== 'sub' && level !== 'mut';
-      prev.disabled = !canStep;
-      next.disabled = !canStep;
+      label.textContent = info.label;
+      detail.textContent = n[1] || '';
+      var keys = present();
+      var at = keys.indexOf(level);
+      prev.disabled = at <= 0;
+      next.disabled = at < 0 || at >= keys.length - 1;
       clearEl(note);
-      if (level === 'species' && focus.species && focus.species.url) {
+      if (bird.birdsOfTheWorldUrl) {
         var link = el('a', 'ext-link', 'Learn more at Birds of the World ↗');
-        link.href = focus.species.url;
+        link.href = bird.birdsOfTheWorldUrl;
         link.target = '_blank';
         link.rel = 'noopener noreferrer';
         note.appendChild(link);
@@ -102,27 +90,25 @@ const TaxonomyFunnel = (function () {
       var browse = el('button', 'pick-link', 'Browse the taxonomy');
       browse.type = 'button';
       browse.addEventListener('click', function () {
-        TaxonomyNavigator.open({ title: 'Taxonomy', start: { order: focus.order, family: focus.family, genus: focus.genus } });
+        TaxonomyNavigator.open({ title: 'Taxonomy', start: { order: bird.order, family: bird.family, genus: genus } });
       });
       note.appendChild(browse);
     }
 
-    // The tapering row of circles.
+    // The tapering row of circles. A level this bird has nothing for is a solid black dot.
     function drawGraphic() {
       clearEl(graphic);
       var W = 300, H = 74, cy = 30, pad = 28;
       var step = (W - pad * 2) / (LEVELS.length - 1);
       var xs = LEVELS.map(function (l, i) { return pad + i * step; });
       var s = svg('svg', { viewBox: '0 0 ' + W + ' ' + H, class: 'funnel-svg', role: 'group', 'aria-label': 'Taxonomy level' });
-      // the taper behind the circles
       var top = LEVELS.map(function (l, i) { return xs[i] + ',' + (cy - l.r * 0.8); });
       var bottom = LEVELS.map(function (l, i) { return xs[LEVELS.length - 1 - i] + ',' + (cy + LEVELS[LEVELS.length - 1 - i].r * 0.8); });
       s.appendChild(svg('polygon', { points: top.concat(bottom).join(' '), fill: '#111' }));
       LEVELS.forEach(function (l, i) {
-        var on = available(l.key);
+        var on = has(l.key);
         var sel = l.key === level;
         var g = svg('g', { role: 'button', tabindex: on ? '0' : '-1', 'aria-label': l.label, style: on ? 'cursor:pointer' : '' });
-        // A level with nothing to show is a solid black dot, like the narrow end of the funnel.
         g.appendChild(svg('circle', { cx: xs[i], cy: cy, r: l.r, fill: on ? '#fff' : '#111', stroke: '#111', 'stroke-width': l.r > 8 ? 4 : 3 }));
         if (sel) g.appendChild(svg('circle', { cx: xs[i], cy: cy, r: Math.max(3, l.r * 0.45), fill: ORANGE }));
         var t = svg('text', { x: xs[i], y: 68, 'text-anchor': 'middle', 'font-size': 11, 'font-weight': 700, fill: sel ? ORANGE : '#111' });
@@ -139,37 +125,16 @@ const TaxonomyFunnel = (function () {
 
     function drawAll() { drawText(); drawGraphic(); }
 
-    // Step to the neighbouring group at the current level (the lower levels are cleared, since they
-    // belonged to the group we left).
-    function step(dir) {
-      var key = level;
-      var load = siblings[key] ? Promise.resolve(siblings[key]) : listSiblings(key).then(function (list) { siblings[key] = list; return list; });
-      load.then(function (list) {
-        if (!list.length) return;
-        var here = list.findIndex(function (it) { return key === 'species' ? (focus.species && it.code === focus.species.code) : it.name === focus[key]; });
-        var it = list[((here < 0 ? 0 : here) + dir + list.length) % list.length];
-        focus.home = false;
-        siblings = { }; siblings[key] = list;
-        if (key === 'order') { focus.order = it.name; focus.family = ''; focus.familySci = ''; focus.genus = ''; focus.species = null; }
-        if (key === 'family') { focus.family = it.name; focus.familySci = it.scientific || ''; focus.genus = ''; focus.species = null; }
-        if (key === 'genus') { focus.genus = it.name; focus.species = null; }
-        if (key === 'species') { focus.species = { code: it.code, name: it.name, sci: it.scientificName, url: it.birdsOfTheWorldUrl }; focus.genus = it.scientificName.split(' ')[0]; }
-        drawAll();
-      }).catch(function () {
-        clearEl(note);
-        note.appendChild(el('span', 'form-note', 'Couldn’t load the neighbouring groups — check your connection.'));
-      });
+    // ◀ ▶ move to the previous / next level this bird has (Order … Species … Subspecies … Mutation);
+    // the orange dot and the level name move with it.
+    function go(dir) {
+      var keys = present();
+      var at = keys.indexOf(level);
+      var to = keys[at + dir];
+      if (to) { level = to; drawAll(); }
     }
-
-    function listSiblings(key) {
-      if (key === 'order') return SpeciesApi.tree('root', '', false);
-      if (key === 'family') return SpeciesApi.tree('order', focus.order, false);
-      if (key === 'genus') return SpeciesApi.tree('family', focus.family, false);
-      return SpeciesApi.tree('genus', focus.genus, false);
-    }
-
-    prev.addEventListener('click', function () { step(-1); });
-    next.addEventListener('click', function () { step(1); });
+    prev.addEventListener('click', function () { go(-1); });
+    next.addEventListener('click', function () { go(1); });
     drawAll();
     return root;
   }

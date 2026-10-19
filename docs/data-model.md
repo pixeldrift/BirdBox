@@ -476,7 +476,7 @@ accounting and notes.
 breeder loan, boarding, a foster home; ownership doesn't change), or *somewhere else*
 (`birds.location_text` — an address or a name). The same chooser is used on the Add/Edit bird form.
 
-**Species box** (`js/taxonomy-funnel.js`, from the design mockup — a tapering row of circles **Ord · Fam · Gen · Spe · Sub · Mut**, the common name large and orange, the scientific name of the selected level with ◀ ▶ to step to the neighbouring group; Sub/Mut grey out when the bird has no subspecies/mutation). Earlier description — the common name first — with the mutation in front when there is one ("Red Factor Sun
+**Species box** (`js/taxonomy-funnel.js`; ◀ ▶ move between *this bird's own* levels — Order … Species … Subspecies … Mutation — skipping ones it has none of, and the orange dot and level name move with them; from the design mockup — a tapering row of circles **Ord · Fam · Gen · Spe · Sub · Mut**, the common name large and orange, the scientific name of the selected level with ◀ ▶ to step to the neighbouring group; Sub/Mut grey out when the bird has no subspecies/mutation). Earlier description — the common name first — with the mutation in front when there is one ("Red Factor Sun
 Conure") — then the scientific name, then Order › Family › Genus chips that open the **taxonomy
 navigator** (`js/taxonomy-navigator.js`, served by `/api/species?tree=`), and "Learn more at Birds of
 the World". The navigator walks Order › Family › Genus › Species with counts (commonly kept / all
@@ -500,3 +500,7 @@ just an attribute**: optional (some birds have none), editable, and unique only 
 they already had (they happened to be made from the band) — they're simply opaque now. A bird without a
 band shows as "No band". CSV import accepts rows without a band; a row can still name another row's
 band as its parent, and parents are resolved to IDs before anything is saved.
+
+The taxonomy popup is a fixed size however long a level is (only the list scrolls), has an always-present
+**↑ Up one level** button, tighter breadcrumbs with emphasised separators, and an icon for every
+order, family, genus and species (from the active icon pack).

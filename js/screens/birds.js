@@ -483,6 +483,9 @@ const BirdsScreen = (function () {
   function buildPhotosSection(bird, refresh) {
     var section = document.createElement('div');
     section.className = 'detail-section';
+    var photosTitle = document.createElement('h3');
+    photosTitle.textContent = 'Photos';
+    section.appendChild(photosTitle);
     var grid = document.createElement('div');
     grid.className = 'photo-grid';
     bird.photos.forEach(function (photo) {

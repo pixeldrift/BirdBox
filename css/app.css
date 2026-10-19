@@ -1386,7 +1386,8 @@ input[type="date"].form-input::-webkit-date-and-time-value {
 .group-heading:disabled { cursor: default; }
 .list-actions.list-actions-3 { grid-template-columns: repeat(3, 1fr); }
 
-.picker-crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 2px 2px 6px; }
+.picker-crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 0 6px; padding: 2px 2px 6px; line-height: 1.25; }
+.crumb-sep { font-size: 1.25rem; font-weight: 800; color: var(--text); line-height: 1; }
 .pick-split { display: flex; gap: 6px; align-items: stretch; }
 .pick-split .pick-option { flex: 1; min-width: 0; }
 .pick-chevron { color: var(--muted); font-size: 1.3rem; padding-left: 8px; }
@@ -1463,14 +1464,27 @@ body.modal-open { overflow: hidden; }
 
 /* Taxonomy funnel */
 .funnel { text-align: center; }
-.funnel-title { margin: 0 0 12px; font-size: 0.95rem; text-align: left; }
-.funnel-common { margin: 0 0 8px; font-size: 1.5rem; font-weight: 800; line-height: 1.15; color: var(--text); font-family: 'Bree Serif', serif; }
-.funnel-row { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin: 0 0 8px; }
-.funnel-main { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 0; }
-.funnel-value { font-size: 1.1rem; font-weight: 700; color: var(--text); overflow-wrap: anywhere; }
+.funnel-title { margin: 0 0 10px; font-size: 0.95rem; text-align: left; }
+.funnel-common { margin: 0 0 8px; font-size: 1.1rem; font-weight: 700; line-height: 1.2; color: var(--text); }
+.funnel-row { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.funnel-value { flex: 1; font-size: 1.05rem; font-weight: 400; color: var(--text); overflow-wrap: anywhere; line-height: 1.2; }
 .funnel-value.sci { font-style: italic; }
-.funnel-label { font-size: 0.72rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #E8912D; }
+.funnel-label { margin-top: 2px; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #E8912D; }
+.funnel-detail { font-size: 0.8rem; color: var(--muted); min-height: 1em; margin-top: 2px; }
 .funnel-arrow { border: 0; background: none; color: var(--muted); font-size: 1.15rem; padding: 6px 8px; cursor: pointer; }
 .funnel-arrow:disabled { opacity: 0.3; cursor: default; }
 .funnel-svg { width: 100%; max-width: 340px; height: auto; }
 .funnel-note { display: flex; flex-direction: column; align-items: center; gap: 4px; margin-top: 4px; }
+
+/* Taxonomy popup: same size however long the list; only the list scrolls */
+.modal-fixed { height: min(88vh, 680px); }
+.modal-fixed .modal-body { display: flex; flex-direction: column; overflow: hidden; }
+.nav-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; flex: 0 0 auto; }
+.nav-bar .filter-chips { margin: 0; }
+.nav-up {
+  flex: 0 0 auto; padding: 7px 12px; border-radius: 999px; border: 1px solid #E9DCC9; background: #FBF6EF;
+  font: inherit; font-weight: 700; font-size: 0.85rem; color: var(--text); cursor: pointer;
+}
+.nav-up:disabled { opacity: 0.35; cursor: default; }
+.nav-crumbs { flex: 0 0 auto; min-height: 2.6em; margin-top: 8px; }
+.nav-list { flex: 1 1 auto; overflow-y: auto; min-height: 0; margin: 0; }
