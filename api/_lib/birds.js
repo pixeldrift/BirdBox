@@ -35,6 +35,8 @@ function toBird(row) {
     subspecies: row.subspecies,
     mutation: row.mutation,
     hatchDate: isoDate(row.hatch_date),
+    hatchPrecision: row.hatch_precision || 'day',
+    hatchApprox: row.hatch_approx === true,
     status: row.status,
     cage: row.cage,
     locationContactId: row.location_contact_id || null,

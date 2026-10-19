@@ -34,7 +34,7 @@ function cleanNewBird(input) {
     bird: {
       id, band: cleanBand, name: text(input.name), sex: input.sex, speciesCode,
       subspecies: text(input.subspecies), mutation: text(input.mutation),
-      hatchDate: hatch, status, cage: text(input.cage), locationContactId: text(input.locationContactId), locationText: text(input.locationText),
+      hatchDate: hatch, hatchPrecision: ['month', 'year'].includes(input.hatchPrecision) ? input.hatchPrecision : 'day', hatchApprox: input.hatchApprox === true, status, cage: text(input.cage), locationContactId: text(input.locationContactId), locationText: text(input.locationText),
       motherId: text(input.motherId), fatherId: text(input.fatherId), pairedId: text(input.pairedId),
       cost, price, registryPublic: input.registryPublic === true, notes: typeof input.notes === 'string' ? input.notes.trim() : '',
     },
@@ -100,8 +100,8 @@ module.exports = async function handler(req, res) {
       });
       if (toInsert.length) {
         await sql.transaction(toInsert.map((b) => sql`
-          insert into birds (id, band, name, sex, species_code, subspecies, mutation, hatch_date, status, cage, location_contact_id, location_text, mother_id, father_id, paired_id, cost, price, registry_public, notes)
-          values (${b.id}, ${b.band}, ${b.name}, ${b.sex}, ${b.speciesCode}, ${b.subspecies}, ${b.mutation}, ${b.hatchDate}, ${b.status}, ${b.cage}, ${b.locationContactId}, ${b.locationText}, ${b.motherId}, ${b.fatherId}, ${b.pairedId}, ${b.cost}, ${b.price}, ${b.registryPublic}, ${b.notes})
+          insert into birds (id, band, name, sex, species_code, subspecies, mutation, hatch_date, hatch_precision, hatch_approx, status, cage, location_contact_id, location_text, mother_id, father_id, paired_id, cost, price, registry_public, notes)
+          values (${b.id}, ${b.band}, ${b.name}, ${b.sex}, ${b.speciesCode}, ${b.subspecies}, ${b.mutation}, ${b.hatchDate}, ${b.hatchPrecision}, ${b.hatchApprox}, ${b.status}, ${b.cage}, ${b.locationContactId}, ${b.locationText}, ${b.motherId}, ${b.fatherId}, ${b.pairedId}, ${b.cost}, ${b.price}, ${b.registryPublic}, ${b.notes})
         `));
       }
       const created = toInsert.length

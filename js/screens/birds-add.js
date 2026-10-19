@@ -70,7 +70,7 @@ const BirdsAddScreen = (function () {
     var bird = {
       id: id, band: band, name: (raw.name || '').trim(), sex: sex, speciesCode: raw.speciesCode, speciesName: raw.speciesName || '',
       subspecies: (raw.subspecies || '').trim(), mutation: (raw.mutation || '').trim(),
-      hatchDate: date.value, status: status, cage: (raw.cage || '').trim(),
+      hatchDate: date.value, hatchPrecision: raw.hatchPrecision || 'day', hatchApprox: !!raw.hatchApprox, status: status, cage: (raw.cage || '').trim(),
       locationContactId: raw.locationContactId || '', locationText: (raw.locationText || '').trim(),
       motherId: raw.motherId || '', fatherId: raw.fatherId || '', pairedId: raw.pairedId || '',
       cost: cost, price: price, registryPublic: !!raw.registryPublic, notes: (raw.notes || '').trim(),
@@ -143,6 +143,91 @@ const BirdsAddScreen = (function () {
 
   // `editing` (optional): a bird to change instead of adding a new one. Its band number stays fixed
   // because other records (parents, shipments, files…) point at it.
+  // Hatch date as three small dropdowns — year, month, day — each with "-Unspecified-" on top, so a
+  // bird can be dated by year, by month, or by day, plus an "approximate" tick. A day needs a month.
+  function hatchField(initial) {
+    var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    var iso = initial && initial.hatchDate ? String(initial.hatchDate).slice(0, 10) : '';
+    var prec = (initial && initial.hatchPrecision) || 'day';
+    var y0 = iso ? +iso.slice(0, 4) : 0, m0 = iso && prec !== 'year' ? +iso.slice(5, 7) : 0, d0 = iso && prec === 'day' ? +iso.slice(8, 10) : 0;
+    var root = document.createElement('div');
+    var row = document.createElement('div');
+    row.className = 'hatch-row';
+    function sel(options, value) {
+      var s = document.createElement('select');
+      s.className = 'form-input';
+      var none = document.createElement('option');
+      none.value = '';
+      none.textContent = '-Unspecified-';
+      s.appendChild(none);
+      options.forEach(function (o) { var e = document.createElement('option'); e.value = o[0]; e.textContent = o[1]; s.appendChild(e); });
+      s.value = value ? String(value) : '';
+      return s;
+    }
+    var thisYear = new Date().getFullYear();
+    var years = []; for (var y = thisYear; y >= thisYear - 60; y--) years.push([y, String(y)]);
+    if (y0 && y0 < thisYear - 60) years.push([y0, String(y0)]);
+    var yearSel = sel(years, y0);
+    var monthSel = sel(MONTHS.map(function (m, i) { return [i + 1, m]; }), m0);
+    var daySel = sel([], d0);
+    function fillDays() {
+      var keep = daySel.value;
+      var n = yearSel.value && monthSel.value ? new Date(+yearSel.value, +monthSel.value, 0).getDate() : 31;
+      while (daySel.options.length > 1) daySel.removeChild(daySel.lastChild);
+      for (var d = 1; d <= n; d++) { var o = document.createElement('option'); o.value = d; o.textContent = d; daySel.appendChild(o); }
+      daySel.value = keep && +keep <= n ? keep : '';
+    }
+    function sync() {
+      monthSel.disabled = !yearSel.value;
+      if (!yearSel.value) monthSel.value = '';
+      daySel.disabled = !monthSel.value;
+      if (!monthSel.value) daySel.value = '';
+      fillDays();
+    }
+    yearSel.addEventListener('change', sync);
+    monthSel.addEventListener('change', sync);
+    fillDays();
+    daySel.value = d0 ? String(d0) : '';
+    sync();
+    [['Year', yearSel], ['Month', monthSel], ['Day', daySel]].forEach(function (p) {
+      var cell = document.createElement('label');
+      cell.className = 'hatch-cell';
+      var l = document.createElement('span');
+      l.className = 'form-note';
+      l.textContent = p[0];
+      cell.appendChild(l);
+      cell.appendChild(p[1]);
+      row.appendChild(cell);
+    });
+    var approx = document.createElement('input');
+    approx.type = 'checkbox';
+    approx.checked = !!(initial && initial.hatchApprox);
+    var approxLabel = document.createElement('label');
+    approxLabel.className = 'form-note hatch-approx';
+    approxLabel.appendChild(approx);
+    approxLabel.appendChild(document.createTextNode(' Approximate'));
+    var age = document.createElement('div');
+    age.className = 'form-note';
+    root.appendChild(row);
+    root.appendChild(approxLabel);
+    root.appendChild(age);
+    function value() {
+      var yv = yearSel.value, mv = monthSel.value, dv = daySel.value;
+      if (!yv) return { hatchDate: '', hatchPrecision: 'day', hatchApprox: false };
+      var precision = dv ? 'day' : mv ? 'month' : 'year';
+      var date = yv + '-' + ('0' + (mv || 1)).slice(-2) + '-' + ('0' + (dv || 1)).slice(-2);
+      return { hatchDate: date, hatchPrecision: precision, hatchApprox: approx.checked };
+    }
+    function showAge() {
+      var v = value();
+      var a = v.hatchDate ? birdAge(v) : '';
+      age.textContent = a ? 'Age: ' + a : '';
+    }
+    root.addEventListener('change', showAge);
+    showAge();
+    return { el: root, get: value };
+  }
+
   function renderForm(main, navigate, setTitle, editing) {
     clearEl(main);
     setTitle(editing ? 'Edit Bird' : 'Add Bird');
@@ -174,7 +259,7 @@ const BirdsAddScreen = (function () {
     var subspecies = input('text', { placeholder: 'Only if it applies — e.g. Congo, Timneh' });
     subspecies.setAttribute('list', 'dl-subspecies');
     var mutation = input('text', { placeholder: 'Optional' });
-    var hatch = input('date');
+    var hatchCtl = hatchField(editing);
     var status = select(STATUSES.map(function (s) { return { value: s, label: s }; }));
     var locCtl = BirdPopups.locationField({ cage: editing ? editing.cage : '', contactId: editing ? editing.locationContactId : '', text: editing ? editing.locationText : '' });
     var selfIds = editing ? [editing.id] : [];
@@ -201,7 +286,6 @@ const BirdsAddScreen = (function () {
       sex.value = editing.sex;
       subspecies.value = editing.subspecies || '';
       mutation.value = editing.mutation || '';
-      hatch.value = editing.hatchDate || '';
       status.value = editing.status;
       cost.value = editing.cost === null || editing.cost === undefined ? '' : editing.cost;
       price.value = editing.price === null || editing.price === undefined ? '' : editing.price;
@@ -209,7 +293,7 @@ const BirdsAddScreen = (function () {
     }
 
     [field('Band number', band, 'Optional — leave blank if this bird has no band.'), field('Name', name), field('Sex', sex), field('Species', speciesPicker.el, 'Search by any name you know — common, trade, or scientific.', true),
-      field('Subspecies / form', subspecies), field('Mutation', mutation), field('Hatch date', hatch),
+      field('Subspecies / form', subspecies), field('Mutation', mutation), field('Hatch date', hatchCtl.el, undefined, true),
       field('Status', status), field('Location', locCtl.el, undefined, true), field('Mother', mother.el, undefined, true), field('Father', father.el, undefined, true),
       field('Paired with', paired.el, undefined, true), field('Cost', cost), field('Asking price', price), field('Notes', notes),
       dlSub, errorBox, saveBtn].forEach(function (el) { form.appendChild(el); });
@@ -221,7 +305,7 @@ const BirdsAddScreen = (function () {
       var result = check({
         band: band.value, name: name.value, sex: sex.value,
         speciesCode: picked ? picked.code : '', speciesName: picked ? picked.name : '',
-        subspecies: subspecies.value, mutation: mutation.value, hatchDate: hatch.value,
+        subspecies: subspecies.value, mutation: mutation.value, hatchDate: hatchCtl.get().hatchDate, hatchPrecision: hatchCtl.get().hatchPrecision, hatchApprox: hatchCtl.get().hatchApprox,
         status: status.value, cage: locCtl.get().cage, locationContactId: locCtl.get().locationContactId, locationText: locCtl.get().locationText, motherId: mother.get(), fatherId: father.get(),
         pairedId: paired.get(), cost: cost.value, price: price.value, notes: notes.value,
       });
@@ -250,8 +334,7 @@ const BirdsAddScreen = (function () {
     // Saving changes to an existing bird.
     function saveEdit() {
       if (!picked) { errorBox.appendChild(message('error', 'Choose a species')); return; }
-      var date = normalizeDate(hatch.value);
-      if (date.error) { errorBox.appendChild(message('error', date.error)); return; }
+      var date = { value: hatchCtl.get().hatchDate };
       if ((cost.value && isNaN(Number(cost.value))) || (price.value && isNaN(Number(price.value)))) {
         errorBox.appendChild(message('error', 'Cost and price must be numbers'));
         return;
@@ -261,7 +344,7 @@ const BirdsAddScreen = (function () {
       saveBtn.textContent = 'Saving…';
       editBird(editing.id, {
         band: band.value, name: name.value, sex: sex.value, speciesCode: picked.code, subspecies: subspecies.value, mutation: mutation.value,
-        hatchDate: date.value, status: status.value, cage: locCtl.get().cage, locationContactId: locCtl.get().locationContactId, locationText: locCtl.get().locationText, motherId: mother.get(), fatherId: father.get(),
+        hatchDate: date.value, hatchPrecision: hatchCtl.get().hatchPrecision, hatchApprox: hatchCtl.get().hatchApprox, status: status.value, cage: locCtl.get().cage, locationContactId: locCtl.get().locationContactId, locationText: locCtl.get().locationText, motherId: mother.get(), fatherId: father.get(),
         pairedId: paired.get(), cost: cost.value, price: price.value, notes: notes.value,
       }).then(function (bird) {
         if (status.value === 'Sold' && !wasSold) {

@@ -95,6 +95,38 @@ function findBirdByBand(band) {
 }
 
 // How to show a bird's band number: the band, or "No band" for birds without one.
+// A hatch date as far as it's known: "Apr 5, 2022", "Apr 2022" or "2022", with "~" when approximate.
+function birdHatchLabel(bird) {
+  if (!bird.hatchDate) return '—';
+  var d = new Date(String(bird.hatchDate).slice(0, 10) + 'T00:00:00');
+  var text = bird.hatchPrecision === 'year' ? String(d.getFullYear())
+    : bird.hatchPrecision === 'month' ? d.toLocaleDateString(undefined, { year: 'numeric', month: 'short' })
+    : d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+  return (bird.hatchApprox ? '~' : '') + text;
+}
+
+// Age in plain words: "2y 6mo", "8mo", "3w", "5d". Empty when there's no hatch date. Partial dates
+// are measured from the start of the year / month, so they read as "about".
+function birdAge(bird) {
+  if (!bird.hatchDate) return '';
+  var born = new Date(String(bird.hatchDate).slice(0, 10) + 'T00:00:00');
+  var now = new Date();
+  if (born > now) return '';
+  var months = (now.getFullYear() - born.getFullYear()) * 12 + (now.getMonth() - born.getMonth());
+  if (now.getDate() < born.getDate()) months -= 1;
+  var text;
+  if (months >= 12) {
+    var y = Math.floor(months / 12), m = months % 12;
+    text = y + 'y' + (m && bird.hatchPrecision !== 'year' ? ' ' + m + 'mo' : '');
+  } else if (months >= 1) {
+    text = months + 'mo';
+  } else {
+    var days = Math.floor((now - born) / 86400000);
+    text = days >= 14 ? Math.floor(days / 7) + 'w' : days + 'd';
+  }
+  return (bird.hatchApprox || bird.hatchPrecision !== 'day' ? '~' : '') + text;
+}
+
 function birdBandLabel(bird) {
   return bird.band || 'No band';
 }

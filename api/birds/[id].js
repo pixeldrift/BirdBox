@@ -10,7 +10,7 @@ const STATUSES = ['Available', 'Reserved', 'Sold', 'Deceased'];
 // The band number can be added, corrected or removed: a bird's id is its own and doesn't depend on it.
 const COLUMNS = {
   band: 'band', name: 'name', sex: 'sex', speciesCode: 'species_code', subspecies: 'subspecies', mutation: 'mutation',
-  hatchDate: 'hatch_date', status: 'status', cage: 'cage', locationContactId: 'location_contact_id', locationText: 'location_text', motherId: 'mother_id', fatherId: 'father_id',
+  hatchDate: 'hatch_date', hatchPrecision: 'hatch_precision', hatchApprox: 'hatch_approx', status: 'status', cage: 'cage', locationContactId: 'location_contact_id', locationText: 'location_text', motherId: 'mother_id', fatherId: 'father_id',
   pairedId: 'paired_id', cost: 'cost', price: 'price', registryPublic: 'registry_public', notes: 'notes',
 };
 
@@ -55,6 +55,11 @@ async function clean(id, body) {
       const n = Number(v);
       if (!Number.isFinite(n) || n < 0) return { error: 'Cost and price must be numbers' };
       values[col] = n;
+    } else if (key === 'hatchPrecision') {
+      if (!['day', 'month', 'year'].includes(v)) return { error: 'Hatch date precision must be day, month or year' };
+      values[col] = v;
+    } else if (key === 'hatchApprox') {
+      values[col] = v === true;
     } else if (key === 'registryPublic') {
       values[col] = v === true;
     } else if (key === 'notes') {

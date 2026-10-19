@@ -185,8 +185,15 @@ const BirdsScreen = (function () {
     [
       ['Band #', birdBandLabel(bird)],
       ['Sex', bird.sex, sexTextClass(bird.sex)],
-      ['Hatch date', formatDate(bird.hatchDate)],
+      ['Hatch date', birdHatchLabel(bird)],
     ].forEach(function (f) { vitalsGrid.appendChild(factRow(f[0], f[1], f[2])); });
+    var ageText = birdAge(bird);
+    if (ageText) {
+      var ageEl = document.createElement('span');
+      ageEl.className = 'fact-sub';
+      ageEl.textContent = 'Age ' + ageText;
+      vitalsGrid.lastChild.appendChild(ageEl);
+    }
 
     // Owner, location and status belong together too. Owner and location open a chooser; status is a dropdown.
     var placeGrid = document.createElement('div');
