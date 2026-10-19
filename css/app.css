@@ -1522,3 +1522,15 @@ body.modal-open { overflow: hidden; }
 .hatch-cell { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .hatch-approx { display: block; margin: 8px 0 0; font-style: normal; }
 .fact-sub { display: block; margin-top: 2px; font-size: 0.78rem; color: var(--muted); }
+
+/* Customize navigation */
+.nav-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+.nav-head h3 { margin: 0; }
+.nav-arrows { display: flex; gap: 6px; }
+.nav-move {
+  min-width: 36px; height: 34px; padding: 0 10px; border-radius: 10px; border: 1px solid #E9DCC9; background: #FBF6EF;
+  font: inherit; font-weight: 700; cursor: pointer; color: var(--text);
+}
+.nav-move:disabled { opacity: 0.3; cursor: default; }
+.nav-line { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 6px 0; border-top: 1px solid #F0E6D8; }
+.nav-name.off { color: var(--muted); text-decoration: line-through; }

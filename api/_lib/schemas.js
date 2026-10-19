@@ -47,6 +47,19 @@ const SCHEMAS = {
       notes: { col: 'notes', type: 'text', max: 4000 },
     },
   },
+  // The app's menus: home tiles and the tabs inside them (see sql/017_navigation.sql).
+  navigation: {
+    table: 'navigation', pk: 'id', idPrefix: 'nav-', order: 'sort, id',
+    fields: {
+      parentId: { col: 'parent_id', type: 'text', max: 80 },
+      label: { col: 'label', type: 'text', required: true, max: 60 },
+      icon: { col: 'icon', type: 'text', max: 200 },
+      blurb: { col: 'blurb', type: 'text', max: 300 },
+      sort: { col: 'sort', type: 'number' },
+      visible: { col: 'visible', type: 'boolean' },
+      homeTile: { col: 'home_tile', type: 'boolean' },
+    },
+  },
   locations: {
     table: 'locations', pk: 'id', idPrefix: 'loc-', order: 'name',
     fields: {

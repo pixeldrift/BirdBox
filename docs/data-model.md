@@ -483,6 +483,17 @@ the World". The navigator walks Order › Family › Genus › Species with coun
 species, and how many of your own birds), and is also a way to choose a species on the Add/Edit form
 ("Browse the taxonomy"). Popups (`js/modal.js`) slide up from the bottom on a phone.
 
+## Navigation as data (`navigation` table)
+
+The home screen tiles and the tabs inside each section live in one table (`sql/017_navigation.sql`):
+id (`mybirds` or `mybirds/birds`), parent, label, icon, blurb, sort, visible, home_tile. The built-in
+layout in `js/nav-data.js` is still the fallback and the source for the seed; the table wins when it
+has a row (`js/data/navigation.js` applies it onto NAV before the first screen). **Account → Customize**
+reorders (↑ ↓), shows/hides tiles and tabs, and resets to standard. To rearrange the menus for
+everyone, edit the table (or this screen). A *new* screen still needs code (a screen file and an entry in
+`CUSTOM_SCREENS` in `js/app.js`) — the table controls where it appears, not what it does. There are no
+user accounts yet, so one layout serves the whole app; per-user layouts would add a user column.
+
 ## Hosting note: keep API files to 12 or fewer
 
 The Vercel Hobby plan allows at most **12 serverless functions** per deployment, and every file in

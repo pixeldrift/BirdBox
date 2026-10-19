@@ -47,10 +47,15 @@ function clean(schema, input, creating) {
     const present = input[key] !== undefined;
     if (!present) {
       if (creating && f.required) return { error: label(key) + ' is required' };
+      if (creating && f.type === 'boolean') { values[f.col] = true; continue; }
       if (creating) values[f.col] = f.type === 'text' || f.type === 'enum' ? (f.ref ? null : '') : null;
       continue;
     }
     let v = input[key];
+    if (f.type === 'boolean') {
+      values[f.col] = v === true || v === 'true';
+      continue;
+    }
     if (f.type === 'number') {
       if (v === '' || v === null) { if (f.required) return { error: label(key) + ' is required' }; values[f.col] = null; continue; }
       v = Number(v);

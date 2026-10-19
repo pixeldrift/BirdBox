@@ -24,6 +24,7 @@
     'business/accounting': typeof AccountingScreen !== 'undefined' ? AccountingScreen : null,
     'business/shipping': typeof ShippingScreen !== 'undefined' ? ShippingScreen : null,
     'business/media': typeof MediaScreen !== 'undefined' ? MediaScreen : null,
+    'account/customize': typeof CustomizeScreen !== 'undefined' ? CustomizeScreen : null,
     'account/settings': typeof SettingsScreen !== 'undefined' ? SettingsScreen : null,
     'account/about': typeof AboutScreen !== 'undefined' ? AboutScreen : null,
     'account/credits': typeof CreditsScreen !== 'undefined' ? CreditsScreen : null,
@@ -82,11 +83,12 @@
     for (var i = 0; i < group.screens.length; i++) {
       if (group.screens[i].id === screenId) { activeScreen = group.screens[i]; break; }
     }
-    if (!activeScreen) activeScreen = group.screens[0];
+    var shownScreens = group.screens.filter(function (s) { return !s.hidden; });
+    if (!activeScreen) activeScreen = shownScreens[0] || group.screens[0];
 
     tabBar.hidden = false;
     clear(tabBar);
-    group.screens.forEach(function (screen) {
+    group.screens.filter(function (s) { return !s.hidden || s.id === activeScreen.id; }).forEach(function (screen) {
       var tab = document.createElement('button');
       tab.type = 'button';
       tab.className = 'tab' + (screen.id === activeScreen.id ? ' active' : '');
@@ -194,7 +196,7 @@
   window.addEventListener('hashchange', route);
 
   main.textContent = 'Loading…';
-  Promise.all([birdsLoaded, contactsLoaded, transactionsLoaded, healthLoaded, buildingsLoaded, waybillsLoaded, transfersLoaded, locationsLoaded, cagesLoaded, filesLoaded]).then(route);
+  Promise.all([birdsLoaded, contactsLoaded, transactionsLoaded, healthLoaded, buildingsLoaded, waybillsLoaded, transfersLoaded, locationsLoaded, cagesLoaded, filesLoaded, navigationLoaded]).then(route);
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {

@@ -133,6 +133,8 @@ const NAV = [
         blurb: 'Guides, FAQs, and support.' },
       { id: 'about', label: 'About', icon: 'icons/tinted/mybirds/Birds.png',
         blurb: 'Who made BirdBox, who it’s for, and where it’s headed.' },
+      { id: 'customize', label: 'Customize', icon: 'icons/tinted/account/Settings.png',
+        blurb: 'Reorder and hide the home screen tiles and the tabs inside each section.' },
       { id: 'credits', label: 'Credits', icon: 'icons/tinted/classifieds/Notes.png',
         blurb: 'The sources, artists, and partners behind BirdBox.' },
     ],

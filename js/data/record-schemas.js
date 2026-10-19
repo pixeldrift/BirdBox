@@ -53,6 +53,13 @@ var RECORD_TYPES_UI = {
     ],
     defaults: { type: 'DNA Certificate' },
   },
+  navigation: {
+    singular: 'menu item', pk: 'id', hash: '#/account/customize',
+    list: function () { return NAV_ROWS; },
+    nameOf: function (r) { return r.label; },
+    fields: [],
+    defaults: {},
+  },
   locations: {
     singular: 'location', pk: 'id', hash: '#/aviary/caging/',
     list: function () { return LOCATIONS_SAMPLE; },
