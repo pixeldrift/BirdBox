@@ -1479,12 +1479,17 @@ body.modal-open { overflow: hidden; }
 /* Taxonomy funnel */
 .funnel { text-align: center; }
 .funnel-title { margin: 0 0 10px; font-size: 0.95rem; text-align: left; }
-.funnel-common { margin: 0 0 8px; font-size: 1.1rem; font-weight: 700; line-height: 1.2; color: var(--text); }
 .funnel-row { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
-.funnel-value { flex: 1; font-size: 1.05rem; font-weight: 400; color: var(--text); overflow-wrap: anywhere; line-height: 1.2; }
-.funnel-value.sci { font-style: italic; }
-.funnel-label { margin-top: 2px; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #E8912D; }
-.funnel-detail { font-size: 0.8rem; color: var(--muted); min-height: 1em; margin-top: 2px; }
+.funnel-middle { flex: 1; min-width: 0; }
+.funnel-value { font-size: 1.15rem; font-weight: 700; line-height: 1.2; color: var(--text); overflow-wrap: anywhere; }
+.funnel-value.sci { font-style: italic; font-weight: 400; }
+.funnel-sci { font-size: 0.95rem; font-style: italic; font-weight: 400; color: var(--muted); min-height: 1.1em; margin-top: 2px; }
+.funnel-label { margin-top: 4px; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #E8912D; }
+.funnel-taper { fill: var(--brand); }
+.funnel-ring { fill: #fff; stroke: var(--brand); }
+.funnel-solid { fill: var(--brand); stroke: var(--brand); }
+.funnel-abbr { fill: var(--brand); }
+.funnel-abbr.sel { fill: #E8912D; }
 .funnel-arrow { border: 0; background: none; color: var(--muted); font-size: 1.15rem; padding: 6px 8px; cursor: pointer; }
 .funnel-arrow:disabled { opacity: 0.3; cursor: default; }
 .funnel-svg { width: 100%; max-width: 340px; height: auto; }

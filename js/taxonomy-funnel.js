@@ -15,6 +15,21 @@ const TaxonomyFunnel = (function () {
     { key: 'mut', abbr: 'Mut', label: 'Mutation', r: 4 },
   ];
 
+  // English names for the bird orders (the species list only carries the Latin ones).
+  var ORDER_ENGLISH = {
+    Struthioniformes: 'Ostriches', Rheiformes: 'Rheas', Tinamiformes: 'Tinamous', Casuariiformes: 'Cassowaries and Emu',
+    Apterygiformes: 'Kiwis', Anseriformes: 'Waterfowl', Galliformes: 'Landfowl', Phoenicopteriformes: 'Flamingos',
+    Podicipediformes: 'Grebes', Columbiformes: 'Pigeons and Doves', Mesitornithiformes: 'Mesites', Pterocliformes: 'Sandgrouse',
+    Otidiformes: 'Bustards', Musophagiformes: 'Turacos', Cuculiformes: 'Cuckoos', Caprimulgiformes: 'Nightjars and Allies',
+    Apodiformes: 'Swifts and Hummingbirds', Opisthocomiformes: 'Hoatzin', Gruiformes: 'Rails and Cranes',
+    Charadriiformes: 'Shorebirds and Allies', Eurypygiformes: 'Kagu and Sunbittern', Phaethontiformes: 'Tropicbirds',
+    Gaviiformes: 'Loons', Sphenisciformes: 'Penguins', Procellariiformes: 'Albatrosses and Petrels', Ciconiiformes: 'Storks',
+    Suliformes: 'Cormorants and Allies', Pelecaniformes: 'Pelicans, Herons and Ibises', Accipitriformes: 'Hawks, Eagles and Allies',
+    Strigiformes: 'Owls', Coliiformes: 'Mousebirds', Leptosomiformes: 'Cuckoo Roller', Trogoniformes: 'Trogons',
+    Bucerotiformes: 'Hornbills and Hoopoes', Coraciiformes: 'Kingfishers and Allies', Piciformes: 'Woodpeckers and Allies',
+    Cariamiformes: 'Seriemas', Falconiformes: 'Falcons', Psittaciformes: 'Parrots', Passeriformes: 'Perching Birds',
+  };
+
   function el(tag, cls, text) {
     var e = document.createElement(tag);
     if (cls) e.className = cls;
@@ -34,20 +49,22 @@ const TaxonomyFunnel = (function () {
     var common = (bird.mutation ? bird.mutation + ' ' : '') + (bird.speciesName || bird.species || '');
     var level = 'species';
 
-    var head = el('div', 'funnel-common', common);
     var row = el('div', 'funnel-row');
     var prev = el('button', 'funnel-arrow', '◀');
-    var value = el('div', 'funnel-value');
+    var middle = el('div', 'funnel-middle');
+    var value = el('div', 'funnel-value');   // the English / common name for this level
+    var sci = el('div', 'funnel-sci');       // the scientific name beneath it, in italics
+    middle.appendChild(value);
+    middle.appendChild(sci);
     var next = el('button', 'funnel-arrow', '▶');
     [prev, next].forEach(function (b) { b.type = 'button'; });
     row.appendChild(prev);
-    row.appendChild(value);
+    row.appendChild(middle);
     row.appendChild(next);
     var label = el('div', 'funnel-label');
-    var detail = el('div', 'funnel-detail');
     var graphic = el('div', 'funnel-graphic');
     var note = el('div', 'funnel-note');
-    [el('h3', 'funnel-title', 'Taxonomy'), head, row, label, detail, graphic, note].forEach(function (e) { root.appendChild(e); });
+    [el('h3', 'funnel-title', 'Taxonomy'), row, label, graphic, note].forEach(function (e) { root.appendChild(e); });
 
     // What this bird has at each level. Levels it has nothing for are skipped by the arrows.
     function has(key) {
@@ -58,11 +75,13 @@ const TaxonomyFunnel = (function () {
       if (key === 'sub') return !!bird.subspecies;
       return !!bird.mutation;
     }
+    // [English / common name, scientific name] for a level. Where there is no English name, the
+    // scientific one stands alone.
     function names(key) {
-      if (key === 'order') return [bird.order, ''];
-      if (key === 'family') return [bird.familyScientific || bird.family, bird.familyScientific ? bird.family : ''];
+      if (key === 'order') return [ORDER_ENGLISH[bird.order] || bird.order, ORDER_ENGLISH[bird.order] ? bird.order : ''];
+      if (key === 'family') return [bird.family || bird.familyScientific, bird.family ? bird.familyScientific : ''];
       if (key === 'genus') return [genus, ''];
-      if (key === 'species') return [bird.scientificName, bird.speciesName];
+      if (key === 'species') return [common, bird.scientificName];
       if (key === 'sub') return [bird.subspecies, ''];
       return [bird.mutation, ''];
     }
@@ -72,9 +91,9 @@ const TaxonomyFunnel = (function () {
       var info = LEVELS.filter(function (l) { return l.key === level; })[0];
       var n = names(level);
       value.textContent = n[0] || '—';
-      value.classList.toggle('sci', level === 'species' || level === 'genus');
+      value.classList.toggle('sci', level === 'genus'); // a genus has only its Latin name
+      sci.textContent = n[1] || '';
       label.textContent = info.label;
-      detail.textContent = n[1] || '';
       var keys = present();
       var at = keys.indexOf(level);
       prev.disabled = at <= 0;
@@ -104,14 +123,14 @@ const TaxonomyFunnel = (function () {
       var s = svg('svg', { viewBox: '0 0 ' + W + ' ' + H, class: 'funnel-svg', role: 'group', 'aria-label': 'Taxonomy level' });
       var top = LEVELS.map(function (l, i) { return xs[i] + ',' + (cy - l.r * 0.8); });
       var bottom = LEVELS.map(function (l, i) { return xs[LEVELS.length - 1 - i] + ',' + (cy + LEVELS[LEVELS.length - 1 - i].r * 0.8); });
-      s.appendChild(svg('polygon', { points: top.concat(bottom).join(' '), fill: '#111' }));
+      s.appendChild(svg('polygon', { points: top.concat(bottom).join(' '), class: 'funnel-taper' }));
       LEVELS.forEach(function (l, i) {
         var on = has(l.key);
         var sel = l.key === level;
         var g = svg('g', { role: 'button', tabindex: on ? '0' : '-1', 'aria-label': l.label, style: on ? 'cursor:pointer' : '' });
-        g.appendChild(svg('circle', { cx: xs[i], cy: cy, r: l.r, fill: on ? '#fff' : '#111', stroke: '#111', 'stroke-width': l.r > 8 ? 4 : 3 }));
+        g.appendChild(svg('circle', { cx: xs[i], cy: cy, r: l.r, class: on ? 'funnel-ring' : 'funnel-solid', 'stroke-width': l.r > 8 ? 4 : 3 }));
         if (sel) g.appendChild(svg('circle', { cx: xs[i], cy: cy, r: Math.max(3, l.r * 0.45), fill: ORANGE }));
-        var t = svg('text', { x: xs[i], y: 68, 'text-anchor': 'middle', 'font-size': 11, 'font-weight': 700, fill: sel ? ORANGE : '#111' });
+        var t = svg('text', { x: xs[i], y: 68, 'text-anchor': 'middle', 'font-size': 11, 'font-weight': 700, class: sel ? 'funnel-abbr sel' : 'funnel-abbr' });
         t.textContent = l.abbr;
         g.appendChild(t);
         if (on) {
