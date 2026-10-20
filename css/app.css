@@ -1549,4 +1549,7 @@ body.modal-open { overflow: hidden; }
 .ne-tabs { min-height: 12px; padding: 4px 0 0 18px; }
 .ne-tab { background: #fff; border-radius: 12px; margin-top: 6px; border: 1px solid #F0E6D8; }
 .ne-tab.off .ne-label { color: var(--muted); text-decoration: line-through; }
-.dragging { opacity: 0.55; box-shadow: 0 6px 18px rgba(60, 46, 34, 0.25); }
+.dragging { position: fixed; z-index: 2000; pointer-events: none; opacity: .92; box-shadow: 0 10px 26px rgba(60, 46, 34, 0.3); margin: 0; }
+.ne-drop { border: 2px dashed #C9A97C; background: #F6EBDA; border-radius: 12px; margin-top: 6px; margin-bottom: 10px; }
+.ne-tabs .ne-drop { margin-bottom: 0; }
+.modal-body.ne-body { max-height: 70vh; overflow-y: auto; overscroll-behavior: contain; }

@@ -95,14 +95,22 @@ const NavEditor = (function () {
       if (!h) return;
       var item = h.closest('.ne-tab') || h.closest('.ne-group');
       if (!item) return;
-      drag = { item: item, type: item.classList.contains('ne-tab') ? 'tab' : 'group' };
+      var r = item.getBoundingClientRect();
+      var ph = el('div', 'ne-drop');
+      ph.style.height = r.height + 'px';
+      drag = { item: item, ph: ph, type: item.classList.contains('ne-tab') ? 'tab' : 'group', dx: e.clientX - r.left, dy: e.clientY - r.top };
+      item.parentNode.insertBefore(ph, item);
+      item.style.width = r.width + 'px';
+      item.style.left = r.left + 'px';
+      item.style.top = r.top + 'px';
       item.classList.add('dragging');
+      document.body.appendChild(item);
       h.setPointerCapture && h.setPointerCapture(e.pointerId);
       e.preventDefault();
     });
 
     function insertAmong(list, selector, item, y) {
-      var kids = Array.prototype.filter.call(list.querySelectorAll(':scope > ' + selector), function (k) { return k !== item; });
+      var kids = Array.prototype.filter.call(list.querySelectorAll(':scope > ' + selector), function (k) { return k !== item && k !== drag.ph; });
       var before = null;
       for (var i = 0; i < kids.length; i++) {
         var r = kids[i].getBoundingClientRect();
@@ -115,25 +123,28 @@ const NavEditor = (function () {
 
     window.addEventListener('pointermove', function (e) {
       if (!drag) return;
+      drag.item.style.left = (e.clientX - drag.dx) + 'px';
+      drag.item.style.top = (e.clientY - drag.dy) + 'px';
       // auto-scroll when near the top or bottom of the visible area
       var scroller = container.closest('.modal-body') || document.scrollingElement;
       var box = scroller === document.scrollingElement ? { top: 0, bottom: window.innerHeight } : scroller.getBoundingClientRect();
       if (e.clientY < box.top + 50) scroller.scrollTop -= 14;
       else if (e.clientY > box.bottom - 50) scroller.scrollTop += 14;
       if (drag.type === 'group') {
-        insertAmong(root, '.ne-group', drag.item, e.clientY);
+        insertAmong(root, '.ne-group', drag.ph, e.clientY);
         return;
       }
-      drag.item.style.pointerEvents = 'none';
       var under = document.elementFromPoint(e.clientX, e.clientY);
-      drag.item.style.pointerEvents = '';
       var list = under && under.closest && (under.closest('.ne-tabs') || (under.closest('.ne-group') && under.closest('.ne-group').querySelector('.ne-tabs')));
-      if (list && root.contains(list)) insertAmong(list, '.ne-tab', drag.item, e.clientY);
+      if (list && root.contains(list)) insertAmong(list, '.ne-tab', drag.ph, e.clientY);
     });
 
     function end() {
       if (!drag) return;
-      drag.item.classList.remove('dragging');
+      var d = drag;
+      d.item.classList.remove('dragging');
+      d.item.style.width = d.item.style.left = d.item.style.top = '';
+      d.ph.parentNode.replaceChild(d.item, d.ph);
       drag = null;
       save(readOrder()).then(draw);
     }
@@ -155,9 +166,8 @@ const NavEditor = (function () {
     var changed = false;
     Modal.open({
       title: 'Edit menus',
-      fixedHeight: true,
       onClose: function () { if (changed && onClose) onClose(); else if (onClose) onClose(); },
-      build: function (body) { build(body, function () { changed = true; }); },
+      build: function (body) { body.classList.add('ne-body'); build(body, function () { changed = true; }); },
     });
   }
 
