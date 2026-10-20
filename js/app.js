@@ -72,6 +72,16 @@
     });
 
     main.appendChild(grid);
+
+    // A small, faded edit button at the bottom right opens the drag-and-drop menu editor.
+    var edit = document.createElement('button');
+    edit.type = 'button';
+    edit.className = 'home-edit';
+    edit.setAttribute('aria-label', 'Edit menus');
+    edit.title = 'Edit menus';
+    edit.textContent = '✎';
+    edit.addEventListener('click', function () { NavEditor.open(function () { if (!location.hash.replace(/^#\/?/, '')) renderHome(); }); });
+    main.appendChild(edit);
   }
 
   function renderGroup(group, screenId, recordId) {
@@ -111,7 +121,7 @@
 
     clear(main);
 
-    var custom = CUSTOM_SCREENS[group.id + '/' + activeScreen.id];
+    var custom = CUSTOM_SCREENS[activeScreen.key || group.id + '/' + activeScreen.id];
     if (custom) {
       var navigateToRecord = function (recId) {
         location.hash = '#/' + group.id + '/' + activeScreen.id + '/' + recId;

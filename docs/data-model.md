@@ -515,3 +515,7 @@ band as its parent, and parents are resolved to IDs before anything is saved.
 The taxonomy popup is a fixed size however long a level is (only the list scrolls), has an always-present
 **↑ Up one level** button, tighter breadcrumbs with emphasised separators, and an icon for every
 order, family, genus and species (from the active icon pack).
+
+### Editing the menus
+
+The faded ✎ on the home screen (and Account → Customize) opens a drag-and-drop editor. Dragging a tile changes its `sort`; dragging a tab into another tile's list sets its `parent_id`, so it shows up as a tab on that screen. Tab ids never change (`mybirds/genetics` stays that even after it moves), so links and bookmarks keep working. Whole tiles can't yet be nested as tabs, and tabs can't be promoted to tiles.

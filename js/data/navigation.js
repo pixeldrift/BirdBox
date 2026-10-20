@@ -22,12 +22,17 @@ function navRow(id) {
   return NAV_ROWS.filter(function (r) { return r.id === id; })[0] || null;
 }
 
-// Remember the built-in layout once, so "Reset" and re-applying always start from it.
+// Remember the built-in layout once, so "Reset" and re-applying always start from it. Every tab
+// gets a permanent `key` (its original "group/screen" id) so it can be moved between sections and
+// still find its screen.
 var NAV_DEFAULT = NAV.map(function (g) {
-  return { id: g.id, label: g.label, icon: g.icon, blurb: g.blurb, homeTile: g.homeTile, screens: g.screens.map(function (s) { return { id: s.id, label: s.label, icon: s.icon, blurb: s.blurb }; }) };
+  g.screens.forEach(function (s) { s.key = g.id + '/' + s.id; s.home = g.id; });
+  return { id: g.id, label: g.label, icon: g.icon, blurb: g.blurb, homeTile: g.homeTile, screens: g.screens.map(function (s) { return { id: s.id, key: s.key, label: s.label, icon: s.icon, blurb: s.blurb }; }) };
 });
+var NAV_SCREENS = [];
+NAV.forEach(function (g) { g.screens.forEach(function (s) { NAV_SCREENS.push(s); }); });
 
-// Applies the table's order, names and visibility onto NAV, in place.
+// Applies the table's order, names, visibility and nesting onto NAV, in place.
 function applyNavigation() {
   var order = {};
   NAV.forEach(function (g) {
@@ -37,16 +42,19 @@ function applyNavigation() {
     g.blurb = row && row.blurb ? row.blurb : def.blurb;
     g.homeTile = g.id === 'account' ? false : row ? !!(row.visible && row.homeTile) : def.homeTile;
     order[g.id] = row ? row.sort : NAV_DEFAULT.indexOf(def) * 10 + 10;
-    var sorder = {};
-    g.screens.forEach(function (s, i) {
-      var sd = def.screens.filter(function (d) { return d.id === s.id; })[0];
-      var srow = navRow(g.id + '/' + s.id);
-      s.label = srow ? srow.label : sd.label;
-      s.hidden = !!(srow && !srow.visible);
-      sorder[s.id] = srow ? srow.sort : i * 10 + 10;
-    });
-    g.screens.sort(function (a, b) { return sorder[a.id] - sorder[b.id]; });
+    g.screens = [];
   });
+  var sorder = {};
+  NAV_SCREENS.forEach(function (s, i) {
+    var srow = navRow(s.key);
+    var sd = NAV_DEFAULT.filter(function (d) { return d.id === s.home; })[0].screens.filter(function (x) { return x.key === s.key; })[0];
+    s.label = srow ? srow.label : sd.label;
+    s.hidden = !!(srow && !srow.visible);
+    sorder[s.key] = srow ? srow.sort : i;
+    var parent = srow && srow.parentId && NAV.some(function (g) { return g.id === srow.parentId; }) ? srow.parentId : s.home;
+    NAV.filter(function (g) { return g.id === parent; })[0].screens.push(s);
+  });
+  NAV.forEach(function (g) { g.screens.sort(function (a, b) { return sorder[a.key] - sorder[b.key]; }); });
   NAV.sort(function (a, b) { return order[a.id] - order[b.id]; });
 }
 
@@ -55,7 +63,7 @@ function saveNavigation(changes) {
   return changes.reduce(function (chain, c) {
     return chain.then(function () {
       var body = {};
-      ['sort', 'visible', 'homeTile', 'label'].forEach(function (k) { if (c[k] !== undefined) body[k] = c[k]; });
+      ['sort', 'visible', 'homeTile', 'label', 'parentId'].forEach(function (k) { if (c[k] !== undefined) body[k] = c[k]; });
       return recordsRequest('PATCH', 'navigation', c.id, body);
     });
   }, Promise.resolve()).then(function () {
@@ -72,7 +80,7 @@ function resetNavigation() {
   var changes = [];
   NAV_DEFAULT.forEach(function (g, gi) {
     changes.push({ id: g.id, sort: (gi + 1) * 10, visible: true, homeTile: g.homeTile !== false, label: g.label });
-    g.screens.forEach(function (s, si) { changes.push({ id: g.id + '/' + s.id, sort: (si + 1) * 10, visible: true, label: s.label }); });
+    g.screens.forEach(function (s, si) { changes.push({ id: s.key, parentId: g.id, sort: (si + 1) * 10 + gi * 100, visible: true, label: s.label }); });
   });
   return saveNavigation(changes.filter(function (c) { return navRow(c.id); }));
 }

@@ -1534,3 +1534,19 @@ body.modal-open { overflow: hidden; }
 .nav-move:disabled { opacity: 0.3; cursor: default; }
 .nav-line { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 6px 0; border-top: 1px solid #F0E6D8; }
 .nav-name.off { color: var(--muted); text-decoration: line-through; }
+
+/* Menu editor */
+.home-edit {
+  position: fixed; right: 16px; bottom: 16px; width: 40px; height: 40px; border-radius: 50%; border: 1px solid #E9DCC9;
+  background: rgba(255, 253, 248, 0.9); color: var(--muted); font-size: 1.1rem; opacity: 0.4; cursor: pointer; z-index: 5;
+}
+.home-edit:hover, .home-edit:focus { opacity: 0.9; }
+.ne-group { background: #FBF6EF; border: 1px solid #E9DCC9; border-radius: 16px; padding: 8px; margin-bottom: 10px; }
+.ne-row { display: flex; align-items: center; gap: 10px; padding: 8px 6px; }
+.ne-head { border-bottom: 1px solid #F0E6D8; }
+.ne-label { flex: 1; min-width: 0; }
+.ne-handle { cursor: grab; touch-action: none; user-select: none; padding: 4px 8px; font-size: 1.3rem; color: var(--muted); }
+.ne-tabs { min-height: 12px; padding: 4px 0 0 18px; }
+.ne-tab { background: #fff; border-radius: 12px; margin-top: 6px; border: 1px solid #F0E6D8; }
+.ne-tab.off .ne-label { color: var(--muted); text-decoration: line-through; }
+.dragging { opacity: 0.55; box-shadow: 0 6px 18px rgba(60, 46, 34, 0.25); }
