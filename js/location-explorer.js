@@ -250,7 +250,7 @@ const LocationExplorer = (function () {
       var search = el('input', 'search-input loc-search');
       search.type = 'search';
       search.value = state.query;
-      search.placeholder = state.mode === 'browse' ? 'Search inside ' + (focus.kind === 'aviary' ? 'My Aviary' : focus.name) + '…' : state.mode === 'tree' ? 'Search everything…' : 'Search all ' + LocationModel.PLURAL[state.allKind] + '…';
+      search.placeholder = state.mode === 'browse' ? 'Search ' + (focus.kind === 'aviary' ? 'My Aviary' : focus.name) + '…' : state.mode === 'tree' ? 'Search ' + model.root.name + '…' : 'Search all ' + LocationModel.PLURAL[state.allKind] + '…';
       search.addEventListener('input', function (e) { state.query = e.target.value; drawResults(); });
       bar.appendChild(search);
       var addTarget = state.mode === 'all' ? null : focus;
@@ -385,10 +385,10 @@ const LocationExplorer = (function () {
         }
         body.appendChild(inspector(focus));
         var tree = el('div', 'loc-tree');
-        function row(n, depth) {
+        function row(n, parentEl) {
           if (show && !show[n.id]) return;
+          var node = el('div', 'loc-tree-node');
           var r = el('div', 'loc-tree-row');
-          r.style.marginLeft = (depth * 14) + 'px';
           var hasKids = n.children.length > 0;
           var open = show ? true : !!state.expanded[n.id];
           var twirl = btn('loc-twirl' + (hasKids ? '' : ' none'), open ? '▾' : '▸', function () { state.expanded[n.id] = !state.expanded[n.id]; drawResults(); });
@@ -398,13 +398,18 @@ const LocationExplorer = (function () {
           var it = item(n, { onOpen: function () { state.focus = n.id; drawResults(); } });
           if (state.focus === n.id) it.classList.add('selected');
           r.appendChild(it);
-          tree.appendChild(r);
-          if (hasKids && open) sortChildren(n).forEach(function (c) { row(c, depth + 1); });
+          node.appendChild(r);
+          if (hasKids && open) {
+            var kids = el('div', 'loc-tree-kids');
+            sortChildren(n).forEach(function (c) { row(c, kids); });
+            if (kids.firstChild) node.appendChild(kids);
+          }
+          parentEl.appendChild(node);
         }
         function sortChildren(n) { return state.sort === 'name' ? n.children : sortNodes(n.children); }
-        sortChildren(model.root).forEach(function (c) { row(c, 0); });
+        sortChildren(model.root).forEach(function (c) { row(c, tree); });
         body.appendChild(tree);
-        if (!tree.querySelector('.loc-tree-row') || (show && Object.keys(show).length === 0)) body.appendChild(empty('Nothing matches.'));
+        if (!tree.querySelector('.loc-tree-node') || (show && Object.keys(show).length === 0)) body.appendChild(empty('Nothing matches.'));
       }
 
       function drawAll() {
