@@ -39,6 +39,14 @@ function loadList(type, target) {
     });
 }
 
+var ROOMS_SAMPLE = [];
+// "My Aviary": the one master record every location, building, room and cage sits under (sql/018_aviary_rooms.sql).
+var AVIARY = { id: 'main', name: 'My Aviary', description: '', address: '', phone: '', email: '', website: '', socials: '' };
+var AVIARY_ROWS = [];
+var aviaryLoaded = loadList('aviary', AVIARY_ROWS).then(function () {
+  if (AVIARY_ROWS[0]) Object.assign(AVIARY, AVIARY_ROWS[0]);
+});
+var roomsLoaded = loadList('rooms', ROOMS_SAMPLE);
 var locationsLoaded = loadList('locations', LOCATIONS_SAMPLE);
 var cagesLoaded = loadList('cages', CAGES_SAMPLE);
 
@@ -54,10 +62,34 @@ function getLocation(id) {
   return LOCATIONS_SAMPLE.filter(function (l) { return l.id === id; })[0] || null;
 }
 
-// The building a cage is in: the one it was filed under, else the one its code starts with.
+function getRoom(id) {
+  return ROOMS_SAMPLE.filter(function (r) { return r.id === id; })[0] || null;
+}
+
+// The room a cage is in, if it was filed under one.
+function roomForCage(cageCode) {
+  var rec = cageCode ? getCage(cageCode) : null;
+  return rec && rec.roomId ? getRoom(rec.roomId) : null;
+}
+
+// The building a room is in: the one it was filed under, else the one its location... none.
+function buildingForRoom(room) {
+  return room && room.buildingCode ? getBuilding(room.buildingCode) : null;
+}
+
+// The location a room is on: directly, or through its building.
+function roomLocation(room) {
+  if (!room) return null;
+  if (room.locationId) return getLocation(room.locationId);
+  return buildingLocation(buildingForRoom(room));
+}
+
+// The building a cage is in: the one it was filed under (directly or through its room), else the one its code starts with.
 function buildingForCage(cageCode) {
   if (!cageCode) return null;
   var rec = getCage(cageCode);
+  var room = roomForCage(cageCode);
+  if (room) return buildingForRoom(room);
   if (rec && rec.buildingCode) return getBuilding(rec.buildingCode);
   var prefix = cageCode.indexOf('-') !== -1 ? cageCode.split('-')[0] : cageCode;
   return getBuilding(prefix);
@@ -69,7 +101,7 @@ function buildingLocation(building) {
 
 // Every cage: the set-up ones plus any code used on a bird that has no record yet.
 function allCages() {
-  var out = CAGES_SAMPLE.map(function (c) { return { code: c.code, buildingCode: c.buildingCode, description: c.description, setUp: true }; });
+  var out = CAGES_SAMPLE.map(function (c) { return { code: c.code, buildingCode: c.buildingCode, roomId: c.roomId, description: c.description, setUp: true }; });
   var have = {};
   out.forEach(function (c) { have[c.code] = true; });
   BIRDS_SAMPLE.forEach(function (b) {
@@ -88,6 +120,7 @@ function birdsInCage(code) {
 // "Building 2 · Home farm" for a cage — whatever of it is known.
 function cagePlaceLabel(cageCode) {
   var b = buildingForCage(cageCode);
-  var loc = buildingLocation(b);
-  return [b ? 'Building ' + b.nickname : '', loc ? loc.name : ''].filter(Boolean).join(' · ') || 'No building set';
+  var room = roomForCage(cageCode);
+  var loc = room ? roomLocation(room) : buildingLocation(b);
+  return [b ? 'Building ' + b.nickname : '', room ? room.name : '', loc ? loc.name : ''].filter(Boolean).join(' · ') || 'No building set';
 }

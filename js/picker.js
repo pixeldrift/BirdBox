@@ -271,6 +271,18 @@ const Picker = (function () {
     }));
   }
 
+  function rooms(opts) {
+    return create(Object.assign({ placeholder: 'Search rooms…' }, opts, {
+      items: function () {
+        return ROOMS_SAMPLE.map(function (r) {
+          var b = buildingForRoom(r);
+          var sub = [b ? 'Building ' + b.nickname : '', r.description].filter(Boolean).join(' · ');
+          return { id: r.id, title: r.name, sub: sub, hay: sub, lead: function () { return pickLead(makeThumb({ icon: 'icons/tinted/aviary/Caging.png' }), r.name, sub); } };
+        });
+      },
+    }));
+  }
+
   function buildings(opts) {
     return create(Object.assign({ placeholder: 'Search buildings, or tap to browse…', tree: true, rootLabel: 'All locations' }, opts, {
       items: function () { return placeTree('building'); },
@@ -341,5 +353,5 @@ const Picker = (function () {
     return [];
   }
 
-  return { listItems: listItems, create: create, birds: birds, contacts: contacts, locations: locations, buildings: buildings, cages: cages };
+  return { listItems: listItems, create: create, birds: birds, contacts: contacts, locations: locations, rooms: rooms, buildings: buildings, cages: cages };
 })();

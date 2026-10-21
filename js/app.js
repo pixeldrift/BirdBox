@@ -206,7 +206,7 @@
   window.addEventListener('hashchange', route);
 
   main.textContent = 'Loading…';
-  Promise.all([birdsLoaded, contactsLoaded, transactionsLoaded, healthLoaded, buildingsLoaded, waybillsLoaded, transfersLoaded, locationsLoaded, cagesLoaded, filesLoaded, navigationLoaded]).then(route);
+  Promise.all([birdsLoaded, contactsLoaded, transactionsLoaded, healthLoaded, buildingsLoaded, waybillsLoaded, transfersLoaded, locationsLoaded, roomsLoaded, aviaryLoaded, cagesLoaded, filesLoaded, navigationLoaded]).then(route);
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {

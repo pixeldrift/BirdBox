@@ -290,3 +290,9 @@ build these out here — leave `My Birds → Genealogy` and `My Birds → Geneti
 placeholders (per `js/nav-data.js`) until that merge happens or the user says otherwise. The
 `Birds` screen's Mother/Father/Paired/Offspring links (see `js/screens/birds.js`) already cover
 basic genealogy navigation and are the data these features would eventually build on.
+
+## Places (Caging) — later
+
+- **Desktop layout:** a persistent hierarchy sidebar beside the explorer and an inspector panel for the selected place. The explorer already keeps one selected place shared by Browse and Tree, so this is mostly layout.
+- **Tasks, calendar events and supplies on a place:** once those sections exist, link them to a location, building, room or cage (a nullable reference on each) and show them, with aggregate counts, on the place's page.
+- **Public directory:** the My Aviary details (name, address, phone, website, socials, logo) are stored for this.

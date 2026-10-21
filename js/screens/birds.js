@@ -488,61 +488,7 @@ const BirdsScreen = (function () {
   // Photos: the bird's pictures, and a dashed box with a + that opens the photo chooser (camera,
   // album, or the BirdBox library).
   function buildPhotosSection(bird, refresh) {
-    var section = document.createElement('div');
-    section.className = 'detail-section';
-    var photosTitle = document.createElement('h3');
-    photosTitle.textContent = 'Photos';
-    section.appendChild(photosTitle);
-    var grid = document.createElement('div');
-    grid.className = 'photo-grid';
-    bird.photos.forEach(function (photo) {
-      var tile = document.createElement('button');
-      tile.type = 'button';
-      tile.className = 'photo-tile' + (photo.isPrimary ? ' primary' : '');
-      var img = document.createElement('img');
-      img.src = photo.url;
-      img.alt = '';
-      tile.appendChild(img);
-      if (photo.isPrimary) {
-        var badge = document.createElement('span');
-        badge.className = 'photo-primary-badge';
-        badge.textContent = 'Main';
-        tile.appendChild(badge);
-      }
-      tile.addEventListener('click', function () {
-        if (photo.isPrimary) return;
-        setMainPhoto(bird.id, photo.id).then(refresh).catch(function () {});
-      });
-      var del = document.createElement('span');
-      del.className = 'file-remove';
-      del.textContent = '✕';
-      del.setAttribute('role', 'button');
-      del.setAttribute('aria-label', 'Remove photo');
-      del.addEventListener('click', function (e) {
-        e.stopPropagation();
-        if (!window.confirm('Remove this photo from ' + (bird.name || bird.band || 'this bird') + '? It stays in the Media library.')) return;
-        unlinkMedia(photo.id, 'bird', bird.id).then(refresh).catch(function () {});
-      });
-      tile.appendChild(del);
-      grid.appendChild(tile);
-    });
-    var add = document.createElement('button');
-    add.type = 'button';
-    add.className = 'photo-add-tile';
-    add.setAttribute('aria-label', 'Add photos');
-    add.textContent = '+';
-    add.addEventListener('click', function () {
-      MediaPicker.open({ type: 'photo', title: 'Add photos', target: { ownerType: 'bird', ownerId: bird.id }, onDone: refresh });
-    });
-    grid.appendChild(add);
-    section.appendChild(grid);
-    if (bird.photos.length > 1) {
-      var note = document.createElement('p');
-      note.className = 'form-note';
-      note.textContent = 'Tap a photo to make it the main picture.';
-      section.appendChild(note);
-    }
-    return section;
+    return PhotosSection.render({ ownerType: 'bird', ownerId: bird.id, name: bird.name || bird.band || 'this bird', photos: bird.photos, refresh: refresh });
   }
 
   return { renderList: renderList, renderDetail: renderDetail };

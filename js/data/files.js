@@ -174,7 +174,30 @@ function renameMedia(mediaId, title) {
 }
 
 function setMainPhoto(birdId, mediaId) {
-  return mediaRequest('PATCH', '?id=' + encodeURIComponent(mediaId), { primary: { targetType: 'bird', targetId: birdId } }).then(refreshMedia);
+  return setMainPhotoFor('bird', birdId, mediaId);
+}
+
+function setMainPhotoFor(targetType, targetId, mediaId) {
+  return mediaRequest('PATCH', '?id=' + encodeURIComponent(mediaId), { primary: { targetType: targetType, targetId: targetId } }).then(refreshMedia);
+}
+
+// The photos linked to any record (oldest first), with the main one flagged — for places, the aviary and so on.
+function mediaPhotos(targetType, targetId) {
+  var out = [];
+  MEDIA.slice().sort(function (a, b) { return String(a.createdAt).localeCompare(String(b.createdAt)); }).forEach(function (m) {
+    if (m.type !== 'photo') return;
+    m.links.forEach(function (l) {
+      if (l.targetType === targetType && l.targetId === targetId) out.push({ id: m.id, url: m.url, isPrimary: !!l.isPrimary, filename: m.filename });
+    });
+  });
+  return out;
+}
+
+// The picture to show for a record: its main photo, else its first.
+function mediaMainPhotoUrl(targetType, targetId) {
+  var photos = mediaPhotos(targetType, targetId);
+  var main = photos.filter(function (p) { return p.isPrimary; })[0] || photos[0];
+  return main ? main.url : '';
 }
 
 function deleteMedia(mediaId) {
@@ -217,6 +240,11 @@ function mediaTargetInfo(link) {
     var c = getContact(id);
     return c ? { text: c.name, hash: '#/business/contacts/' + id, kind: 'Contact' } : null;
   }
+  if (t === 'aviary') return { text: AVIARY.name, hash: '#/aviary/caging/aviary', kind: 'Aviary' };
+  if (t === 'location') { var lo = getLocation(id); return lo ? { text: lo.name, hash: '#/aviary/caging/location~' + id, kind: 'Location' } : null; }
+  if (t === 'building') { var bu = getBuilding(id); return bu ? { text: 'Building ' + bu.nickname, hash: '#/aviary/caging/building~' + id, kind: 'Building' } : null; }
+  if (t === 'room') { var ro = getRoom(id); return ro ? { text: ro.name, hash: '#/aviary/caging/room~' + id, kind: 'Room' } : null; }
+  if (t === 'cage') return { text: 'Cage ' + id, hash: '#/aviary/caging/' + id, kind: 'Cage' };
   return null;
 }
 

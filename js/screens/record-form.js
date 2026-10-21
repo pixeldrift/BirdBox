@@ -9,7 +9,7 @@ const RecordForm = (function () {
     return e;
   }
 
-  var PICKERS = { contact: 'contacts', bird: 'birds', location: 'locations', building: 'buildings' };
+  var PICKERS = { contact: 'contacts', bird: 'birds', location: 'locations', building: 'buildings', room: 'rooms' };
 
   // Handles the "new" and "edit~<id>" routes for a screen. Returns true if it took over.
   function route(main, id, type, navigate, setTitle) {
@@ -104,7 +104,7 @@ const RecordForm = (function () {
     wrap.appendChild(form);
 
     // Delete — only when editing, and only after confirming.
-    if (editing) {
+    if (editing && !def.noDelete) {
       var danger = el('div', 'detail-section');
       var del = el('button', 'add-record-btn danger-btn', 'Delete this ' + def.singular);
       del.type = 'button';

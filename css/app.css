@@ -1553,3 +1553,75 @@ body.modal-open { overflow: hidden; }
 .ne-drop { border: 2px dashed #C9A97C; background: #F6EBDA; border-radius: 12px; margin-top: 6px; margin-bottom: 10px; }
 .ne-tabs .ne-drop { margin-bottom: 0; }
 .modal-body.ne-body { max-height: 70vh; overflow-y: auto; overscroll-behavior: contain; }
+
+/* Caging explorer */
+.loc-explorer { display: flex; flex-direction: column; }
+.loc-seg { display: flex; gap: 0; border: 1px solid #E0D2BE; border-radius: 10px; overflow: hidden; background: #FBF6EF; }
+.loc-seg-btn { flex: 1; padding: 8px 10px; border: 0; background: none; font: inherit; font-size: 0.82rem; font-weight: 700; color: var(--muted); cursor: pointer; white-space: nowrap; }
+.loc-seg-btn + .loc-seg-btn { border-left: 1px solid #E0D2BE; }
+.loc-seg-btn.active { background: #EFE3CF; color: var(--text); }
+.loc-modes { margin-bottom: 10px; }
+.loc-kinds { margin: 4px 0 10px; }
+.loc-kinds .loc-seg-btn { padding: 8px 4px; font-size: 0.76rem; }
+.loc-searchbar { display: flex; gap: 8px; align-items: flex-start; margin-bottom: 8px; }
+.loc-search { margin-bottom: 0; flex: 1; min-width: 0; }
+.loc-add { flex: 0 0 auto; padding: 12px 14px; border-radius: 999px; border: 1px solid var(--brand); background: var(--brand); color: #fff; font: inherit; font-weight: 700; font-size: 0.85rem; cursor: pointer; white-space: nowrap; }
+.loc-controls { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+.loc-spacer { flex: 1; }
+.loc-sort { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; color: var(--muted); font-weight: 700; }
+.loc-select { padding: 6px 8px; border-radius: 8px; border: 1px solid #E0D2BE; background: var(--card-bg); font: inherit; font-size: 0.82rem; color: var(--text); }
+.loc-filter-btn, .loc-mini { padding: 6px 12px; border-radius: 8px; border: 1px solid #E0D2BE; background: var(--card-bg); font: inherit; font-size: 0.82rem; font-weight: 700; color: var(--text); cursor: pointer; }
+.loc-filter-btn::before { content: '⚲ '; }
+.loc-filter-btn.on { border-color: var(--brand); color: var(--brand); background: #EEF1E6; }
+.loc-present .loc-seg-btn { padding: 6px 10px; }
+.loc-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.loc-chip { padding: 4px 10px; border-radius: 8px; border: 1px solid var(--brand); background: #EEF1E6; color: var(--brand); font: inherit; font-size: 0.78rem; font-weight: 700; cursor: pointer; }
+.loc-scope { margin: 0 2px 8px; font-size: 0.78rem; color: var(--muted); }
+.loc-scope:empty { display: none; }
+.loc-level { margin: 10px 2px 6px; font-size: 0.8rem; font-weight: 700; color: var(--muted); }
+.loc-crumbs { padding: 0 2px 8px; }
+.loc-head { display: flex; align-items: center; gap: 12px; padding: 12px; margin-bottom: 4px; border-radius: 16px; background: #F5EEDF; border: 1px solid #E9DCC9; }
+.loc-head-thumb { width: 56px; height: 56px; border-radius: 14px; }
+.loc-head-thumb img { width: 32px; height: 32px; }
+.loc-head-thumb img.thumb-photo { width: 100%; height: 100%; }
+.loc-head-info { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 3px; }
+.loc-head-name { font-size: 1.02rem; overflow: hidden; text-overflow: ellipsis; max-width: 100%; white-space: nowrap; }
+.loc-details-btn { flex: 0 0 auto; padding: 8px 14px; border-radius: 10px; border: 1px solid #E0D2BE; background: var(--card-bg); font: inherit; font-weight: 700; font-size: 0.82rem; color: var(--text); cursor: pointer; }
+
+/* one item, every level: same width, padding, border and spacing */
+.loc-items { display: flex; flex-direction: column; gap: 8px; }
+.loc-item { display: flex; align-items: center; gap: 12px; width: 100%; padding: 10px 12px; border: 1px solid #E9DCC9; border-radius: 16px; background: var(--card-bg); box-shadow: 0 1px 4px rgba(139, 94, 60, 0.06); font: inherit; color: inherit; text-align: left; cursor: pointer; margin: 0; }
+.loc-item.selected { border-color: var(--brand); background: #F1F5EE; }
+.loc-thumb { width: 44px; height: 44px; border-radius: 12px; flex: 0 0 auto; }
+.loc-thumb img:not(.thumb-photo):not(.avatar-photo) { width: 26px; height: 26px; }
+.loc-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.loc-name { font-weight: 700; font-size: 0.92rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.loc-sub, .loc-path { font-size: 0.78rem; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.loc-path { font-size: 0.74rem; }
+.loc-flags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 2px; }
+.loc-flag { padding: 1px 8px; border-radius: 999px; background: #F6ECD6; color: #96712B; font-size: 0.68rem; font-weight: 700; }
+.loc-flag.quiet { background: #EFE9E1; color: var(--muted); }
+.loc-badge { flex: 0 0 auto; padding: 4px 10px; border-radius: 999px; background: #E7EDE2; color: #4C6B45; font-size: 0.72rem; font-weight: 700; }
+.loc-chev { flex: 0 0 auto; color: var(--muted); font-size: 1.3rem; }
+.loc-items.grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.loc-items.grid .loc-item { flex-direction: column; align-items: stretch; text-align: center; padding: 12px 8px; }
+.loc-items.grid .loc-thumb { width: 64px; height: 64px; margin: 0 auto; }
+.loc-items.grid .loc-thumb img:not(.thumb-photo):not(.avatar-photo) { width: 36px; height: 36px; }
+.loc-items.grid .loc-info { align-items: center; }
+.loc-items.grid .loc-flags { justify-content: center; }
+.loc-items.grid .loc-badge { align-self: center; }
+.loc-items.grid .loc-chev { display: none; }
+@media (min-width: 720px) { .loc-items.grid { grid-template-columns: repeat(3, 1fr); } }
+
+/* tree */
+.loc-tree { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+.loc-tree-row { display: flex; align-items: center; gap: 6px; }
+.loc-tree-row .loc-item { flex: 1; min-width: 0; width: auto; }
+.loc-twirl { flex: 0 0 auto; width: 30px; height: 30px; border: 0; background: none; font-size: 1.05rem; color: var(--text); cursor: pointer; border-radius: 8px; }
+.loc-twirl.none { visibility: hidden; }
+.loc-twirl:disabled { opacity: 0.4; cursor: default; }
+
+.loc-add-row { display: block; width: 100%; margin-bottom: 8px; text-align: left; }
+.loc-filter-row { display: flex; align-items: flex-start; gap: 10px; padding: 10px 2px; font-weight: 600; }
+.loc-filter-row small { display: block; font-weight: 400; color: var(--muted); }
+.loc-filter-row input { margin-top: 3px; width: 18px; height: 18px; }

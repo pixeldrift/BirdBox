@@ -3,7 +3,8 @@ const { neon } = require('@neondatabase/serverless');
 const sql = neon(process.env.DATABASE_URL);
 
 // Records a file can be linked to (table names come from here, never from the request).
-const TARGETS = { bird: 'birds', health: 'health_records', waybill: 'waybills', transaction: 'transactions', contact: 'contacts' };
+const TARGETS = { bird: 'birds', health: 'health_records', waybill: 'waybills', transaction: 'transactions', contact: 'contacts', aviary: 'aviary', location: 'locations', building: 'buildings', room: 'rooms', cage: 'cages' };
+const TARGET_PK = { building: 'code', cage: 'code' }; // everything else is keyed by id
 const TYPES = ['photo', 'receipt', 'waybill', 'invoice', 'document'];
 const MAX_BYTES = 3 * 1024 * 1024; // Vercel caps request bodies at ~4.5 MB, and base64 adds a third
 
@@ -27,19 +28,20 @@ function cleanLink(l) {
 }
 
 async function targetExists(link) {
-  const rows = await sql(`select 1 from ${TARGETS[link.targetType]} where id = $1`, [link.targetId]);
+  const rows = await sql(`select 1 from ${TARGETS[link.targetType]} where ${TARGET_PK[link.targetType] || 'id'} = $1`, [link.targetId]);
   return rows.length > 0;
 }
 
 // A bird always has one main photo as long as it has any photo: if it lost it, the oldest takes over.
-async function ensureMainPhoto(birdId) {
+async function ensureMainPhoto(targetType, targetId) {
   const has = await sql`select 1 from media_links l join media m on m.id = l.media_id
-    where l.target_type = 'bird' and l.target_id = ${birdId} and m.type = 'photo' and l.is_primary`;
+    where l.target_type = ${targetType} and l.target_id = ${targetId} and m.type = 'photo' and l.is_primary`;
   if (has.length) return;
   await sql`update media_links set is_primary = true where (media_id, target_type, target_id) = (
     select l.media_id, l.target_type, l.target_id from media_links l join media m on m.id = l.media_id
-    where l.target_type = 'bird' and l.target_id = ${birdId} and m.type = 'photo' order by l.created_at limit 1)`;
+    where l.target_type = ${targetType} and l.target_id = ${targetId} and m.type = 'photo' order by l.created_at limit 1)`;
 }
+const HAS_MAIN_PHOTO = ['bird', 'aviary', 'location', 'building', 'room', 'cage'];
 
 module.exports = async function handler(req, res) {
   const query = req.query || {};
@@ -93,7 +95,7 @@ module.exports = async function handler(req, res) {
                 values (${id}, ${type}, ${filename}, ${title}, ${contentType}, ${data.length}, ${data})`;
       for (const l of links) {
         await sql`insert into media_links (media_id, target_type, target_id) values (${id}, ${l.targetType}, ${l.targetId}) on conflict do nothing`;
-        if (type === 'photo' && l.targetType === 'bird') await ensureMainPhoto(l.targetId);
+        if (type === 'photo' && HAS_MAIN_PHOTO.includes(l.targetType)) await ensureMainPhoto(l.targetType, l.targetId);
       }
       const rows = await sql`select media_id, target_type, target_id, is_primary from media_links where media_id = ${id}`;
       res.status(201).json(toMedia({ id, type, filename, title, content_type: contentType, size: data.length, created_at: new Date().toISOString() }, rows));
@@ -112,16 +114,16 @@ module.exports = async function handler(req, res) {
         const l = cleanLink(b.link);
         if (!l || !(await targetExists(l))) { res.status(404).json({ error: 'That record wasn’t found' }); return; }
         await sql`insert into media_links (media_id, target_type, target_id) values (${id}, ${l.targetType}, ${l.targetId}) on conflict do nothing`;
-        if (found[0].type === 'photo' && l.targetType === 'bird') await ensureMainPhoto(l.targetId);
+        if (found[0].type === 'photo' && HAS_MAIN_PHOTO.includes(l.targetType)) await ensureMainPhoto(l.targetType, l.targetId);
       } else if (b.unlink) {
         const l = cleanLink(b.unlink);
         if (!l) { res.status(400).json({ error: 'Nothing to unlink' }); return; }
         await sql`delete from media_links where media_id = ${id} and target_type = ${l.targetType} and target_id = ${l.targetId}`;
-        if (l.targetType === 'bird') await ensureMainPhoto(l.targetId);
+        if (HAS_MAIN_PHOTO.includes(l.targetType)) await ensureMainPhoto(l.targetType, l.targetId);
       } else if (b.primary) {
         const l = cleanLink(b.primary);
-        if (!l || l.targetType !== 'bird') { res.status(400).json({ error: 'Only birds have a main photo' }); return; }
-        await sql`update media_links set is_primary = (media_id = ${id}) where target_type = 'bird' and target_id = ${l.targetId}
+        if (!l || !HAS_MAIN_PHOTO.includes(l.targetType)) { res.status(400).json({ error: 'That doesn’t have a main photo' }); return; }
+        await sql`update media_links set is_primary = (media_id = ${id}) where target_type = ${l.targetType} and target_id = ${l.targetId}
                   and media_id in (select id from media where type = 'photo')`;
       } else {
         res.status(400).json({ error: 'Nothing to change' });
@@ -134,9 +136,9 @@ module.exports = async function handler(req, res) {
     // Delete the file itself (every link goes with it).
     if (req.method === 'DELETE') {
       const id = String(query.id || '');
-      const birds = await sql`select target_id from media_links where media_id = ${id} and target_type = 'bird'`;
+      const birds = await sql`select target_type, target_id from media_links where media_id = ${id} and target_type = any(${HAS_MAIN_PHOTO})`;
       await sql`delete from media where id = ${id}`;
-      for (const r of birds) await ensureMainPhoto(r.target_id);
+      for (const r of birds) await ensureMainPhoto(r.target_type, r.target_id);
       res.status(200).json({ ok: true });
       return;
     }

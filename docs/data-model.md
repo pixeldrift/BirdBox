@@ -519,3 +519,12 @@ order, family, genus and species (from the active icon pack).
 ### Editing the menus
 
 The faded ✎ on the home screen (and Account → Customize) opens a drag-and-drop editor. Dragging a tile changes its `sort`; dragging a tab into another tile's list sets its `parent_id`, so it shows up as a tab on that screen. Tab ids never change (`mybirds/genetics` stays that even after it moves), so links and bookmarks keep working. Whole tiles can't yet be nested as tabs, and tabs can't be promoted to tiles.
+
+## Places
+
+`My Aviary` (table `aviary`, one row `main`) sits above everything: name plus optional about, address, phone, email, website and social links. It is edited under Account → Settings and can't be deleted. Beneath it: **Location → Building → Room → Cage → birds**, every level optional and nothing is created to fill a gap. A building with no location sits directly under My Aviary (flagged "No location"); a cage with no building or room likewise. Birds with no cage show as one "Unassigned birds" entry.
+
+- `rooms(id, name, description, building_code, location_id)` — a room is in a building, or directly on a location, or neither.
+- `cages.room_id` — a cage is in a room, or (via `building_code`) directly in a building.
+- Photos for the aviary, locations, buildings, rooms and cages use the same `media_links` as birds (target types `aviary`, `location`, `building`, `room`, `cage`), each with a main photo.
+- The explorer builds one tree of nodes from these tables in the browser (`js/location-model.js`); nothing extra is stored for it.

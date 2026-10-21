@@ -26,6 +26,7 @@ function findRecord(type, id) {
 
 function afterRecordsChange(type) {
   if (type === 'contacts') reindexContacts();
+  if (type === 'aviary' && AVIARY_ROWS[0]) Object.assign(AVIARY, AVIARY_ROWS[0]);
   if (typeof reindexMedia === 'function') reindexMedia();
 }
 
@@ -62,11 +63,12 @@ function deleteRecord(type, id) {
       WAYBILLS_SAMPLE.forEach(function (w) { if (w.clientId === id) w.clientId = null; });
       TRANSFERS_SAMPLE.forEach(function (t) { if (t.contactId === id) t.contactId = null; });
     }
+    if (type === 'rooms') CAGES_SAMPLE.forEach(function (c) { if (c.roomId === id) c.roomId = null; });
     if (type === 'cages') BIRDS_SAMPLE.forEach(function (b) { if (b.cage === id) b.cage = null; });
-    if (type === 'buildings') CAGES_SAMPLE.forEach(function (c) { if (c.buildingCode === id) c.buildingCode = null; });
-    if (type === 'locations') BUILDINGS_SAMPLE.forEach(function (b) { if (b.locationId === id) b.locationId = null; });
+    if (type === 'buildings') { CAGES_SAMPLE.forEach(function (c) { if (c.buildingCode === id) c.buildingCode = null; }); ROOMS_SAMPLE.forEach(function (r) { if (r.buildingCode === id) r.buildingCode = null; }); }
+    if (type === 'locations') { BUILDINGS_SAMPLE.forEach(function (b) { if (b.locationId === id) b.locationId = null; }); ROOMS_SAMPLE.forEach(function (r) { if (r.locationId === id) r.locationId = null; }); }
     MEDIA.forEach(function (m) {
-      var target = { contacts: 'contact', transactions: 'transaction', health: 'health' }[type];
+      var target = { contacts: 'contact', transactions: 'transaction', health: 'health', locations: 'location', buildings: 'building', rooms: 'room', cages: 'cage' }[type];
       if (target) m.links = m.links.filter(function (l) { return !(l.targetType === target && l.targetId === id); });
     });
     afterRecordsChange(type);

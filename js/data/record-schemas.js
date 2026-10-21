@@ -82,6 +82,34 @@ var RECORD_TYPES_UI = {
     ],
     defaults: {},
   },
+  rooms: {
+    singular: 'room', pk: 'id', hash: '#/aviary/caging/',
+    list: function () { return ROOMS_SAMPLE; },
+    nameOf: function (r) { return r.name; },
+    fields: [
+      { key: 'name', label: 'Name', type: 'text', required: true, hint: 'e.g. Flight room, Nursery, Quarantine.' },
+      { key: 'description', label: 'Description', type: 'text' },
+      { key: 'buildingCode', label: 'Building', type: 'text', ref: 'building', hint: 'Optional — which building it’s in.' },
+      { key: 'locationId', label: 'Location', type: 'text', ref: 'location', hint: 'Optional — only needed if it isn’t in a building.' },
+    ],
+    defaults: {},
+  },
+  aviary: {
+    singular: 'aviary', pk: 'id', hash: '#/account/settings',
+    list: function () { return AVIARY_ROWS; },
+    nameOf: function (r) { return r.name; },
+    noDelete: true,
+    fields: [
+      { key: 'name', label: 'Aviary name', type: 'text', required: true, hint: 'Shown at the top of your locations. Rename it any time.' },
+      { key: 'description', label: 'About', type: 'textarea' },
+      { key: 'address', label: 'Address', type: 'textarea', hint: 'Optional.' },
+      { key: 'phone', label: 'Phone', type: 'text' },
+      { key: 'email', label: 'Email', type: 'text' },
+      { key: 'website', label: 'Website', type: 'text' },
+      { key: 'socials', label: 'Social links', type: 'text', hint: 'Optional — e.g. Instagram, Facebook.' },
+    ],
+    defaults: {},
+  },
   cages: {
     singular: 'cage', pk: 'code', hash: '#/aviary/caging/',
     list: function () { return CAGES_SAMPLE; },
@@ -89,6 +117,7 @@ var RECORD_TYPES_UI = {
     fields: [
       { key: 'code', label: 'Cage number', type: 'text', required: true, createOnly: true, hint: 'e.g. F2-010. Can’t be changed later.' },
       { key: 'buildingCode', label: 'Building', type: 'text', ref: 'building', hint: 'Optional — which building it’s in.' },
+      { key: 'roomId', label: 'Room', type: 'text', ref: 'room', hint: 'Optional — which room it’s in.' },
       { key: 'description', label: 'Description', type: 'text' },
     ],
     defaults: {},

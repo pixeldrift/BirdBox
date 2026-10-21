@@ -41,11 +41,52 @@ const SettingsScreen = (function () {
     return card;
   }
 
+  // My Aviary: the name and optional public details shown at the top of your places (and, later, in the public directory).
+  function aviaryCard(main) {
+    var section = document.createElement('div');
+    section.className = 'detail-section';
+    var title = document.createElement('h3');
+    title.textContent = 'My Aviary';
+    section.appendChild(title);
+    var facts = document.createElement('div');
+    facts.className = 'fact-grid';
+    [['Name', AVIARY.name], ['About', AVIARY.description], ['Address', AVIARY.address], ['Phone', AVIARY.phone], ['Email', AVIARY.email], ['Website', AVIARY.website], ['Social', AVIARY.socials]].forEach(function (f) { if (f[1]) facts.appendChild(factRow(f[0], f[1])); });
+    section.appendChild(facts);
+    var note = document.createElement('p');
+    note.className = 'form-note';
+    note.textContent = 'Everything is optional apart from the name. These details can be used later in the public directory.';
+    section.appendChild(note);
+    var edit = document.createElement('button');
+    edit.type = 'button';
+    edit.className = 'add-record-btn';
+    edit.textContent = 'Edit my aviary';
+    edit.addEventListener('click', function () { location.hash = '#/account/settings/edit~main'; });
+    section.appendChild(edit);
+    return section;
+  }
+
+  function renderDetail(main, id, navigate, setTitle) {
+    if (id === 'edit~main') {
+      RecordForm.render(main, {
+        type: 'aviary', id: 'main', navigate: navigate, setTitle: setTitle,
+        after: function () { location.hash = '#/account/settings'; },
+        onCancel: function () { location.hash = '#/account/settings'; },
+      });
+      return;
+    }
+    renderList(main);
+  }
+
   function renderList(main) {
     clearEl(main);
 
     var wrap = document.createElement('div');
     wrap.className = 'list-screen';
+    wrap.appendChild(aviaryCard(main));
+    wrap.appendChild(PhotosSection.render({
+      title: 'Logo & photos', ownerType: 'aviary', ownerId: 'main', name: AVIARY.name, photos: mediaPhotos('aviary', 'main'),
+      refresh: function () { renderList(main); },
+    }));
 
     var section = document.createElement('div');
     section.className = 'detail-section';
@@ -90,5 +131,5 @@ const SettingsScreen = (function () {
     main.appendChild(wrap);
   }
 
-  return { renderList: renderList, renderDetail: renderList };
+  return { renderList: renderList, renderDetail: renderDetail };
 })();

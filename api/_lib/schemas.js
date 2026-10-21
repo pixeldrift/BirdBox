@@ -67,6 +67,27 @@ const SCHEMAS = {
       description: { col: 'description', type: 'text', max: 400 },
     },
   },
+  aviary: {
+    table: 'aviary', pk: 'id', idPrefix: 'av-', order: 'id', noCreate: true, noDelete: true,
+    fields: {
+      name: { col: 'name', type: 'text', required: true, max: 120 },
+      description: { col: 'description', type: 'text', max: 600 },
+      address: { col: 'address', type: 'text', max: 300 },
+      phone: { col: 'phone', type: 'text', max: 60 },
+      email: { col: 'email', type: 'text', max: 160 },
+      website: { col: 'website', type: 'text', max: 200 },
+      socials: { col: 'socials', type: 'text', max: 400 },
+    },
+  },
+  rooms: {
+    table: 'rooms', pk: 'id', idPrefix: 'room-', order: 'name',
+    fields: {
+      name: { col: 'name', type: 'text', required: true, max: 120 },
+      description: { col: 'description', type: 'text', max: 400 },
+      buildingCode: { col: 'building_code', type: 'text', ref: 'building' },
+      locationId: { col: 'location_id', type: 'text', ref: 'location' },
+    },
+  },
   buildings: {
     table: 'buildings', pk: 'code', idPrefix: '', order: 'code',
     fields: {
@@ -79,6 +100,7 @@ const SCHEMAS = {
     table: 'cages', pk: 'code', idPrefix: '', order: 'code',
     fields: {
       buildingCode: { col: 'building_code', type: 'text', ref: 'building' },
+      roomId: { col: 'room_id', type: 'text', ref: 'room' },
       description: { col: 'description', type: 'text', max: 400 },
     },
   },
