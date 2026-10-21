@@ -1625,3 +1625,19 @@ body.modal-open { overflow: hidden; }
 .loc-filter-row { display: flex; align-items: flex-start; gap: 10px; padding: 10px 2px; font-weight: 600; }
 .loc-filter-row small { display: block; font-weight: 400; color: var(--muted); }
 .loc-filter-row input { margin-top: 3px; width: 18px; height: 18px; }
+
+/* Caging explorer — second pass */
+.loc-controls { flex-wrap: nowrap; gap: 6px; }
+.loc-sort span { display: none; }
+.loc-select { max-width: 112px; }
+.loc-present .loc-seg-btn { padding: 6px 8px; white-space: nowrap; }
+.loc-controls + .loc-controls { flex-wrap: wrap; }
+.loc-head { cursor: pointer; }
+.loc-item { min-height: 66px; }
+.loc-item .loc-foot { display: none; }
+.loc-items.grid .loc-sub, .loc-items.grid .loc-badge { display: none; }
+.loc-items.grid .loc-item { min-height: 0; align-items: stretch; text-align: center; }
+.loc-items.grid .loc-foot { display: flex; justify-content: space-between; gap: 6px; font-size: 0.72rem; color: var(--muted); margin-top: auto; padding-top: 4px; }
+.loc-items.grid .loc-parent { text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.loc-items.grid .loc-contents { flex: 0 0 auto; font-weight: 700; color: #4C6B45; white-space: nowrap; }
+.loc-items.grid .loc-info { flex: 0 0 auto; }

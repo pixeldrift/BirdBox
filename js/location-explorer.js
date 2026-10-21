@@ -28,12 +28,17 @@ const LocationExplorer = (function () {
 
   function plural(n, one, many) { return n + ' ' + (n === 1 ? one : many); }
 
+  var ICONS = {
+    aviary: 'icons/places/aviary.svg', location: 'icons/places/location.svg', building: 'icons/places/building.svg',
+    room: 'icons/places/room.svg', cage: 'icons/tinted/aviary/Caging.png', loose: 'icons/places/birds.svg',
+  };
+
   // ---- the one item component --------------------------------------------------------------
 
   function thumbFor(node) {
     var photo = node.kind === 'loose' ? '' : mediaMainPhotoUrl(node.kind, node.key);
     if (node.kind === 'aviary') photo = mediaMainPhotoUrl('aviary', 'main');
-    return makeThumb(photo ? { src: photo } : { icon: 'icons/tinted/aviary/Caging.png' });
+    return makeThumb(photo ? { src: photo } : { icon: ICONS[node.kind] || ICONS.cage });
   }
 
   // node: a LocationModel node, or a bird ({ kind: 'bird', bird }). opts: { path: 'Home farm › Building F2', onOpen }
@@ -55,15 +60,16 @@ const LocationExplorer = (function () {
     info.appendChild(el('span', 'loc-name', node.kind === 'bird' ? birdShortLabel(node.bird) : node.name));
     var sub;
     if (node.kind === 'bird') sub = [birdBandLabel(node.bird), node.bird.sex].filter(Boolean).join(' · ');
-    else sub = [node.kind === 'loose' ? 'No cage set' : node.typeLabel, node.kind === 'cage' || node.kind === 'loose' ? '' : LocationModel.countsLine(node)].filter(Boolean).join(' · ');
+    else if (opts.path) sub = opts.path; // searching or browsing All: where it is
+    else sub = [node.kind === 'loose' ? 'No cage set' : node.typeLabel, node.kind === 'cage' || node.kind === 'loose' ? '' : LocationModel.countsLine(node)].concat(node.flags || []).filter(Boolean).join(' · ');
     info.appendChild(el('span', 'loc-sub', sub));
-    if (opts.path) info.appendChild(el('span', 'loc-path', opts.path));
-    if (node.flags && node.flags.length) {
-      var flags = el('span', 'loc-flags');
-      node.flags.forEach(function (f) { flags.appendChild(el('span', 'loc-flag' + (f === 'Empty' ? ' quiet' : ''), f)); });
-      info.appendChild(flags);
-    }
     b.appendChild(info);
+
+    // Grid cards: the parent's name lower left, what's inside lower right.
+    var foot = el('span', 'loc-foot');
+    foot.appendChild(el('span', 'loc-parent', opts.parent || ''));
+    foot.appendChild(el('span', 'loc-contents', node.kind === 'bird' ? '' : contentsLabel(node)));
+    b.appendChild(foot);
 
     if (node.kind !== 'bird') {
       var n = node.kind === 'cage' || node.kind === 'loose' ? node.directBirds : node.birds;
@@ -72,6 +78,17 @@ const LocationExplorer = (function () {
     }
     if (opts.onOpen) b.addEventListener('click', opts.onOpen);
     return b;
+  }
+
+  // "3 cages", "2 rooms · 5 cages" → in a card, just the one number that matters.
+  function contentsLabel(n) {
+    if (n.kind === 'cage' || n.kind === 'loose') return plural(n.directBirds, 'bird', 'birds');
+    var kids = n.children.filter(function (c) { return c.kind !== 'loose'; });
+    if (!kids.length) return '';
+    var kinds = {};
+    kids.forEach(function (c) { kinds[c.kind] = (kinds[c.kind] || 0) + 1; });
+    var ks = Object.keys(kinds);
+    return ks.length === 1 ? plural(kids.length, ks[0], LocationModel.PLURAL[ks[0]]) : plural(kids.length, 'item', 'items');
   }
 
   // ---- helpers ---------------------------------------------------------------------------
@@ -212,7 +229,10 @@ const LocationExplorer = (function () {
       var n = node.kind === 'cage' || node.kind === 'loose' ? node.directBirds : node.birds;
       info.appendChild(el('span', 'loc-badge', plural(n, 'bird', 'birds')));
       card.appendChild(info);
-      card.appendChild(btn('loc-details-btn', 'Details', function () { navigate(detailHash(node)); }));
+      card.appendChild(el('span', 'loc-chev', '›'));
+      card.setAttribute('role', 'button');
+      card.tabIndex = 0;
+      card.addEventListener('click', function () { navigate(detailHash(node)); });
       return card;
     }
 
@@ -288,10 +308,12 @@ const LocationExplorer = (function () {
       function list(nodes, opts2) {
         var box = el('div', 'loc-items' + (state.present === 'grid' && state.mode !== 'tree' ? ' grid' : ''));
         nodes.forEach(function (n) {
-          box.appendChild(item(n, { path: opts2 && opts2.paths ? pathLabel(n, model) : '', onOpen: function () { open(n); } }));
+          box.appendChild(item(n, { path: opts2 && opts2.paths ? pathLabel(n, model) : '', parent: parentName(n), onOpen: function () { open(n); } }));
         });
         return box;
       }
+
+      function parentName(n) { var p = model.byId[n.parentId]; return p ? p.name : ''; }
 
       function open(n) {
         if (state.mode === 'all') { navigate(detailHash(n)); return; }
@@ -322,7 +344,7 @@ const LocationExplorer = (function () {
           });
           body.appendChild(el('p', 'loc-level', 'Birds in this ' + (focus.kind === 'cage' ? 'cage' : 'group')));
           var box = el('div', 'loc-items' + (state.present === 'grid' ? ' grid' : ''));
-          birds.forEach(function (bd) { box.appendChild(item({ kind: 'bird', bird: bd }, { onOpen: function () { location.hash = '#/mybirds/birds/' + bd.id; } })); });
+          birds.forEach(function (bd) { box.appendChild(item({ kind: 'bird', bird: bd }, { parent: focus.name, onOpen: function () { location.hash = '#/mybirds/birds/' + bd.id; } })); });
           body.appendChild(box);
           if (!birds.length) body.appendChild(empty(focus.directBirds ? 'No birds match.' : 'No birds here yet.'));
           return;

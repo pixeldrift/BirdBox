@@ -33,7 +33,7 @@ const LocationModel = (function () {
       var parent = b.locationId && locNodes[b.locationId] ? locNodes[b.locationId] : root;
       var n = add(make('building', b.code, 'Building ' + b.nickname, b), parent);
       n.code = b.code;
-      if (parent === root && haveLocations) { n.unassigned = true; n.flags.push('No location'); }
+      if (parent === root && haveLocations) { n.unassigned = true; }
       bldNodes[b.code] = n;
     });
 
