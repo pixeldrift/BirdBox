@@ -6,6 +6,19 @@
 --    A cage can still sit directly in a building, or nowhere at all.
 -- 3. Photos for locations, buildings, rooms, cages and the aviary itself, the same way birds have them.
 
+-- Safe to run even if 014_locations_cages.sql was skipped: the tables it makes are created here if missing.
+create table if not exists locations (
+  id text primary key,
+  name text not null,
+  description text not null default ''
+);
+alter table buildings add column if not exists location_id text;
+create table if not exists cages (
+  code text primary key,
+  building_code text,
+  description text not null default ''
+);
+
 create table if not exists aviary (
   id text primary key,
   name text not null default 'My Aviary',
