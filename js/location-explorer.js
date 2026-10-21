@@ -61,7 +61,7 @@ const LocationExplorer = (function () {
     var sub;
     if (node.kind === 'bird') sub = [birdBandLabel(node.bird), node.bird.sex].filter(Boolean).join(' · ');
     else if (opts.path) sub = opts.path; // searching or browsing All: where it is
-    else sub = [node.kind === 'loose' ? 'No cage set' : node.typeLabel, node.kind === 'cage' || node.kind === 'loose' ? '' : LocationModel.countsLine(node)].concat(node.flags || []).filter(Boolean).join(' · ');
+    else sub = [node.kind === 'loose' ? 'No cage set' : node.typeLabel, node.kind === 'cage' || node.kind === 'loose' ? '' : LocationModel.countsLine(node)].filter(Boolean).join(' · ');
     info.appendChild(el('span', 'loc-sub', sub));
     b.appendChild(info);
 
@@ -73,7 +73,7 @@ const LocationExplorer = (function () {
 
     if (node.kind !== 'bird') {
       var n = node.kind === 'cage' || node.kind === 'loose' ? node.directBirds : node.birds;
-      b.appendChild(el('span', 'loc-badge', plural(n, 'bird', 'birds')));
+      b.appendChild(el('span', 'loc-badge', n ? plural(n, 'bird', 'birds') : 'Empty'));
       b.appendChild(el('span', 'loc-chev', '›'));
     }
     if (opts.onOpen) b.addEventListener('click', opts.onOpen);
@@ -82,9 +82,9 @@ const LocationExplorer = (function () {
 
   // "3 cages", "2 rooms · 5 cages" → in a card, just the one number that matters.
   function contentsLabel(n) {
-    if (n.kind === 'cage' || n.kind === 'loose') return plural(n.directBirds, 'bird', 'birds');
+    if (n.kind === 'cage' || n.kind === 'loose') return n.directBirds ? plural(n.directBirds, 'bird', 'birds') : 'Empty';
     var kids = n.children.filter(function (c) { return c.kind !== 'loose'; });
-    if (!kids.length) return '';
+    if (!kids.length) return 'Empty';
     var kinds = {};
     kids.forEach(function (c) { kinds[c.kind] = (kinds[c.kind] || 0) + 1; });
     var ks = Object.keys(kinds);
@@ -227,7 +227,7 @@ const LocationExplorer = (function () {
       var line = node.kind === 'loose' ? 'Birds with no cage set' : [node.kind === 'aviary' ? '' : node.typeLabel, node.kind === 'cage' ? '' : LocationModel.countsLine(node)].filter(Boolean).join(' · ');
       info.appendChild(el('span', 'loc-sub', line));
       var n = node.kind === 'cage' || node.kind === 'loose' ? node.directBirds : node.birds;
-      info.appendChild(el('span', 'loc-badge', plural(n, 'bird', 'birds')));
+      info.appendChild(el('span', 'loc-badge', n ? plural(n, 'bird', 'birds') : 'Empty'));
       card.appendChild(info);
       card.appendChild(el('span', 'loc-chev', '›'));
       card.setAttribute('role', 'button');
