@@ -61,7 +61,7 @@ const LocationExplorer = (function () {
     var sub;
     if (node.kind === 'bird') sub = [birdBandLabel(node.bird), node.bird.sex].filter(Boolean).join(' · ');
     else if (opts.path) sub = opts.path; // searching or browsing All: where it is
-    else sub = [node.kind === 'loose' ? 'No cage set' : node.typeLabel, node.kind === 'cage' || node.kind === 'loose' ? '' : LocationModel.countsLine(node)].filter(Boolean).join(' · ');
+    else sub = node.kind === 'loose' ? 'No cage set' : node.kind === 'cage' ? (node.record && node.record.description) || '' : LocationModel.countsLine(node);
     info.appendChild(el('span', 'loc-sub', sub));
     b.appendChild(info);
 
@@ -224,7 +224,7 @@ const LocationExplorer = (function () {
       card.appendChild(thumb);
       var info = el('div', 'loc-head-info');
       info.appendChild(el('strong', 'loc-head-name', node.name));
-      var line = node.kind === 'loose' ? 'Birds with no cage set' : [node.kind === 'aviary' ? '' : node.typeLabel, node.kind === 'cage' ? '' : LocationModel.countsLine(node)].filter(Boolean).join(' · ');
+      var line = node.kind === 'loose' ? 'Birds with no cage set' : node.kind === 'cage' ? (node.record && node.record.description) || '' : LocationModel.countsLine(node);
       info.appendChild(el('span', 'loc-sub', line));
       var n = node.kind === 'cage' || node.kind === 'loose' ? node.directBirds : node.birds;
       info.appendChild(el('span', 'loc-badge', n ? plural(n, 'bird', 'birds') : 'Empty'));
@@ -270,17 +270,15 @@ const LocationExplorer = (function () {
       ctl.appendChild(sortWrap);
       var activeCount = ['unassigned', 'birds', 'empty', 'notSetUp'].filter(function (k) { return state.filters[k]; }).length;
       ctl.appendChild(btn('loc-filter-btn' + (activeCount ? ' on' : ''), activeCount ? 'Filter · ' + activeCount : 'Filter', openFilters));
-      var spacer = el('span', 'loc-spacer');
-      ctl.appendChild(spacer);
-      var treeCtl = el('div', 'loc-controls');
+      ctl.appendChild(el('span', 'loc-spacer'));
+      var treeCtl = ctl;
       if (state.mode === 'tree') {
-        treeCtl.appendChild(btn('loc-mini', 'Expand all', function () { LocationModel.descendants(model.root, model.byId).forEach(function (n) { if (n.children.length) state.expanded[n.id] = true; }); state.expanded[model.root.id] = true; drawResults(); }));
-        treeCtl.appendChild(btn('loc-mini', 'Collapse all', function () { state.expanded = {}; drawResults(); }));
+        treeCtl.appendChild(btn('loc-mini', 'Expand', function () { LocationModel.descendants(model.root, model.byId).forEach(function (n) { if (n.children.length) state.expanded[n.id] = true; }); state.expanded[model.root.id] = true; drawResults(); }));
+        treeCtl.appendChild(btn('loc-mini', 'Collapse', function () { state.expanded = {}; drawResults(); }));
       } else {
         ctl.appendChild(segmented([['list', '☰ List'], ['grid', '▦ Grid']], state.present, function (p) { state.present = p; draw(); }, 'loc-present'));
       }
       wrap.appendChild(ctl);
-      if (state.mode === 'tree') wrap.appendChild(treeCtl);
 
       // 4. active filters, and what the search covers
       var chips = el('div', 'loc-chips');
