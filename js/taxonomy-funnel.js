@@ -30,11 +30,9 @@ const TaxonomyFunnel = (function () {
     Cariamiformes: 'Seriemas', Falconiformes: 'Falcons', Psittaciformes: 'Parrots', Passeriformes: 'Perching Birds',
   };
 
-  // English names for genera. The species list carries none, so this holds the ones we know of;
-  // any genus not listed shows its scientific name in both places.
-  var GENUS_ENGLISH = {
-    Aratinga: 'Aratinga Parakeets (South American Conures)',
-  };
+  // English names for genera. The species list carries none, so this is empty for now and every genus
+  // shows its scientific name in both places. Add entries here (genus: 'English name') as they're sourced.
+  var GENUS_ENGLISH = {};
 
   function el(tag, cls, text) {
     var e = document.createElement(tag);
