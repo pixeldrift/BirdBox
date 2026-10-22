@@ -309,7 +309,7 @@ const HealthScreen = (function () {
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       if (!birdPicker.get()) {
-        alert('Choose a bird first');
+        Modal.alert('Choose a bird first');
         return;
       }
       var chosenFiles = Array.prototype.slice.call(fileInput.files);
@@ -329,13 +329,13 @@ const HealthScreen = (function () {
         return chosenFiles.reduce(function (chain, f) {
           return chain.then(function () { return uploadFile('health', saved.id, 'document', f).catch(function () { failed += 1; }); });
         }, Promise.resolve()).then(function () {
-          if (failed) alert(failed + (failed === 1 ? ' file' : ' files') + ' didn’t upload — you can add ' + (failed === 1 ? 'it' : 'them') + ' on the record.');
+          if (failed) Modal.alert(failed + (failed === 1 ? ' file' : ' files') + ' didn’t upload — you can add ' + (failed === 1 ? 'it' : 'them') + ' on the record.');
           navigate(saved.id);
         });
       }).catch(function () {
         saveBtn.disabled = false;
         saveBtn.textContent = 'Save Record';
-        alert('Could not save this record — please try again.');
+        Modal.alert('Could not save this record — please try again.');
       });
     });
 

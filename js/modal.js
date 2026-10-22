@@ -55,5 +55,50 @@ const Modal = (function () {
     return { close: close, body: body };
   }
 
-  return { open: open };
+  // An app-styled replacement for the browser's confirm() / alert() boxes.
+  //   Modal.confirm({ title, message, confirmLabel, cancelLabel, danger, onConfirm })
+  //   Modal.alert(message, title)
+  function confirm(o) {
+    return open({
+      title: o.title || 'Are you sure?',
+      build: function (body, close) {
+        var p = document.createElement('p');
+        p.className = 'confirm-text';
+        p.textContent = o.message || '';
+        var yes = document.createElement('button');
+        yes.type = 'button';
+        yes.className = 'save-btn' + (o.danger ? ' danger' : '');
+        yes.textContent = o.confirmLabel || 'Yes';
+        yes.addEventListener('click', function () { close(); if (o.onConfirm) o.onConfirm(); });
+        var no = document.createElement('button');
+        no.type = 'button';
+        no.className = 'add-record-btn';
+        no.textContent = o.cancelLabel || 'Cancel';
+        no.addEventListener('click', close);
+        body.appendChild(p);
+        body.appendChild(yes);
+        body.appendChild(no);
+      },
+    });
+  }
+
+  function alertBox(message, title) {
+    return open({
+      title: title || 'Heads up',
+      build: function (body, close) {
+        var p = document.createElement('p');
+        p.className = 'confirm-text';
+        p.textContent = message;
+        var ok = document.createElement('button');
+        ok.type = 'button';
+        ok.className = 'save-btn';
+        ok.textContent = 'OK';
+        ok.addEventListener('click', close);
+        body.appendChild(p);
+        body.appendChild(ok);
+      },
+    });
+  }
+
+  return { open: open, confirm: confirm, alert: alertBox };
 })();

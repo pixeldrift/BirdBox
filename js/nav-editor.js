@@ -154,8 +154,10 @@ const NavEditor = (function () {
     var reset = el('button', 'add-record-btn danger-btn', 'Reset to the standard layout');
     reset.type = 'button';
     reset.addEventListener('click', function () {
-      if (!window.confirm('Put the home screen and all the tabs back to the standard layout?')) return;
-      resetNavigation().then(function () { if (onChange) onChange(); draw(); }).catch(fail);
+      Modal.confirm({
+        title: 'Reset menus?', message: 'Put the home screen and all the tabs back to the standard layout?', confirmLabel: 'Reset',
+        onConfirm: function () { resetNavigation().then(function () { if (onChange) onChange(); draw(); }).catch(fail); },
+      });
     });
     container.appendChild(reset);
     draw();

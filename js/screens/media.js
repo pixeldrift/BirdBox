@@ -259,10 +259,14 @@ const MediaScreen = (function () {
     del.type = 'button';
     del.addEventListener('click', function () {
       var n = m.links.length;
-      if (!window.confirm('Delete this file' + (n ? ' and remove it from ' + n + ' linked record' + (n === 1 ? '' : 's') : '') + '? This can’t be undone.')) return;
-      deleteMedia(m.id).then(function () { location.hash = '#/business/media'; }).catch(function (err) {
-        clearEl(msg);
-        msg.appendChild(el('p', 'form-message error', err.message));
+      Modal.confirm({
+        title: 'Delete this file?', message: 'Delete this file' + (n ? ' and remove it from ' + n + ' linked record' + (n === 1 ? '' : 's') : '') + '? This can’t be undone.', confirmLabel: 'Delete', danger: true,
+        onConfirm: function () {
+          deleteMedia(m.id).then(function () { location.hash = '#/business/media'; }).catch(function (err) {
+            clearEl(msg);
+            msg.appendChild(el('p', 'form-message error', err.message));
+          });
+        },
       });
     });
     danger.appendChild(del);

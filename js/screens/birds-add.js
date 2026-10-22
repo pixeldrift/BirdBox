@@ -383,14 +383,18 @@ const BirdsAddScreen = (function () {
         var text = 'Delete ' + birdShortLabel(editing) + (editing.band ? ' (' + editing.band + ')' : '') + '?' +
           (records ? ' Its ' + records + ' health record' + (records === 1 ? '' : 's') + ' will be deleted too.' : '') +
           ' Photos stay in the Media library. Shipments, accounting entries and its offspring keep their records but no longer link to it. This can’t be undone.';
-        if (!window.confirm(text)) return;
-        del.disabled = true;
-        deleteBird(editing.id).then(function () {
-          location.hash = '#/mybirds/birds';
-        }).catch(function (err) {
-          del.disabled = false;
-          clearEl(delMsg);
-          delMsg.appendChild(message('error', err.message));
+        Modal.confirm({
+          title: 'Delete this bird?', message: text, confirmLabel: 'Delete', danger: true,
+          onConfirm: function () {
+            del.disabled = true;
+            deleteBird(editing.id).then(function () {
+              location.hash = '#/mybirds/birds';
+            }).catch(function (err) {
+              del.disabled = false;
+              clearEl(delMsg);
+              delMsg.appendChild(message('error', err.message));
+            });
+          },
         });
       });
       danger.appendChild(del);

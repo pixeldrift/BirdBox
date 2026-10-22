@@ -324,15 +324,19 @@ const ShippingAddScreen = (function () {
       del.type = 'button';
       var delMsg = el('div');
       del.addEventListener('click', function () {
-        if (!window.confirm('Delete this shipment? Its photos, receipt and waybill stay in the Media library, just unlinked. The birds are not affected. This can’t be undone.')) return;
-        del.disabled = true;
-        deleteWaybill(editing).then(function () {
-          draft = null;
-          location.hash = '#/business/shipping';
-        }).catch(function (err) {
-          del.disabled = false;
-          clearEl(delMsg);
-          delMsg.appendChild(el('p', 'form-message error', err.message));
+        Modal.confirm({
+          title: 'Delete this shipment?', message: 'Delete this shipment? Its photos, receipt and waybill stay in the Media library, just unlinked. The birds are not affected. This can’t be undone.', confirmLabel: 'Delete', danger: true,
+          onConfirm: function () {
+            del.disabled = true;
+            deleteWaybill(editing).then(function () {
+              draft = null;
+              location.hash = '#/business/shipping';
+            }).catch(function (err) {
+              del.disabled = false;
+              clearEl(delMsg);
+              delMsg.appendChild(el('p', 'form-message error', err.message));
+            });
+          },
         });
       });
       danger.appendChild(del);

@@ -58,12 +58,14 @@ const BirdsScreen = (function () {
       var q = state.query.trim().toLowerCase();
       var results = BIRDS_SAMPLE.filter(function (b) {
         if (state.status !== 'All' && b.status !== state.status) return false;
+        if (state.status !== 'Sold' && birdIsGone(b)) return false; // sold and gone: only under the Sold filter
         if (!q) return true;
         var hay = [b.band, b.name, b.speciesName, b.scientificName, b.species, b.subspecies, b.mutation].filter(Boolean).join(' ').toLowerCase();
         return hay.indexOf(q) !== -1;
       });
 
-      countLabel.textContent = results.length + (results.length === 1 ? ' bird' : ' birds');
+      var goneHidden = state.status === 'Sold' ? 0 : BIRDS_SAMPLE.filter(birdIsGone).length;
+      countLabel.textContent = results.length + (results.length === 1 ? ' bird' : ' birds') + (goneHidden ? ' · ' + goneHidden + ' sold and gone hidden' : '');
 
       clearEl(listWrap);
       if (results.length === 0) {
@@ -243,7 +245,7 @@ const BirdsScreen = (function () {
     familySection.appendChild(familyTitle);
 
     var familyChips = document.createElement('div');
-    familyChips.className = 'chip-row';
+    familyChips.className = 'chip-row chip-col';
     familyChips.appendChild(makeRelChip('Mother', bird.motherId ? getBird(bird.motherId) : null, navigate));
     familyChips.appendChild(makeRelChip('Father', bird.fatherId ? getBird(bird.fatherId) : null, navigate));
     if (bird.pairedId) familyChips.appendChild(makeRelChip('Paired With', getBird(bird.pairedId), navigate));
@@ -257,7 +259,7 @@ const BirdsScreen = (function () {
       familySection.appendChild(kidsLabel);
 
       var kidsRow = document.createElement('div');
-      kidsRow.className = 'chip-row';
+      kidsRow.className = 'chip-row chip-col';
       kids.forEach(function (k) {
         kidsRow.appendChild(birdChip(k, function () { navigate(k.id); }));
       });

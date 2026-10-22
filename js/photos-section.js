@@ -31,8 +31,10 @@ const PhotosSection = (function () {
       del.setAttribute('aria-label', 'Remove photo');
       del.addEventListener('click', function (e) {
         e.stopPropagation();
-        if (!window.confirm('Remove this photo from ' + (o.name || 'this record') + '? It stays in the Media library.')) return;
-        unlinkMedia(photo.id, o.ownerType, o.ownerId).then(o.refresh).catch(function () {});
+        Modal.confirm({
+          title: 'Remove photo?', message: 'Remove this photo from ' + (o.name || 'this record') + '? It stays in the Media library.', confirmLabel: 'Remove',
+          onConfirm: function () { unlinkMedia(photo.id, o.ownerType, o.ownerId).then(o.refresh).catch(function () {}); },
+        });
       });
       tile.appendChild(del);
       grid.appendChild(tile);

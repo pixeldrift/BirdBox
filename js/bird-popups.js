@@ -56,7 +56,7 @@ const BirdPopups = (function () {
               if (getCage(code)) { done(code); return; }
               var guess = buildingForCage(code);
               createRecord('cages', { code: code, buildingCode: guess ? guess.code : '' }).then(function () { done(code); })
-                .catch(function (err) { window.alert(err.message); });
+                .catch(function (err) { Modal.alert(err.message); });
             },
           },
         }).el);

@@ -115,14 +115,18 @@ const RecordForm = (function () {
           opts.type === 'buildings' ? ' Its cages stay, just no longer filed under it.' :
           opts.type === 'locations' ? ' Its buildings stay, just no longer on a location.' :
           opts.type === 'cages' ? (inCage ? ' The ' + inCage + ' bird' + (inCage === 1 ? '' : 's') + ' in it will be left with no cage.' : '') : '';
-        if (!window.confirm('Delete “' + def.nameOf(rec) + '”?' + note + ' This can’t be undone.')) return;
-        del.disabled = true;
-        deleteRecord(opts.type, opts.id).then(function () {
-          if (opts.afterDelete) opts.afterDelete(); else location.hash = def.hash.replace(/\/$/, '');
-        }).catch(function (err) {
-          del.disabled = false;
-          clearEl(delMsg);
-          delMsg.appendChild(el('p', 'form-message error', err.message));
+        Modal.confirm({
+          title: 'Delete ' + def.singular + '?', message: 'Delete “' + def.nameOf(rec) + '”?' + note + ' This can’t be undone.', confirmLabel: 'Delete', danger: true,
+          onConfirm: function () {
+            del.disabled = true;
+            deleteRecord(opts.type, opts.id).then(function () {
+              if (opts.afterDelete) opts.afterDelete(); else location.hash = def.hash.replace(/\/$/, '');
+            }).catch(function (err) {
+              del.disabled = false;
+              clearEl(delMsg);
+              delMsg.appendChild(el('p', 'form-message error', err.message));
+            });
+          },
         });
       });
       danger.appendChild(del);

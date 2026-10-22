@@ -37,6 +37,12 @@ function addTransfer(data) {
 }
 
 // Who owns a bird: the contact that lists it as owned, or null when it's yours.
+// Sold and now owned by someone else: no longer in your possession, so it's kept out of your flock
+// lists and cage counts (it's still found under the Sold filter, and on its own page).
+function birdIsGone(bird) {
+  return bird.status === 'Sold' && !!birdOwner(bird.id);
+}
+
 function birdOwner(birdId) {
   return CONTACTS_SAMPLE.filter(function (c) { return (c.birdsOwned || []).indexOf(birdId) !== -1; })[0] || null;
 }

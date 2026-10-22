@@ -7,12 +7,12 @@
 const TaxonomyFunnel = (function () {
   var ORANGE = '#E8912D';
   var LEVELS = [
-    { key: 'order', abbr: 'Ord', label: 'Order', r: 22 },
-    { key: 'family', abbr: 'Fam', label: 'Family', r: 17 },
-    { key: 'genus', abbr: 'Gen', label: 'Genus', r: 13 },
+    { key: 'order', abbr: 'Ord', label: 'Order', r: 16 },
+    { key: 'family', abbr: 'Fam', label: 'Family', r: 13 },
+    { key: 'genus', abbr: 'Gen', label: 'Genus', r: 11 },
     { key: 'species', abbr: 'Spe', label: 'Species', r: 9 },
-    { key: 'sub', abbr: 'Sub', label: 'Subspecies', r: 6 },
-    { key: 'mut', abbr: 'Mut', label: 'Mutation', r: 4 },
+    { key: 'sub', abbr: 'Sub', label: 'Subspecies', r: 7 },
+    { key: 'mut', abbr: 'Mut', label: 'Mutation', r: 5.5 },
   ];
 
   // English names for the bird orders (the species list only carries the Latin ones).
@@ -43,18 +43,29 @@ const TaxonomyFunnel = (function () {
     return e;
   }
 
+  // Keeps a name on one line by shrinking its font (down to a floor, then it's trimmed with …),
+  // so the box never grows or shrinks as you step through the levels.
+  function fit(node, startRem, minRem) {
+    var size = startRem;
+    node.style.fontSize = size + 'rem';
+    var guard = 0;
+    while (node.scrollWidth > node.clientWidth + 1 && size > minRem && guard++ < 30) {
+      size -= 0.05;
+      node.style.fontSize = size + 'rem';
+    }
+  }
+
   function create(bird) {
     var root = el('div', 'funnel');
     var genus = bird.scientificName ? bird.scientificName.split(' ')[0] : '';
     var common = (bird.mutation ? bird.mutation + ' ' : '') + (bird.speciesName || bird.species || '');
     var level = 'species';
 
+    var value = el('div', 'funnel-value');   // the English / common name, on its own line above the arrows
     var row = el('div', 'funnel-row');
     var prev = el('button', 'funnel-arrow', '◀');
     var middle = el('div', 'funnel-middle');
-    var value = el('div', 'funnel-value');   // the English / common name for this level
-    var sci = el('div', 'funnel-sci');       // the scientific name beneath it, in italics
-    middle.appendChild(value);
+    var sci = el('div', 'funnel-sci');       // the scientific name between the arrows, in italics
     middle.appendChild(sci);
     var next = el('button', 'funnel-arrow', '▶');
     [prev, next].forEach(function (b) { b.type = 'button'; });
@@ -64,7 +75,7 @@ const TaxonomyFunnel = (function () {
     var label = el('div', 'funnel-label');
     var graphic = el('div', 'funnel-graphic');
     var note = el('div', 'funnel-note');
-    [el('h3', 'funnel-title', 'Taxonomy'), row, label, graphic, note].forEach(function (e) { root.appendChild(e); });
+    [el('h3', 'funnel-title', 'Taxonomy'), value, row, label, graphic, note].forEach(function (e) { root.appendChild(e); });
 
     // What this bird has at each level. Levels it has nothing for are skipped by the arrows.
     function has(key) {
@@ -93,6 +104,8 @@ const TaxonomyFunnel = (function () {
       value.textContent = n[0] || '—';
       value.classList.toggle('sci', level === 'genus'); // a genus has only its Latin name
       sci.textContent = n[1] || '';
+      fit(value, 1.15, 0.8);
+      fit(sci, 0.95, 0.75);
       label.textContent = info.label;
       var keys = present();
       var at = keys.indexOf(level);
@@ -106,7 +119,7 @@ const TaxonomyFunnel = (function () {
         link.rel = 'noopener noreferrer';
         note.appendChild(link);
       }
-      var browse = el('button', 'pick-link', 'Browse the taxonomy');
+      var browse = el('button', 'pick-link', 'Browse Taxonomy Explorer');
       browse.type = 'button';
       browse.addEventListener('click', function () {
         TaxonomyNavigator.open({ title: 'Taxonomy', start: { order: bird.order, family: bird.family, genus: genus } });
@@ -117,7 +130,7 @@ const TaxonomyFunnel = (function () {
     // The tapering row of circles. A level this bird has nothing for is a solid black dot.
     function drawGraphic() {
       clearEl(graphic);
-      var W = 300, H = 74, cy = 30, pad = 28;
+      var W = 300, H = 62, cy = 22, pad = 24;
       var step = (W - pad * 2) / (LEVELS.length - 1);
       var xs = LEVELS.map(function (l, i) { return pad + i * step; });
       var s = svg('svg', { viewBox: '0 0 ' + W + ' ' + H, class: 'funnel-svg', role: 'group', 'aria-label': 'Taxonomy level' });
@@ -128,9 +141,10 @@ const TaxonomyFunnel = (function () {
         var on = has(l.key);
         var sel = l.key === level;
         var g = svg('g', { role: 'button', tabindex: on ? '0' : '-1', 'aria-label': l.label, style: on ? 'cursor:pointer' : '' });
-        g.appendChild(svg('circle', { cx: xs[i], cy: cy, r: l.r, class: on ? 'funnel-ring' : 'funnel-solid', 'stroke-width': l.r > 8 ? 4 : 3 }));
-        if (sel) g.appendChild(svg('circle', { cx: xs[i], cy: cy, r: Math.max(3, l.r * 0.45), fill: ORANGE }));
-        var t = svg('text', { x: xs[i], y: 68, 'text-anchor': 'middle', 'font-size': 11, 'font-weight': 700, class: sel ? 'funnel-abbr sel' : 'funnel-abbr' });
+        g.appendChild(svg('circle', { cx: xs[i], cy: cy, r: l.r, class: on ? 'funnel-ring' : 'funnel-solid', 'stroke-width': 2.5 }));
+        // The orange dot leaves the same clear gap inside every ring, whatever its size.
+        if (sel) g.appendChild(svg('circle', { cx: xs[i], cy: cy, r: Math.max(1.5, l.r - 5.5), fill: ORANGE }));
+        var t = svg('text', { x: xs[i], y: 58, 'text-anchor': 'middle', 'font-size': 11, 'font-weight': 700, class: sel ? 'funnel-abbr sel' : 'funnel-abbr' });
         t.textContent = l.abbr;
         g.appendChild(t);
         if (on) {

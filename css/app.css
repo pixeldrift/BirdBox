@@ -1494,9 +1494,9 @@ body.modal-open { overflow: hidden; }
 .funnel-title { margin: 0 0 10px; font-size: 0.95rem; text-align: left; }
 .funnel-row { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
 .funnel-middle { flex: 1; min-width: 0; }
-.funnel-value { font-size: 1.15rem; font-weight: 700; line-height: 1.2; color: var(--text); overflow-wrap: anywhere; }
+.funnel-value { font-size: 1.15rem; font-weight: 700; line-height: 1.4; height: 1.4em; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; }
 .funnel-value.sci { font-style: italic; font-weight: 400; }
-.funnel-sci { font-size: 0.95rem; font-style: italic; font-weight: 400; color: var(--muted); min-height: 1.1em; margin-top: 2px; }
+.funnel-sci { font-size: 0.95rem; font-style: italic; font-weight: 400; color: var(--muted); height: 1.4em; line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .funnel-label { margin-top: 4px; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #E8912D; }
 .funnel-taper { fill: var(--brand); }
 .funnel-ring { fill: #fff; stroke: var(--brand); }
@@ -1668,3 +1668,19 @@ body.modal-open { overflow: hidden; }
 /* Linked records: every member the same width, with a text "Remove" link */
 .relation-body .chip, .relation-body .list-row, .relation-body .loc-item { width: 100%; }
 .relation-remove { flex: 0 0 auto; font-size: 0.85rem; font-weight: 600; }
+.save-btn.danger { background: #A6543D; }
+.confirm-text { margin: 4px 0 14px; line-height: 1.45; }
+.modal-body .save-btn + .add-record-btn { margin-top: 10px; display: block; width: 100%; }
+
+.chip-col { flex-direction: column; }
+.chip-col > .chip { width: 100%; }
+
+/* One convention for controls (see docs/ui-conventions.md):
+   main sections = pill tabs · hierarchy = breadcrumb links · view / single-choice filters = segmented control
+   · active filters = square chips with ✕ · sort = dropdown. Pills are never used for filters. */
+.filter-chips { gap: 0; padding: 0; border: 1px solid #E0D2BE; border-radius: 10px; background: #FBF6EF; overflow-x: auto; }
+.filter-chip { flex: 1 0 auto; border: 0; border-left: 1px solid #E0D2BE; border-radius: 0; background: none; color: var(--muted); font-weight: 700; font-size: 0.82rem; padding: 8px 14px; }
+.filter-chip:first-child { border-left: 0; }
+.filter-chip.active { background: #EFE3CF; border-color: #E0D2BE; color: var(--text); }
+.nav-bar .filter-chips { margin: 0; }
+.nav-up { border-radius: 10px; }
