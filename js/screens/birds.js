@@ -250,6 +250,12 @@ const BirdsScreen = (function () {
     familyChips.appendChild(makeRelChip('Father', bird.fatherId ? getBird(bird.fatherId) : null, navigate));
     if (bird.pairedId) familyChips.appendChild(makeRelChip('Paired With', getBird(bird.pairedId), navigate));
     familySection.appendChild(familyChips);
+    var treeLink = document.createElement('button');
+    treeLink.type = 'button';
+    treeLink.className = 'pick-link';
+    treeLink.textContent = 'View family tree ›';
+    treeLink.addEventListener('click', function () { location.hash = '#/mybirds/genealogy/' + bird.id; });
+    familySection.appendChild(treeLink);
 
     var kids = birdChildren(bird.id);
     if (kids.length) {

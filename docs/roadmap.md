@@ -302,3 +302,11 @@ basic genealogy navigation and are the data these features would eventually buil
 - **Permissions system:** granular control over what each user can see or edit, by area (birds, shipping, accounting, contacts, places, media, settings…) and by action (see / add / change / delete). Each **role** (Owner, Manager, Employee, Volunteer) gets a default permission set, and a role's defaults can be customised, as can an individual's. Users are defined already (see below); this is what gives them teeth.
 - **Logins:** sign-in for team members, tied to their user record, so the permissions actually apply.
 - **Assign team members:** to tasks, calendar events, shipments and care routines once those sections exist (a nullable `assigned_to` reference to `users.id` on each).
+
+## Data and genealogy — later
+
+- **Anonymise the demo data:** randomise the existing birds and contacts so nothing real remains — shuffle and scramble first and last names, addresses and details across entries, generate random phone numbers and emails, and re-assign relationships sensibly. (The current data is old, but this should be a repeatable "make a safe demo copy" tool.)
+- **Carriers (splits) on a bird:** a field for genes a bird is known to carry but doesn't show, so the mutation predictor doesn't have to infer it only from chicks. The predictor already reads it; it needs a column and a field on the bird form.
+- **More species gene profiles** for the mutation predictor (Budgerigar, Quaker, Sun Conure, Lineolated, and the rest of the Tree of Birds list).
+- **Production (pairs, clutches, eggs)**, built on the same pairings the family tree shows.
+- **Genealogy diagram export** (image / print) and a printable pedigree certificate.

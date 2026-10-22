@@ -16,6 +16,7 @@
   // nav placeholder, keyed by "groupId/screenId".
   var CUSTOM_SCREENS = {
     'mybirds/birds': typeof BirdsScreen !== 'undefined' ? BirdsScreen : null,
+    'mybirds/genealogy': typeof GenealogyScreen !== 'undefined' ? GenealogyScreen : null,
     'mybirds/health': typeof HealthScreen !== 'undefined' ? HealthScreen : null,
     'aviary/caging': typeof CagingScreen !== 'undefined' ? CagingScreen : null,
     'registry/search': typeof RegistrySearchScreen !== 'undefined' ? RegistrySearchScreen : null,
