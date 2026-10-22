@@ -7,12 +7,12 @@
 const TaxonomyFunnel = (function () {
   var ORANGE = '#E8912D';
   var LEVELS = [
-    { key: 'order', abbr: 'Ord', label: 'Order', r: 14 },
-    { key: 'family', abbr: 'Fam', label: 'Family', r: 12 },
-    { key: 'genus', abbr: 'Gen', label: 'Genus', r: 10.5 },
+    { key: 'order', abbr: 'Ord', label: 'Order', r: 15 },
+    { key: 'family', abbr: 'Fam', label: 'Family', r: 12.5 },
+    { key: 'genus', abbr: 'Gen', label: 'Genus', r: 10.8 },
     { key: 'species', abbr: 'Spe', label: 'Species', r: 9 },
-    { key: 'sub', abbr: 'Sub', label: 'Subspecies', r: 7.8 },
-    { key: 'mut', abbr: 'Mut', label: 'Mutation', r: 6.6 },
+    { key: 'sub', abbr: 'Sub', label: 'Subspecies', r: 7.4 },
+    { key: 'mut', abbr: 'Mut', label: 'Mutation', r: 6 },
   ];
 
   // English names for the bird orders (the species list only carries the Latin ones).
@@ -134,8 +134,8 @@ const TaxonomyFunnel = (function () {
       var step = (W - pad * 2) / (LEVELS.length - 1);
       var xs = LEVELS.map(function (l, i) { return pad + i * step; });
       var s = svg('svg', { viewBox: '0 0 ' + W + ' ' + H, class: 'funnel-svg', role: 'group', 'aria-label': 'Taxonomy level' });
-      var top = LEVELS.map(function (l, i) { return xs[i] + ',' + (cy - l.r * 0.32); });
-      var bottom = LEVELS.map(function (l, i) { return xs[LEVELS.length - 1 - i] + ',' + (cy + LEVELS[LEVELS.length - 1 - i].r * 0.32); });
+      var top = LEVELS.map(function (l, i) { return xs[i] + ',' + (cy - l.r * 0.56); });
+      var bottom = LEVELS.map(function (l, i) { return xs[LEVELS.length - 1 - i] + ',' + (cy + LEVELS[LEVELS.length - 1 - i].r * 0.56); });
       s.appendChild(svg('polygon', { points: top.concat(bottom).join(' '), class: 'funnel-taper' }));
       LEVELS.forEach(function (l, i) {
         var on = has(l.key);
