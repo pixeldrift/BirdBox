@@ -74,6 +74,18 @@ const CagingScreen = (function () {
     return b;
   }
 
+  // Always shown on a place's page: its description, or a nudge to add one.
+  function describe(rec, onEdit) {
+    var box = el('div', 'detail-section');
+    box.appendChild(el('h3', '', 'Description'));
+    if (rec && rec.description) box.appendChild(el('p', 'notes-text', rec.description));
+    else {
+      box.appendChild(el('p', 'form-note', 'No description yet.'));
+      if (onEdit) { var b = el('button', 'pick-link', 'Add a description'); b.type = 'button'; b.addEventListener('click', onEdit); box.appendChild(b); }
+    }
+    return box;
+  }
+
   function summary(node) {
     var n = node.kind === 'cage' || node.kind === 'loose' ? node.directBirds : node.birds;
     return (node.kind === 'cage' ? '' : LocationModel.countsLine(node) + (LocationModel.countsLine(node) ? ' · ' : '')) + birdCount(n);
@@ -108,17 +120,17 @@ const CagingScreen = (function () {
       rec ? function () { navigate('edit~cage~' + id); } : null, isLoose ? '' : mediaMainPhotoUrl('cage', id)));
 
     if (!isLoose) {
-      if (rec && rec.description) { var facts = el('div', 'fact-grid'); facts.appendChild(factRow('Description', rec.description)); wrap.appendChild(facts); }
+      wrap.appendChild(describe(rec, rec ? function () { navigate('edit~cage~' + id); } : null));
       wrap.appendChild(photos('cage', id, 'cage ' + id, again));
       // Where this cage is — assign or change it from here (or from the room's / building's page).
       wrap.appendChild(Relations.one({
-        title: 'Room', value: rec && rec.roomId || '', find: getRoom,
+        title: 'Room', parentName: 'cage', value: rec && rec.roomId || '', find: getRoom,
         render: function (r) { return placeRow(model, 'room', r.id, navigate); },
         picker: function (cfg) { return Picker.rooms(Object.assign({ placeholder: 'Put this cage in a room — search…' }, cfg)); },
         set: function (rid) { return saveCage(id, { roomId: rid || '' }); }, refresh: again,
       }));
       wrap.appendChild(Relations.one({
-        title: 'Building', value: rec ? rec.buildingCode || '' : '', find: getBuilding,
+        title: 'Building', parentName: 'cage', value: rec ? rec.buildingCode || '' : '', find: getBuilding,
         render: function (b) { return placeRow(model, 'building', b.code, navigate); },
         picker: function (cfg) { return Picker.buildings(Object.assign({ placeholder: 'Assign to a building — browse or search…' }, cfg)); },
         set: function (code) { return assignCageToBuilding(id, code || ''); }, refresh: again,
@@ -138,7 +150,8 @@ const CagingScreen = (function () {
         });
       },
       link: function (birdId) { return editBird(birdId, { cage: id }); },
-      addPlaceholder: '+ Put a bird in this cage — search…',
+      addPlaceholder: 'Add a bird to this cage',
+      itemName: function (bd) { return birdShortLabel(bd); },
     }));
 
     if (!isLoose && !rec) {
@@ -159,10 +172,10 @@ const CagingScreen = (function () {
     var node = model.byId['room:' + id];
     var wrap = el('div', 'detail-screen');
     wrap.appendChild(header(r.name, summary(node), function () { navigate('edit~room~' + id); }, mediaMainPhotoUrl('room', id)));
-    if (r.description) { var f = el('div', 'fact-grid'); f.appendChild(factRow('Description', r.description)); wrap.appendChild(f); }
+    wrap.appendChild(describe(r, function () { navigate('edit~room~' + id); }));
     wrap.appendChild(photos('room', id, r.name, again));
     wrap.appendChild(Relations.one({
-      title: 'Building', value: r.buildingCode || '', find: getBuilding,
+      title: 'Building', parentName: 'room', value: r.buildingCode || '', find: getBuilding,
       render: function (b) { return placeRow(model, 'building', b.code, navigate); },
       picker: function (cfg) { return Picker.buildings(Object.assign({ placeholder: 'Put this room in a building — search…' }, cfg)); },
       set: function (code) { return updateRecord('rooms', id, { buildingCode: code || '' }); }, refresh: again,
@@ -192,12 +205,12 @@ const CagingScreen = (function () {
     wrap.appendChild(header('Building ' + b.nickname, summary(node), function () { navigate('edit~building~' + code); }, mediaMainPhotoUrl('building', code)));
     var facts = el('div', 'fact-grid');
     facts.appendChild(factRow('Code', b.code));
-    if (b.description) facts.appendChild(factRow('Description', b.description));
     wrap.appendChild(facts);
+    wrap.appendChild(describe(b, function () { navigate('edit~building~' + code); }));
     wrap.appendChild(photos('building', code, 'Building ' + b.nickname, again));
 
     wrap.appendChild(Relations.one({
-      title: 'Location', value: b.locationId || '', find: getLocation,
+      title: 'Location', parentName: 'building', value: b.locationId || '', find: getLocation,
       render: function (l) { return placeRow(model, 'location', l.id, navigate); },
       picker: function (cfg) { return Picker.locations(Object.assign({ placeholder: 'Put this building on a location — search…' }, cfg)); },
       set: function (id) { return updateRecord('buildings', code, { locationId: id || '' }); }, refresh: again,
@@ -236,7 +249,7 @@ const CagingScreen = (function () {
     var rooms = node.children.filter(function (c) { return c.kind === 'room'; }).map(function (c) { return c.record; });
     var wrap = el('div', 'detail-screen');
     wrap.appendChild(header(l.name, summary(node), function () { navigate('edit~location~' + id); }, mediaMainPhotoUrl('location', id)));
-    if (l.description) { var f = el('div', 'fact-grid'); f.appendChild(factRow('Description', l.description)); wrap.appendChild(f); }
+    wrap.appendChild(describe(l, function () { navigate('edit~location~' + id); }));
     wrap.appendChild(photos('location', id, l.name, again));
     wrap.appendChild(Relations.many({
       title: 'Buildings', related: buildings, render: function (b) { return placeRow(model, 'building', b.code, navigate); }, parentName: 'location',

@@ -1651,3 +1651,7 @@ body.modal-open { overflow: hidden; }
 .loc-twirl { width: 22px; }
 .loc-filter-btn, .loc-mini { white-space: nowrap; flex: 0 0 auto; }
 .loc-select { max-width: 96px; }
+
+/* Linked records: every member the same width, with a text "Remove" link */
+.relation-body .chip, .relation-body .list-row, .relation-body .loc-item { width: 100%; }
+.relation-remove { flex: 0 0 auto; font-size: 0.85rem; font-weight: 600; }

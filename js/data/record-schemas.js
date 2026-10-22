@@ -66,7 +66,7 @@ var RECORD_TYPES_UI = {
     nameOf: function (r) { return r.name; },
     fields: [
       { key: 'name', label: 'Name', type: 'text', required: true, hint: 'A site — e.g. Home farm, Fallbrook, Rental barn.' },
-      { key: 'description', label: 'Description', type: 'text' },
+      { key: 'description', label: 'Description', type: 'textarea' },
     ],
     defaults: {},
   },
@@ -77,7 +77,7 @@ var RECORD_TYPES_UI = {
     fields: [
       { key: 'code', label: 'Code', type: 'text', required: true, createOnly: true, hint: 'The letters at the start of its cage numbers — F2 for cages like F2-001. Can’t be changed later.' },
       { key: 'nickname', label: 'Name', type: 'text', required: true },
-      { key: 'description', label: 'Description', type: 'text' },
+      { key: 'description', label: 'Description', type: 'textarea' },
       { key: 'locationId', label: 'Location', type: 'text', ref: 'location', hint: 'Optional — which site it’s on.' },
     ],
     defaults: {},
@@ -88,7 +88,7 @@ var RECORD_TYPES_UI = {
     nameOf: function (r) { return r.name; },
     fields: [
       { key: 'name', label: 'Name', type: 'text', required: true, hint: 'e.g. Flight room, Nursery, Quarantine.' },
-      { key: 'description', label: 'Description', type: 'text' },
+      { key: 'description', label: 'Description', type: 'textarea' },
       { key: 'buildingCode', label: 'Building', type: 'text', ref: 'building', hint: 'Optional — which building it’s in.' },
       { key: 'locationId', label: 'Location', type: 'text', ref: 'location', hint: 'Optional — only needed if it isn’t in a building.' },
     ],
@@ -118,7 +118,7 @@ var RECORD_TYPES_UI = {
       { key: 'code', label: 'Cage number', type: 'text', required: true, createOnly: true, hint: 'e.g. F2-010. Can’t be changed later.' },
       { key: 'buildingCode', label: 'Building', type: 'text', ref: 'building', hint: 'Optional — which building it’s in.' },
       { key: 'roomId', label: 'Room', type: 'text', ref: 'room', hint: 'Optional — which room it’s in.' },
-      { key: 'description', label: 'Description', type: 'text' },
+      { key: 'description', label: 'Description', type: 'textarea' },
     ],
     defaults: {},
   },

@@ -24,6 +24,24 @@ const Relations = (function () {
     box.appendChild(el('p', 'form-message error', (err && err.message) || 'That didn’t work'));
   }
 
+  // "Remove" never deletes the record itself, so say so and ask first.
+  function confirmRemove(o, name, onYes) {
+    Modal.open({
+      title: 'Remove?',
+      build: function (body, close) {
+        body.appendChild(el('p', '', 'Remove ' + name + ' from this ' + (o.parentName || 'record') + '? It isn’t deleted — it just won’t be listed here any more.'));
+        var yes = el('button', 'save-btn', 'Remove');
+        yes.type = 'button';
+        yes.addEventListener('click', function () { close(); onYes(); });
+        var no = el('button', 'add-record-btn', 'Keep it');
+        no.type = 'button';
+        no.addEventListener('click', close);
+        body.appendChild(yes);
+        body.appendChild(no);
+      },
+    });
+  }
+
   function many(o) {
     var section = el('div', 'detail-section');
     var message = el('div');
@@ -35,11 +53,11 @@ const Relations = (function () {
       body.appendChild(o.render(rec));
       row.appendChild(body);
       if (o.unlink) {
-        var x = el('button', 'file-remove', '✕');
+        var x = el('button', 'pick-link relation-remove', 'Remove');
         x.type = 'button';
-        x.setAttribute('aria-label', 'Remove');
-        x.title = 'Remove from this ' + (o.parentName || 'record');
-        x.addEventListener('click', function () { o.unlink(rec).then(o.refresh).catch(function (err) { showError(message, err); }); });
+        x.addEventListener('click', function () {
+          confirmRemove(o, o.itemName ? o.itemName(rec) : 'this', function () { o.unlink(rec).then(o.refresh).catch(function (err) { showError(message, err); }); });
+        });
         row.appendChild(x);
       }
       section.appendChild(row);
@@ -90,7 +108,10 @@ const Relations = (function () {
       row.appendChild(change);
       var remove = el('button', 'pick-link', 'Remove');
       remove.type = 'button';
-      remove.addEventListener('click', function () { o.set('').then(o.refresh).catch(function (err) { showError(message, err); }); });
+      remove.className = 'pick-link relation-remove';
+      remove.addEventListener('click', function () {
+        confirmRemove({ parentName: o.parentName }, o.itemName ? o.itemName(rec) : 'this ' + o.title.toLowerCase(), function () { o.set('').then(o.refresh).catch(function (err) { showError(message, err); }); });
+      });
       row.appendChild(remove);
       body.appendChild(row);
     }
