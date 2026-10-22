@@ -39,7 +39,7 @@
     backBtn.hidden = true;
     tabBar.hidden = true;
     clear(tabBar);
-    appTitle.textContent = 'BirdBox';
+    appTitle.textContent = '';
     document.title = 'BirdBox';
 
     clear(main);

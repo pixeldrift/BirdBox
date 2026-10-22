@@ -22,12 +22,16 @@
 <body>
   <div id="app">
     <header id="app-bar">
-      <button id="back-btn" class="icon-btn" hidden aria-label="Back">&#8592;</button>
-      <h1 id="app-title">BirdBox</h1>
-      <div id="app-bar-spacer"></div>
-      <button id="avatar-btn" aria-label="Account">
-        <img src="icons/tinted/account/My_Profile.png" alt="">
-      </button>
+      <div id="app-left">
+        <button id="back-btn" class="icon-btn" hidden aria-label="Back">&#8592;</button>
+        <span id="app-title"></span>
+      </div>
+      <h1 id="app-brand">Bird<span>Box</span></h1>
+      <div id="app-right">
+        <button id="avatar-btn" aria-label="Account">
+          <img src="icons/tinted/account/My_Profile.png" alt="">
+        </button>
+      </div>
     </header>
 
     <nav id="tab-bar" hidden></nav>
