@@ -244,6 +244,7 @@ function mediaTargetInfo(link) {
   if (t === 'location') { var lo = getLocation(id); return lo ? { text: lo.name, hash: '#/aviary/caging/location~' + id, kind: 'Location' } : null; }
   if (t === 'building') { var bu = getBuilding(id); return bu ? { text: 'Building ' + bu.nickname, hash: '#/aviary/caging/building~' + id, kind: 'Building' } : null; }
   if (t === 'room') { var ro = getRoom(id); return ro ? { text: ro.name, hash: '#/aviary/caging/room~' + id, kind: 'Room' } : null; }
+  if (t === 'supply') { var su = getSupply(id); return su ? { text: su.name, hash: '#/aviary/supplies/' + id, kind: 'Supply' } : null; }
   if (t === 'cage') return { text: 'Cage ' + id, hash: '#/aviary/caging/' + id, kind: 'Cage' };
   return null;
 }

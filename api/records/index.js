@@ -96,7 +96,7 @@ async function checkRefs(schema, values) {
 
 // Things that point at a record are tidied up when it's deleted.
 async function cleanupAfterDelete(type, id) {
-  const targetType = { contacts: 'contact', transactions: 'transaction', health: 'health', locations: 'location', buildings: 'building', rooms: 'room', cages: 'cage' }[type];
+  const targetType = { contacts: 'contact', transactions: 'transaction', health: 'health', locations: 'location', buildings: 'building', rooms: 'room', cages: 'cage', supplies: 'supply' }[type];
   const steps = [];
   if (targetType) steps.push(['delete from media_links where target_type = $1 and target_id = $2', [targetType, id]]);
   if (type === 'contacts') {
@@ -104,6 +104,7 @@ async function cleanupAfterDelete(type, id) {
     steps.push(['update waybills set client_id = null where client_id = $1', [id]]);
     steps.push(['update bird_transfers set contact_id = null where contact_id = $1', [id]]);
     steps.push(['update birds set location_contact_id = null where location_contact_id = $1', [id]]);
+    steps.push(['update supplies set vendor_id = null where vendor_id = $1', [id]]);
   }
   if (type === 'rooms') steps.push(['update cages set room_id = null where room_id = $1', [id]]);
   if (type === 'buildings') steps.push(['update rooms set building_code = null where building_code = $1', [id]]);

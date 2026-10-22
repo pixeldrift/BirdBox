@@ -1791,3 +1791,9 @@ select.app-select-native { position: absolute; width: 1px; height: 1px; opacity:
 .gen-tools { flex: 1; min-height: 0; overflow-y: auto; padding: 10px 12px; -webkit-overflow-scrolling: touch; }
 .gen-tools .detail-section { margin-bottom: 12px; }
 .gen-drawer-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+
+.supply-low { background: #F8E3D3; color: #B15A1F; }
+.stock-line { display: flex; align-items: center; gap: 10px; }
+.stock-amount { font-size: 1.4rem; }
+.stock-amount.low { color: #B15A1F; }
+.stock-adjust { display: flex; gap: 8px; margin: 10px 0 4px; }

@@ -536,3 +536,7 @@ The faded ✎ on the home screen (and Account → Customize) opens a drag-and-dr
 ## Genealogy tools
 
 `js/genealogy/` holds the tools ported from the Tree of Birds project, working on the real birds: `pedigree.js` (coefficient of inbreeding and relatedness, relationship wording, safe-to-breed tiers), `genetics.js` (a generic Mendelian engine with per-species gene profiles for Green-cheeked Conure, Cockatiel, Indian Ringneck, Peach-faced Lovebird and Gouldian Finch, with sex-linked, recessive, dominant and incomplete-dominant genes), and `tree-graph.js` (the family tree picture). Birds are read as pedigree nodes from `mother_id`, `father_id`, sex, species and mutation — no extra tables. `sql/020_test_pedigree.sql` is an optional 136-bird Game of Thrones test pedigree (one species per family; several unrelated families share each species so cross-family pairings show a low inbreeding coefficient); `020_remove_test_pedigree.sql` removes it. Layout uses Dagre (MIT), copied into `js/vendor/`.
+
+## Supplies
+
+`supplies(id, name, category, brand, description, unit, quantity, reorder_level, price, vendor_id, source, notes)` — feed, supplements, cleaning, medical and equipment kept on hand (`sql/022_supplies.sql`). `vendor_id` points at a contact; photos link through `media_links` (target type `supply`, with a main photo). "Running low" means quantity is at or under the reorder level. Care plans (what each cage or bird is fed) and feeding tasks will link to supplies, so a food can be tapped for its photos, source and stock.

@@ -38,6 +38,23 @@ const SCHEMAS = {
       notes: { col: 'notes', type: 'text', max: 4000 },
     },
   },
+  // Things kept on hand: feed, supplements, cleaning, medical, equipment (see sql/022_supplies.sql).
+  supplies: {
+    table: 'supplies', pk: 'id', idPrefix: 'sup-', order: 'name',
+    fields: {
+      name: { col: 'name', type: 'text', required: true, max: 160 },
+      category: { col: 'category', type: 'enum', required: true, options: ['Feed', 'Supplement', 'Cleaning', 'Medical', 'Equipment', 'Other'] },
+      brand: { col: 'brand', type: 'text', max: 120 },
+      description: { col: 'description', type: 'text', max: 1000 },
+      unit: { col: 'unit', type: 'text', max: 40 },
+      quantity: { col: 'quantity', type: 'number' },
+      reorderLevel: { col: 'reorder_level', type: 'number' },
+      price: { col: 'price', type: 'number' },
+      vendorId: { col: 'vendor_id', type: 'text', ref: 'contact' },
+      source: { col: 'source', type: 'text', max: 300 },
+      notes: { col: 'notes', type: 'text', max: 4000 },
+    },
+  },
   transactions: {
     table: 'transactions', pk: 'id', idPrefix: 'tx-', order: 'date desc',
     fields: {

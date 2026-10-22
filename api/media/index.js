@@ -3,7 +3,7 @@ const { neon } = require('@neondatabase/serverless');
 const sql = neon(process.env.DATABASE_URL);
 
 // Records a file can be linked to (table names come from here, never from the request).
-const TARGETS = { bird: 'birds', health: 'health_records', waybill: 'waybills', transaction: 'transactions', contact: 'contacts', aviary: 'aviary', location: 'locations', building: 'buildings', room: 'rooms', cage: 'cages' };
+const TARGETS = { bird: 'birds', health: 'health_records', waybill: 'waybills', transaction: 'transactions', contact: 'contacts', aviary: 'aviary', location: 'locations', building: 'buildings', room: 'rooms', cage: 'cages', supply: 'supplies' };
 const TARGET_PK = { building: 'code', cage: 'code' }; // everything else is keyed by id
 const TYPES = ['photo', 'receipt', 'waybill', 'invoice', 'document'];
 const MAX_BYTES = 3 * 1024 * 1024; // Vercel caps request bodies at ~4.5 MB, and base64 adds a third
@@ -41,7 +41,7 @@ async function ensureMainPhoto(targetType, targetId) {
     select l.media_id, l.target_type, l.target_id from media_links l join media m on m.id = l.media_id
     where l.target_type = ${targetType} and l.target_id = ${targetId} and m.type = 'photo' order by l.created_at limit 1)`;
 }
-const HAS_MAIN_PHOTO = ['bird', 'aviary', 'location', 'building', 'room', 'cage'];
+const HAS_MAIN_PHOTO = ['bird', 'aviary', 'location', 'building', 'room', 'cage', 'supply'];
 
 module.exports = async function handler(req, res) {
   const query = req.query || {};
