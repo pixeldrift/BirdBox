@@ -1697,3 +1697,19 @@ select.app-select-native { position: absolute; width: 1px; height: 1px; opacity:
 .app-select-option.selected { border-color: #4C6B45; background: #E7EDE2; font-weight: 700; }
 .app-select-option:disabled { opacity: 0.4; }
 .app-select-check { color: #4C6B45; font-weight: 800; }
+
+/* App calendar (js/app-date.js) */
+.cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.cal-nav { width: 40px; height: 36px; border: 1px solid #E0D2BE; border-radius: 10px; background: var(--card-bg); font-size: 1.3rem; line-height: 1; cursor: pointer; color: var(--text); }
+.cal-title { background: none; border: 0; font: inherit; font-weight: 800; font-size: 1rem; color: var(--text); cursor: pointer; padding: 6px 10px; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.cal-week { margin-bottom: 4px; text-align: center; font-size: 0.72rem; font-weight: 700; color: var(--muted); }
+.cal-day { aspect-ratio: 1; border: 1px solid transparent; border-radius: 10px; background: none; font: inherit; color: var(--text); cursor: pointer; }
+.cal-day.today { border-color: #C9A97C; }
+.cal-day.selected { background: var(--brand); color: #fff; font-weight: 700; }
+.cal-day:disabled { opacity: 0.3; cursor: default; }
+.cal-pick { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.cal-years { max-height: 280px; overflow-y: auto; grid-template-columns: repeat(4, 1fr); }
+.cal-opt { padding: 12px 6px; border: 1px solid #E8DDD1; border-radius: 12px; background: var(--card-bg); font: inherit; color: var(--text); cursor: pointer; }
+.cal-opt.selected { border-color: #4C6B45; background: #E7EDE2; font-weight: 700; }
+.cal-foot { display: flex; justify-content: space-between; margin-top: 12px; }
