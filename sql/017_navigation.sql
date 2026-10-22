@@ -20,6 +20,7 @@ select * from (values
   ('mybirds/birds', 'mybirds', 'Birds', 'icons/tinted/mybirds/Birds.png', 'Your full flock: profiles, photos, and details for every bird you own.', 10, true, false),
   ('mybirds/genealogy', 'mybirds', 'Genealogy', 'icons/tinted/mybirds/Genealogy.png', 'Visual family trees showing parents, siblings, and offspring.', 20, true, false),
   ('mybirds/genetics', 'mybirds', 'Genetics', 'icons/tinted/mybirds/Genetics.png', 'Mutation calculator and pairing predictor for expected offspring traits.', 30, true, false),
+  ('mybirds/inbreeding', 'mybirds', 'Inbreeding', 'icons/tinted/mybirds/Genetics.png', 'How closely related two birds are, and how risky pairing them would be.', 35, true, false),
   ('mybirds/health', 'mybirds', 'Health', 'icons/tinted/mybirds/Health.png', 'Vet visits, medications, and health notes per bird.', 40, true, false),
   ('mybirds/production', 'mybirds', 'Production', 'icons/tinted/mybirds/Production.png', 'Egg-laying, clutches, and hatch records.', 50, true, false),
   ('mybirds/labels', 'mybirds', 'Labels', 'icons/tinted/mybirds/Labels.png', 'Print band/ID labels for cages and carriers.', 60, true, false),

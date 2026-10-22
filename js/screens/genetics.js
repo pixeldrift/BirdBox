@@ -1,8 +1,9 @@
-// Mybirds → Genetics: the breeding tools, working on the birds in the shared workbench (the same ones as on
-// the Genealogy tab). Pick two birds to check how closely related they are and predict their chicks, or one
-// bird to find the best mate for a wanted outcome. Maths in js/genealogy/pedigree.js and genetics.js.
+// Mybirds → Genetics (the offspring predictor) and Mybirds → Inbreeding (how related two birds are), two
+// tabs working on the birds in the shared workbench (the same ones as on the Genealogy tab). Pick two birds
+// to predict their chicks or check their relatedness; pick one to find the best mate for a wanted outcome.
+// Maths in js/genealogy/pedigree.js and genetics.js.
 // Routes: (none) · <birdId> puts that bird on the bench.
-const GeneticsScreen = (function () {
+const BreedingTools = (function () {
   var desiredOutcome = '';
 
   function el(tag, cls, text) {
@@ -14,7 +15,7 @@ const GeneticsScreen = (function () {
 
   function pct(n, d) { return (n * 100).toFixed(d === undefined ? 1 : d) + '%'; }
 
-  function render(main, navigate, startId) {
+  function render(main, navigate, startId, kind) {
     if (startId && getBird(startId)) Workbench.only([startId]);
     Workbench.tidy();
 
@@ -159,16 +160,21 @@ const GeneticsScreen = (function () {
     function drawAll() {
       clearEl(tools);
       var sel = selectedNodes();
-      drawCoi(section('Inbreeding'), sel);
-      drawGenes(section('Offspring predictor'), sel);
+      if (kind === 'coi') drawCoi(section('Inbreeding'), sel);
+      else drawGenes(section('Offspring predictor'), sel);
     }
 
     drawAll();
   }
 
-  function renderList(main, navigate) { render(main, navigate, ''); }
+  function screen(kind) {
+    return {
+      renderList: function (main, navigate) { render(main, navigate, '', kind); },
+      renderDetail: function (main, id, navigate) { render(main, navigate, id, kind); },
+    };
+  }
 
-  function renderDetail(main, id, navigate) { render(main, navigate, id); }
-
-  return { renderList: renderList, renderDetail: renderDetail };
+  return { genetics: screen('genes'), inbreeding: screen('coi') };
 })();
+const GeneticsScreen = BreedingTools.genetics;
+const InbreedingScreen = BreedingTools.inbreeding;

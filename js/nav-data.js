@@ -20,6 +20,8 @@ const NAV = [
         blurb: 'Visual family trees showing parents, siblings, and offspring.' },
       { id: 'genetics', label: 'Genetics', icon: 'icons/tinted/mybirds/Genetics.png',
         blurb: 'Mutation calculator and pairing predictor for expected offspring traits.' },
+      { id: 'inbreeding', label: 'Inbreeding', icon: 'icons/tinted/mybirds/Genetics.png',
+        blurb: 'How closely related two birds are, and how risky pairing them would be.' },
       { id: 'health', label: 'Health', icon: 'icons/tinted/mybirds/Health.png',
         blurb: 'Vet visits, medications, and health notes per bird.' },
       { id: 'production', label: 'Production', icon: 'icons/tinted/mybirds/Production.png',

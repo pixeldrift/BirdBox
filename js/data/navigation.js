@@ -45,12 +45,14 @@ function applyNavigation() {
     g.screens = [];
   });
   var sorder = {};
+  var prevSort = null; // a tab with no saved row (a newer built-in one) slots in right after the tab before it
   NAV_SCREENS.forEach(function (s, i) {
     var srow = navRow(s.key);
     var sd = NAV_DEFAULT.filter(function (d) { return d.id === s.home; })[0].screens.filter(function (x) { return x.key === s.key; })[0];
     s.label = srow ? srow.label : sd.label;
     s.hidden = !!(srow && !srow.visible);
-    sorder[s.key] = srow ? srow.sort : i;
+    sorder[s.key] = srow ? srow.sort : prevSort !== null ? prevSort + 0.5 : i;
+    prevSort = sorder[s.key];
     var parent = srow && srow.parentId && NAV.some(function (g) { return g.id === srow.parentId; }) ? srow.parentId : s.home;
     NAV.filter(function (g) { return g.id === parent; })[0].screens.push(s);
   });
