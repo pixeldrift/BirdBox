@@ -1788,3 +1788,6 @@ select.app-select-native { position: absolute; width: 1px; height: 1px; opacity:
 .mate-result { padding: 8px 0; border-bottom: 1px solid #EEE3D6; }
 .mate-name { font-weight: 800; }
 .mate-relationship { font-size: 0.76rem; color: var(--muted); }
+.gen-tools { flex: 1; min-height: 0; overflow-y: auto; padding: 10px 12px; -webkit-overflow-scrolling: touch; }
+.gen-tools .detail-section { margin-bottom: 12px; }
+.gen-drawer-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
