@@ -383,6 +383,10 @@ const LocationExplorer = (function () {
           });
         }
         body.appendChild(inspector(focus));
+        if (!state.treeOpened) { // first time in Tree: open every branch so the whole hierarchy is visible
+          state.treeOpened = true;
+          LocationModel.descendants(model.root, model.byId).forEach(function (n) { if (n.children.length) state.expanded[n.id] = true; });
+        }
         var tree = el('div', 'loc-tree');
         function row(n, parentEl) {
           if (show && !show[n.id]) return;

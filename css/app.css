@@ -1641,7 +1641,7 @@ body.modal-open { overflow: hidden; }
 
 /* Caging explorer — second pass */
 .loc-controls { flex-wrap: nowrap; gap: 6px; }
-.loc-sort span { display: none; }
+.loc-sort > span { display: none; }
 .loc-select { max-width: 112px; }
 .loc-present .loc-seg-btn { padding: 6px 8px; white-space: nowrap; }
 .loc-controls + .loc-controls { flex-wrap: wrap; }
