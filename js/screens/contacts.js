@@ -1,7 +1,7 @@
 // Contacts (client list / address book) list+detail screen for business/contacts.
 // Shared row/fact/chip helpers come from js/ui-helpers.js.
 const ContactsScreen = (function () {
-  var TYPES = ['All', 'Breeder', 'Pet Owner', 'Vendor', 'Store'];
+  var TYPES = ['All', 'Breeder', 'Pet Owner', 'Vendor', 'Store', 'My Team'];
 
   function typeClass(type) {
     return 'type-' + type.toLowerCase().replace(/\s+/g, '-');
@@ -48,7 +48,7 @@ const ContactsScreen = (function () {
 
       var q = state.query.trim().toLowerCase();
       var results = CONTACTS_SAMPLE.filter(function (c) {
-        if (state.type !== 'All' && c.type !== state.type) return false;
+        if (state.type !== 'All' && c.type !== (state.type === 'My Team' ? 'Team' : state.type)) return false;
         if (!q) return true;
         var hay = [c.name, c.company, c.city, c.state].filter(Boolean).join(' ').toLowerCase();
         return hay.indexOf(q) !== -1;
@@ -112,14 +112,15 @@ const ContactsScreen = (function () {
     var sub = document.createElement('span');
     sub.className = 'list-row-sub';
     var subParts = [contact.company, [contact.city, contact.state].filter(Boolean).join(', ')].filter(Boolean);
-    sub.textContent = subParts.join(' · ') || contact.type;
+    var teamUser = contact.userId ? getUser(contact.userId) : null;
+    sub.textContent = teamUser ? teamUser.role : subParts.join(' · ') || contact.type;
 
     info.appendChild(title);
     info.appendChild(sub);
 
     var type = document.createElement('span');
     type.className = 'type-badge ' + typeClass(contact.type);
-    type.textContent = contact.type;
+    type.textContent = contact.type === 'Team' ? 'My Team' : contact.type;
 
     row.appendChild(avatar);
     row.appendChild(info);
@@ -131,6 +132,11 @@ const ContactsScreen = (function () {
 
   function renderDetail(main, id, navigate, setTitle) {
     clearEl(main);
+    // A team member's details are edited under My Team, not here.
+    if (id.indexOf('edit~') === 0) {
+      var editing = getContact(id.slice(5));
+      if (editing && editing.userId) { location.hash = '#/account/myteam/edit~' + editing.userId; return; }
+    }
     if (RecordForm.route(main, id, 'contacts', navigate, setTitle)) return;
     var contact = getContact(id);
     if (!contact) {
@@ -161,7 +167,7 @@ const ContactsScreen = (function () {
     h2.textContent = contact.name;
     var typeBadge = document.createElement('span');
     typeBadge.className = 'type-badge ' + typeClass(contact.type);
-    typeBadge.textContent = contact.type;
+    typeBadge.textContent = contact.type === 'Team' ? 'My Team' : contact.type;
     titleWrap.appendChild(h2);
     titleWrap.appendChild(typeBadge);
 

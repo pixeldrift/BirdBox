@@ -25,6 +25,7 @@ function findRecord(type, id) {
 }
 
 function afterRecordsChange(type) {
+  if (type === 'users') reloadContacts().catch(function () {}); // the address-book mirror changed too
   if (type === 'contacts') reindexContacts();
   if (type === 'aviary' && AVIARY_ROWS[0]) Object.assign(AVIARY, AVIARY_ROWS[0]);
   if (typeof reindexMedia === 'function') reindexMedia();

@@ -25,6 +25,7 @@
     'business/shipping': typeof ShippingScreen !== 'undefined' ? ShippingScreen : null,
     'business/media': typeof MediaScreen !== 'undefined' ? MediaScreen : null,
     'account/customize': typeof CustomizeScreen !== 'undefined' ? CustomizeScreen : null,
+    'account/myteam': typeof TeamScreen !== 'undefined' ? TeamScreen : null,
     'account/settings': typeof SettingsScreen !== 'undefined' ? SettingsScreen : null,
     'account/about': typeof AboutScreen !== 'undefined' ? AboutScreen : null,
     'account/credits': typeof CreditsScreen !== 'undefined' ? CreditsScreen : null,
@@ -206,7 +207,7 @@
   window.addEventListener('hashchange', route);
 
   main.textContent = 'Loading…';
-  Promise.all([birdsLoaded, contactsLoaded, transactionsLoaded, healthLoaded, buildingsLoaded, waybillsLoaded, transfersLoaded, locationsLoaded, roomsLoaded, aviaryLoaded, cagesLoaded, filesLoaded, navigationLoaded]).then(route);
+  Promise.all([birdsLoaded, contactsLoaded, transactionsLoaded, healthLoaded, buildingsLoaded, waybillsLoaded, transfersLoaded, usersLoaded, locationsLoaded, roomsLoaded, aviaryLoaded, cagesLoaded, filesLoaded, navigationLoaded]).then(route);
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {

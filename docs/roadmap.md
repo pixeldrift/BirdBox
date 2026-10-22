@@ -296,3 +296,9 @@ basic genealogy navigation and are the data these features would eventually buil
 - **Desktop layout:** a persistent hierarchy sidebar beside the explorer and an inspector panel for the selected place. The explorer already keeps one selected place shared by Browse and Tree, so this is mostly layout.
 - **Tasks, calendar events and supplies on a place:** once those sections exist, link them to a location, building, room or cage (a nullable reference on each) and show them, with aggregate counts, on the place's page.
 - **Public directory:** the My Aviary details (name, address, phone, website, socials, logo) are stored for this.
+
+## Team and permissions — later
+
+- **Permissions system:** granular control over what each user can see or edit, by area (birds, shipping, accounting, contacts, places, media, settings…) and by action (see / add / change / delete). Each **role** (Owner, Manager, Employee, Volunteer) gets a default permission set, and a role's defaults can be customised, as can an individual's. Users are defined already (see below); this is what gives them teeth.
+- **Logins:** sign-in for team members, tied to their user record, so the permissions actually apply.
+- **Assign team members:** to tasks, calendar events, shipments and care routines once those sections exist (a nullable `assigned_to` reference to `users.id` on each).

@@ -120,7 +120,7 @@ const NAV = [
       { id: 'notifications', label: 'Notifications', icon: 'icons/tinted/account/Notifications.png',
         blurb: 'Alerts for sales, messages, and account activity.' },
       { id: 'myteam', label: 'My Team', icon: 'icons/tinted/account/My_Team.png',
-        blurb: 'Manage collaborators who can access your records.' },
+        blurb: 'The people who help run your aviary — employees, volunteers and family.' },
       { id: 'settings', label: 'Settings', icon: 'icons/tinted/account/Settings.png',
         blurb: 'App preferences and configuration.' },
       { id: 'privacy', label: 'Privacy', icon: 'icons/tinted/account/Privacy.png',

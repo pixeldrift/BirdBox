@@ -24,6 +24,21 @@ var RECORD_TYPES_UI = {
     ],
     defaults: { type: 'Breeder' },
   },
+  users: {
+    singular: 'team member', pk: 'id', hash: '#/account/myteam/',
+    list: function () { return USERS_SAMPLE; },
+    nameOf: function (r) { return userFullName(r); },
+    fields: [
+      { key: 'firstName', label: 'First name', type: 'text', required: true },
+      { key: 'lastName', label: 'Last name', type: 'text' },
+      { key: 'role', label: 'Role', type: 'enum', required: true, options: USER_ROLES.map(function (r) { return r.id; }), hint: 'What they do. Each role will come with default permissions you can adjust.' },
+      { key: 'status', label: 'Status', type: 'enum', required: true, options: ['Active', 'Inactive'] },
+      { key: 'email', label: 'Email', type: 'text' },
+      { key: 'phone', label: 'Phone', type: 'text' },
+      { key: 'notes', label: 'Notes', type: 'textarea' },
+    ],
+    defaults: { role: 'Volunteer', status: 'Active' },
+  },
   transactions: {
     singular: 'entry', pk: 'id', hash: '#/business/accounting/',
     list: function () { return TRANSACTIONS_SAMPLE; },

@@ -23,6 +23,15 @@ var contactsLoaded = fetch('/api/records?type=contacts')
     console.error('Could not load contacts from the server:', err);
   });
 
+// Team members are mirrored into contacts on the server; pull the fresh list after they change.
+function reloadContacts() {
+  return fetch('/api/records?type=contacts').then(function (res) { return res.json(); }).then(function (list) {
+    CONTACTS_SAMPLE.length = 0;
+    Array.prototype.push.apply(CONTACTS_SAMPLE, list);
+    reindexContacts();
+  });
+}
+
 function getContact(id) {
   return CONTACTS_BY_ID[id] || null;
 }

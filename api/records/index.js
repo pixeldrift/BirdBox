@@ -116,6 +116,18 @@ async function cleanupAfterDelete(type, id) {
   }
 }
 
+// A team member always has a matching address-book entry; keep it in step.
+async function syncTeamContact(userId) {
+  try {
+    const u = (await sql`select * from users where id = ${userId}`)[0];
+    if (!u) return;
+    const name = (u.first_name + ' ' + u.last_name).trim();
+    await sql`insert into contacts (id, name, type, email, phone, user_id)
+              values (${'c-' + userId}, ${name}, 'Team', ${u.email}, ${u.phone}, ${userId})
+              on conflict (id) do update set name = ${name}, email = ${u.email}, phone = ${u.phone}, user_id = ${userId}`;
+  } catch (err) { /* contacts.user_id not added yet (sql/019_users.sql) */ }
+}
+
 module.exports = async function handler(req, res) {
   const query = req.query || {};
   const type = String(query.type || '');
@@ -150,6 +162,7 @@ module.exports = async function handler(req, res) {
       const vals = [newId].concat(Object.keys(result.values).map((c) => result.values[c]));
       const rows = await sql(
         `insert into ${schema.table} (${cols.join(', ')}) values (${cols.map((_, i) => '$' + (i + 1)).join(', ')}) returning *`, vals);
+      if (type === 'users') await syncTeamContact(newId);
       res.status(201).json(toRecord(schema, rows[0], type));
       return;
     }
@@ -165,6 +178,7 @@ module.exports = async function handler(req, res) {
         `update ${schema.table} set ${cols.map((c, i) => c + ' = $' + (i + 1)).join(', ')} where ${schema.pk} = $${cols.length + 1} returning *`,
         cols.map((c) => result.values[c]).concat([id]));
       if (!rows.length) { res.status(404).json({ error: 'Record not found' }); return; }
+      if (type === 'users') await syncTeamContact(id);
       res.status(200).json(toRecord(schema, rows[0], type));
       return;
     }
@@ -173,6 +187,9 @@ module.exports = async function handler(req, res) {
       if (schema.noDelete) { res.status(405).json({ error: 'That one can be edited but not deleted' }); return; }
       const rows = await sql(`delete from ${schema.table} where ${schema.pk} = $1 returning ${schema.pk}`, [id]);
       if (!rows.length) { res.status(404).json({ error: 'Record not found' }); return; }
+      if (type === 'users') {
+        try { await sql`delete from contacts where user_id = ${id}`; await cleanupAfterDelete('contacts', 'c-' + id); } catch (err) { /* nothing mirrored */ }
+      }
       await cleanupAfterDelete(type, id);
       res.status(200).json({ ok: true });
       return;

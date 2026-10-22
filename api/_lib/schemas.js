@@ -13,15 +13,29 @@ const SCHEMAS = {
     fields: {
       name: { col: 'name', type: 'text', required: true, max: 120 },
       company: { col: 'company', type: 'text', max: 120 },
-      type: { col: 'type', type: 'enum', required: true, options: ['Breeder', 'Pet Owner', 'Vendor', 'Store'] },
+      type: { col: 'type', type: 'enum', required: true, options: ['Breeder', 'Pet Owner', 'Vendor', 'Store', 'Team'] },
       city: { col: 'city', type: 'text', max: 80 },
       state: { col: 'state', type: 'text', max: 40 },
       email: { col: 'email', type: 'text', max: 160 },
       phone: { col: 'phone', type: 'text', max: 40 },
       notes: { col: 'notes', type: 'text', max: 4000 },
       // Who owns which birds is changed through the ownership prompts, not by editing a contact.
+      userId: { col: 'user_id', type: 'text', readOnly: true }, // set when this contact mirrors a team member
       birdsOwned: { col: 'birds_owned', type: 'textarray', readOnly: true },
       birdsPurchasing: { col: 'birds_purchasing', type: 'textarray', readOnly: true },
+    },
+  },
+  // The people who help run the aviary. Each one is mirrored as an address-book contact (type 'Team').
+  users: {
+    table: 'users', pk: 'id', idPrefix: 'u-', order: 'first_name, last_name',
+    fields: {
+      firstName: { col: 'first_name', type: 'text', required: true, max: 80 },
+      lastName: { col: 'last_name', type: 'text', max: 80 },
+      role: { col: 'role', type: 'enum', required: true, options: ['Owner', 'Manager', 'Employee', 'Volunteer'] },
+      status: { col: 'status', type: 'enum', required: true, options: ['Active', 'Inactive'] },
+      email: { col: 'email', type: 'text', max: 160 },
+      phone: { col: 'phone', type: 'text', max: 40 },
+      notes: { col: 'notes', type: 'text', max: 4000 },
     },
   },
   transactions: {
