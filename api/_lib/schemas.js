@@ -55,6 +55,19 @@ const SCHEMAS = {
       notes: { col: 'notes', type: 'text', max: 4000 },
     },
   },
+  // What a place or bird is fed / given (see sql/023_care_plans.sql). The most specific plan wins.
+  care: {
+    table: 'care_items', pk: 'id', idPrefix: 'care-', order: 'id',
+    fields: {
+      targetType: { col: 'target_type', type: 'enum', required: true, options: ['aviary', 'location', 'building', 'room', 'cage', 'bird'] },
+      targetId: { col: 'target_id', type: 'text', required: true, max: 80 },
+      supplyId: { col: 'supply_id', type: 'text', ref: 'supply' },
+      label: { col: 'label', type: 'text', max: 160 },
+      amount: { col: 'amount', type: 'text', max: 80 },
+      mealTime: { col: 'meal_time', type: 'enum', required: true, options: ['Morning', 'Midday', 'Evening', 'Night', 'Anytime'] },
+      notes: { col: 'notes', type: 'text', max: 600 },
+    },
+  },
   transactions: {
     table: 'transactions', pk: 'id', idPrefix: 'tx-', order: 'date desc',
     fields: {

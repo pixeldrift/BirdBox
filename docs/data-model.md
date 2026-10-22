@@ -540,3 +540,7 @@ The faded ✎ on the home screen (and Account → Customize) opens a drag-and-dr
 ## Supplies
 
 `supplies(id, name, category, brand, description, unit, quantity, reorder_level, price, vendor_id, source, notes)` — feed, supplements, cleaning, medical and equipment kept on hand (`sql/022_supplies.sql`). `vendor_id` points at a contact; photos link through `media_links` (target type `supply`, with a main photo). "Running low" means quantity is at or under the reorder level. Care plans (what each cage or bird is fed) and feeding tasks will link to supplies, so a food can be tapped for its photos, source and stock.
+
+## Care plans
+
+`care_items(id, target_type, target_id, supply_id, label, amount, meal_time, notes)` (`sql/023_care_plans.sql`) — what a place, bird or the whole aviary is fed and given. `target_type` is one of aviary, location, building, room, cage, bird. A line links to a supply (`supply_id`) or is just a name (`label`, e.g. "Fresh water"). The **most specific plan wins as a whole**: a bird's own plan, else its cage's, else its room's, building's, location's, then the aviary-wide plan (`effectiveCare()` in `js/data/care.js`). Shown as "Care & feeding" on each page (`js/care-section.js`), summarised on Aviary → Feed/Water, and listed on each supply's page under "Used in care plans". Feeding tasks will read these.

@@ -87,7 +87,7 @@ async function checkRefs(schema, values) {
     const f = schema.fields[key];
     const v = values[f.col];
     if (!f.ref || !v) continue;
-    const target = { contact: ['contacts', 'id'], bird: ['birds', 'id'], location: ['locations', 'id'], building: ['buildings', 'code'], room: ['rooms', 'id'] }[f.ref];
+    const target = { contact: ['contacts', 'id'], bird: ['birds', 'id'], location: ['locations', 'id'], building: ['buildings', 'code'], room: ['rooms', 'id'], supply: ['supplies', 'id'] }[f.ref];
     const found = await sql(`select 1 from ${target[0]} where ${target[1]} = $1`, [v]);
     if (!found.length) return 'That ' + f.ref + ' isn’t in your records';
   }
@@ -106,6 +106,9 @@ async function cleanupAfterDelete(type, id) {
     steps.push(['update birds set location_contact_id = null where location_contact_id = $1', [id]]);
     steps.push(['update supplies set vendor_id = null where vendor_id = $1', [id]]);
   }
+  const careTarget = { locations: 'location', buildings: 'building', rooms: 'room', cages: 'cage' }[type];
+  if (careTarget) steps.push(['delete from care_items where target_type = $1 and target_id = $2', [careTarget, id]]);
+  if (type === 'supplies') steps.push(['delete from care_items where supply_id = $1', [id]]);
   if (type === 'rooms') steps.push(['update cages set room_id = null where room_id = $1', [id]]);
   if (type === 'buildings') steps.push(['update rooms set building_code = null where building_code = $1', [id]]);
   if (type === 'locations') steps.push(['update rooms set location_id = null where location_id = $1', [id]]);

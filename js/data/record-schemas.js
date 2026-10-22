@@ -58,6 +58,13 @@ var RECORD_TYPES_UI = {
     ],
     defaults: { category: 'Feed' },
   },
+  care: {
+    singular: 'care line', pk: 'id', hash: '#/aviary/feedwater',
+    list: function () { return CARE_SAMPLE; },
+    nameOf: function (r) { return careLineText(r); },
+    fields: [],
+    defaults: {},
+  },
   transactions: {
     singular: 'entry', pk: 'id', hash: '#/business/accounting/',
     list: function () { return TRANSACTIONS_SAMPLE; },

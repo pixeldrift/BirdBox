@@ -135,6 +135,22 @@ const SuppliesScreen = (function () {
 
     wrap.appendChild(PhotosSection.render({ ownerType: 'supply', ownerId: s.id, name: s.name, photos: mediaPhotos('supply', s.id), refresh: again }));
 
+    var used = supplyUsage(s.id);
+    var usage = el('div', 'detail-section');
+    usage.appendChild(el('h3', '', 'Used in care plans (' + used.length + ')'));
+    if (!used.length) usage.appendChild(el('p', 'form-note', 'Not in any care plan yet. Add it to a cage, bird or place under “Care & feeding”.'));
+    used.forEach(function (c) {
+      var r = el('button', 'list-row');
+      r.type = 'button';
+      r.appendChild(el('span', 'list-row-info', ''));
+      var info = r.firstChild;
+      info.appendChild(el('span', 'list-row-title', careLabel(c.targetType, c.targetId)));
+      info.appendChild(el('span', 'list-row-sub', [c.amount, c.mealTime].filter(Boolean).join(' · ')));
+      r.addEventListener('click', function () { location.hash = careTargetHash(c.targetType, c.targetId); });
+      usage.appendChild(r);
+    });
+    wrap.appendChild(usage);
+
     wrap.appendChild(Relations.one({
       title: 'Bought from', parentName: 'supply', value: s.vendorId || '', find: getContact,
       render: function (c) { return contactChip(c, function () { location.hash = '#/business/contacts/' + c.id; }); },
