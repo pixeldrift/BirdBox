@@ -30,6 +30,12 @@ const TaxonomyFunnel = (function () {
     Cariamiformes: 'Seriemas', Falconiformes: 'Falcons', Psittaciformes: 'Parrots', Passeriformes: 'Perching Birds',
   };
 
+  // English names for genera. The species list carries none, so this holds the ones we know of;
+  // any genus not listed shows its scientific name in both places.
+  var GENUS_ENGLISH = {
+    Aratinga: 'Aratinga Parakeets (South American Conures)',
+  };
+
   function el(tag, cls, text) {
     var e = document.createElement(tag);
     if (cls) e.className = cls;
@@ -91,7 +97,7 @@ const TaxonomyFunnel = (function () {
     function names(key) {
       if (key === 'order') return [ORDER_ENGLISH[bird.order] || bird.order, ORDER_ENGLISH[bird.order] ? bird.order : ''];
       if (key === 'family') return [bird.family || bird.familyScientific, bird.family ? bird.familyScientific : ''];
-      if (key === 'genus') return [genus, ''];
+      if (key === 'genus') return [GENUS_ENGLISH[genus] || genus, genus];
       if (key === 'species') return [common, bird.scientificName];
       if (key === 'sub') return [bird.subspecies, ''];
       return [bird.mutation, ''];
@@ -102,7 +108,7 @@ const TaxonomyFunnel = (function () {
       var info = LEVELS.filter(function (l) { return l.key === level; })[0];
       var n = names(level);
       value.textContent = n[0] || '—';
-      value.classList.toggle('sci', level === 'genus'); // a genus has only its Latin name
+      value.classList.toggle('sci', !!n[0] && n[0] === n[1]); // no English name: the Latin one stands in, in italics
       sci.textContent = n[1] || '';
       fit(value, 1.15, 0.8);
       fit(sci, 0.95, 0.75);
