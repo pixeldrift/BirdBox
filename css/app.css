@@ -1684,3 +1684,16 @@ body.modal-open { overflow: hidden; }
 .filter-chip.active { background: #EFE3CF; border-color: #E0D2BE; color: var(--text); }
 .nav-bar .filter-chips { margin: 0; }
 .nav-up { border-radius: 10px; }
+
+/* App dropdown (js/app-select.js): the real <select> is hidden, this button stands in for it. */
+select.app-select-native { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.app-select-btn { display: flex; align-items: center; justify-content: space-between; gap: 8px; text-align: left; cursor: pointer; font-family: inherit; }
+.app-select-btn:disabled { opacity: 0.55; cursor: default; }
+.app-select-text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.app-select-text.blank { color: var(--muted); }
+.app-select-arrow { flex: 0 0 auto; color: var(--muted); font-size: 0.8em; }
+.app-select-list { display: flex; flex-direction: column; gap: 6px; }
+.app-select-option { display: flex; justify-content: space-between; align-items: center; gap: 10px; width: 100%; padding: 12px 14px; border: 1px solid #E8DDD1; border-radius: 12px; background: var(--card-bg); font: inherit; color: inherit; text-align: left; cursor: pointer; }
+.app-select-option.selected { border-color: #4C6B45; background: #E7EDE2; font-weight: 700; }
+.app-select-option:disabled { opacity: 0.4; }
+.app-select-check { color: #4C6B45; font-weight: 800; }

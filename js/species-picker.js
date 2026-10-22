@@ -163,7 +163,7 @@ const SpeciesPicker = (function () {
 
     paintChosen();
     // Or choose by walking down the taxonomy (order › family › genus › species).
-    var browse = el('button', 'pick-link', 'Browse the taxonomy');
+    var browse = el('button', 'pick-link', 'Browse Taxonomy Explorer');
     browse.type = 'button';
     browse.addEventListener('click', function () {
       TaxonomyNavigator.open({ title: 'Choose a species', onSelect: function (s) { choose(s); } });

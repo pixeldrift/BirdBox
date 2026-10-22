@@ -263,6 +263,7 @@ const LocationExplorer = (function () {
       var sortWrap = el('label', 'loc-sort');
       sortWrap.appendChild(el('span', '', 'Sort'));
       var sel = el('select', 'loc-select');
+      sel.setAttribute('aria-label', 'Sort by');
       [['name', 'Name'], ['birds', 'Most birds'], ['items', 'Most inside']].forEach(function (o) { var op = el('option', '', o[1]); op.value = o[0]; sel.appendChild(op); });
       sel.value = state.sort;
       sel.addEventListener('change', function () { state.sort = sel.value; drawResults(); });
