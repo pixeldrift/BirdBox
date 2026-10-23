@@ -40,10 +40,7 @@ const FilesUI = (function () {
       x.setAttribute('aria-label', 'Remove ' + (file.filename || 'file') + ' from this record');
       x.addEventListener('click', function (e) {
         e.stopPropagation();
-        Modal.confirm({
-          title: 'Remove file?', message: 'Remove this file from this record? It stays in the Media library.', confirmLabel: 'Remove',
-          onConfirm: function () { unlinkMedia(file.id, opts.ownerType, opts.ownerId).then(opts.refresh).catch(function (err) { fail(err.message); }); },
-        });
+        PhotosSection.confirmRemove({ mediaId: file.id, ownerType: opts.ownerType, ownerId: opts.ownerId, name: 'this record', noun: 'file', onDone: opts.refresh });
       });
       return x;
     }

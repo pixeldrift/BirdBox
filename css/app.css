@@ -1919,3 +1919,13 @@ button.care-food { cursor: pointer; }
 .chip-thumb img:not(.thumb-photo):not(.avatar-photo) { width: 74%; height: 74%; object-fit: contain; }
 .loc-thumb img:not(.thumb-photo):not(.avatar-photo), .loc-items.grid .loc-thumb img:not(.thumb-photo):not(.avatar-photo), .loc-head-thumb img:not(.thumb-photo):not(.avatar-photo) { width: 76%; height: 76%; }
 .care-thumb img:not(.thumb-photo) { width: 76%; height: 76%; }
+
+/* Photo edit mode: ✓ lower left, bin lower right; tapping a photo just views it */
+.photo-head { display: flex; align-items: center; justify-content: space-between; }
+.photo-edit { font-size: 0.85rem; }
+.photo-zoom { display: none; }
+.photo-act { position: absolute; bottom: 5px; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, 0.92); box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25); cursor: pointer; }
+.photo-act-main { left: 5px; color: #4C6B45; }
+.photo-act-del { right: 5px; color: #A6543D; }
+.photo-act-icon { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.photo-main-btn { margin-top: 12px; width: 100%; }
