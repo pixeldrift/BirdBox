@@ -1890,6 +1890,6 @@ button.care-food { cursor: pointer; }
 /* edit mode: the grab handle lives inside the item, where the arrow was */
 .loc-item .loc-handle { width: 34px; font-size: 1.5rem; text-align: center; flex: 0 0 auto; }
 /* bigger disclosure triangles, and a smaller indent since the lines show the nesting */
-.loc-twirl { font-size: 2.3rem; width: 26px; }
+.loc-twirl { font-size: 2rem; width: 26px; color: #6F5F50; }
 .loc-tree-kids { margin-left: 10px; padding-left: 8px; }
 .loc-tree-kids > .loc-tree-node > .loc-tree-row::before { left: -8px; width: 6px; }
