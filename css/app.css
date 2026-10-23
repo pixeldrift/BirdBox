@@ -1903,3 +1903,7 @@ button.care-food { cursor: pointer; }
 .loc-act:hover { color: var(--text); }
 .loc-tree.editing .loc-badge { display: none; }
 .loc-tools .loc-handle { width: 30px; }
+
+/* drop line between items while dragging */
+.loc-tree { position: relative; }
+.loc-insert { position: absolute; height: 4px; border-radius: 2px; background: #4C6B45; pointer-events: none; z-index: 5; box-shadow: 0 0 0 2px rgba(76, 107, 69, 0.2); }

@@ -428,9 +428,6 @@ const LocationExplorer = (function () {
             if (matchesQuery(n, model) && matchesFilters(n)) { show[n.id] = true; LocationModel.ancestors(n, model.byId).forEach(function (a) { show[a.id] = true; }); }
           });
         }
-        if (state.editing) {
-          body.appendChild(el('p', 'loc-edit-hint', 'Drag ≡ onto a place to move it — a cage onto a room or building, a room onto a building or location, a building onto a location. Drop on the strip to take it out. ✎ renames and 🗑 deletes.'));
-        }
         if (state.moveNote) {
           var note = el('div', 'loc-move-note');
           note.appendChild(el('span', '', state.moveNote.text));
@@ -443,12 +440,6 @@ const LocationExplorer = (function () {
           LocationModel.descendants(model.root, model.byId).forEach(function (n) { if (n.children.length) state.expanded[n.id] = true; });
         }
         var tree = el('div', 'loc-tree' + (state.editing ? ' editing' : ''));
-        if (state.editing) {
-          var rootDrop = el('div', 'loc-drop-root');
-          rootDrop.dataset.id = model.root.id;
-          rootDrop.textContent = 'Drop here to take it out of its parent';
-          tree.appendChild(rootDrop);
-        }
         function row(n, parentEl) {
           if (show && !show[n.id]) return;
           var node = el('div', 'loc-tree-node');
@@ -456,6 +447,7 @@ const LocationExplorer = (function () {
           r.dataset.id = n.id;
           var hasKids = n.children.length > 0;
           var open = show ? true : !!state.expanded[n.id];
+          if (hasKids && open) r.dataset.open = '1';
           var twirl = btn('loc-twirl' + (hasKids ? '' : ' none'), open ? '▾' : '▸', function () { state.expanded[n.id] = !state.expanded[n.id]; drawResults(); });
           twirl.setAttribute('aria-label', open ? 'Collapse' : 'Expand');
           twirl.disabled = !hasKids || !!show;
@@ -543,17 +535,37 @@ const LocationExplorer = (function () {
 
       // ---- drag and drop in edit mode (pointer events, so it works on touch too) ----
       var drag = null;
-      function canDrop(node, target) {
-        if (!node || !target || target.id === node.id) return false;
-        if (target.kind === 'aviary') return node.parentId !== model.root.id;
-        if (target.id === node.parentId) return false;
-        return (KIND_PARENTS[node.kind] || []).indexOf(target.kind) !== -1;
+      // Can `node` live directly under `parent` (a place, or My Aviary itself meaning "no parent")? Staying put doesn't count.
+      function canDrop(node, parent) {
+        if (!node || !parent || parent.id === node.id) return false;
+        if (parent.id === node.parentId) return false;
+        if (parent.kind === 'aviary') return true;
+        return (KIND_PARENTS[node.kind] || []).indexOf(parent.kind) !== -1;
       }
 
+      // Where would a drop at this point go? Over the middle of a row it goes into that row; near its top or bottom edge, or in
+      // the gap between rows, it goes beside it — under the same parent (or, below an open branch, as its first child).
+      // -> { parent, line: { y, left, width } | null, zone: row element to outline | null }
       function targetAt(x, y) {
-        var under = document.elementFromPoint(x, y);
-        var zone = under && under.closest && under.closest('.loc-tree-row, .loc-drop-root');
-        return zone && model.byId[zone.dataset.id] ? { zone: zone, node: model.byId[zone.dataset.id] } : null;
+        var rows = Array.prototype.filter.call(body.querySelectorAll('.loc-tree-row'), function (r) { return !drag.rowEl.contains(r) || r === drag.rowEl; });
+        if (!rows.length) return null;
+        var tree = body.querySelector('.loc-tree').getBoundingClientRect();
+        var hit = null;
+        for (var i = 0; i < rows.length; i++) {
+          var rc = rows[i].getBoundingClientRect();
+          var nextTop = i + 1 < rows.length ? rows[i + 1].getBoundingClientRect().top : rc.bottom + 12;
+          if (y >= (i === 0 ? -Infinity : rc.top - 5) && y < nextTop - 5) { hit = { row: rows[i], rc: rc }; break; }
+        }
+        if (!hit) hit = { row: rows[rows.length - 1], rc: rows[rows.length - 1].getBoundingClientRect() };
+        var node = model.byId[hit.row.dataset.id];
+        var itemRect = hit.row.querySelector('.loc-item').getBoundingClientRect();
+        var rel = (y - hit.rc.top) / hit.rc.height;
+        var parent, lineY, left = itemRect.left;
+        if (rel >= 0.28 && rel <= 0.72 && node.id !== drag.node.id) return { parent: node, line: null, zone: hit.row };
+        if (rel < 0.28) { parent = model.byId[node.parentId]; lineY = hit.rc.top - 4; }
+        else if (hit.row.dataset.open === '1' && node.id !== drag.node.id) { parent = node; lineY = hit.rc.bottom + 4; left = itemRect.left + 22; }
+        else { parent = model.byId[node.parentId]; lineY = hit.rc.bottom + 4; }
+        return { parent: parent, line: { y: lineY - tree.top, left: left - tree.left, width: itemRect.width - (left - itemRect.left) }, zone: null };
       }
 
       body.addEventListener('pointerdown', function (e) {
@@ -576,9 +588,25 @@ const LocationExplorer = (function () {
         e.preventDefault();
       });
 
-      function markTargets(t) {
+      function clearMarks() {
         Array.prototype.forEach.call(body.querySelectorAll('.drop-ok'), function (z) { z.classList.remove('drop-ok'); });
-        if (t && canDrop(drag.node, t.node)) { t.zone.classList.add('drop-ok'); drag.over = t.node; } else drag.over = null;
+        var old = body.querySelector('.loc-insert');
+        if (old) old.parentNode.removeChild(old);
+      }
+
+      function markTargets(t) {
+        clearMarks();
+        drag.over = null;
+        if (!t || !canDrop(drag.node, t.parent)) return;
+        drag.over = t.parent;
+        if (t.zone) t.zone.classList.add('drop-ok');
+        if (t.line) {
+          var bar = el('div', 'loc-insert');
+          bar.style.top = t.line.y + 'px';
+          bar.style.left = t.line.left + 'px';
+          bar.style.width = t.line.width + 'px';
+          body.querySelector('.loc-tree').appendChild(bar);
+        }
       }
 
       function onMove(e) {
@@ -596,7 +624,7 @@ const LocationExplorer = (function () {
         d.ghost.parentNode.removeChild(d.ghost);
         d.rowEl.classList.remove('drag-source');
         body.classList.remove('dragging-now');
-        Array.prototype.forEach.call(body.querySelectorAll('.drop-ok'), function (z) { z.classList.remove('drop-ok'); });
+        clearMarks();
         if (d.over) moveNode(d.node, d.over);
       }
       if (state.unbind) state.unbind(); // one set of listeners at a time, however often the tree is redrawn
