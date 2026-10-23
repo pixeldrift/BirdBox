@@ -79,6 +79,20 @@ var RECORD_TYPES_UI = {
     fields: [],
     defaults: {},
   },
+  events: {
+    singular: 'event', pk: 'id', hash: '#/aviary/calendar/',
+    list: function () { return EVENTS_SAMPLE; },
+    nameOf: function (r) { return r.title; },
+    fields: [],
+    defaults: {},
+  },
+  eventlinks: {
+    singular: 'link', pk: 'id', hash: '#/aviary/calendar/',
+    list: function () { return EVENT_LINKS_SAMPLE; },
+    nameOf: function (r) { return r.targetId; },
+    fields: [],
+    defaults: {},
+  },
   transactions: {
     singular: 'entry', pk: 'id', hash: '#/business/accounting/',
     list: function () { return TRANSACTIONS_SAMPLE; },

@@ -65,6 +65,7 @@ function deleteRecord(type, id) {
       TRANSFERS_SAMPLE.forEach(function (t) { if (t.contactId === id) t.contactId = null; });
       SUPPLIES_SAMPLE.forEach(function (s) { if (s.vendorId === id) s.vendorId = null; });
     }
+    if (type === 'events') { for (var q = EVENT_LINKS_SAMPLE.length - 1; q >= 0; q--) if (EVENT_LINKS_SAMPLE[q].eventId === id) EVENT_LINKS_SAMPLE.splice(q, 1); }
     if (type === 'tasks') { for (var k = TASK_DONE_SAMPLE.length - 1; k >= 0; k--) if (TASK_DONE_SAMPLE[k].taskId === id) TASK_DONE_SAMPLE.splice(k, 1); }
     if (type === 'users') {
       TASKS_SAMPLE.forEach(function (t) { if (t.assignedTo === id) t.assignedTo = null; });

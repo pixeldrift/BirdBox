@@ -1827,3 +1827,32 @@ button.care-food { cursor: pointer; }
 .task-plan { margin: 6px 0; }
 .task-weekdays { flex-wrap: wrap; }
 .task-history { margin: 4px 0; font-size: 0.88rem; }
+
+/* Calendar */
+.cal-bar-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.cal-controls { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.cal-controls .loc-seg { flex: 1; max-width: 240px; }
+.cal-layers { margin-bottom: 10px; flex-wrap: wrap; }
+.cal-layers .gen-toggle { position: relative; }
+.cal-month { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; margin-bottom: 12px; }
+.cal-dow { text-align: center; font-size: 0.7rem; font-weight: 800; color: var(--muted); padding: 4px 0; }
+.cal-cell { aspect-ratio: 1 / 1.05; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 5px 0 4px; border: 1px solid #EFE4D3; border-radius: 10px; background: var(--card-bg); font: inherit; color: var(--text); cursor: pointer; }
+.cal-cell.out { opacity: 0.4; }
+.cal-cell.today .cal-num { color: var(--brand); font-weight: 800; text-decoration: underline; }
+.cal-cell.selected { border-color: var(--brand); background: #EEF1E6; }
+.cal-num { font-size: 0.82rem; }
+.cal-dots { display: flex; gap: 3px; min-height: 7px; }
+.cal-dot { width: 6px; height: 6px; border-radius: 50%; display: block; }
+.cal-dot-event { background: #4C6E85; } .cal-dot-task { background: #4C6B45; } .cal-dot-shipment { background: #D47629; } .cal-dot-health { background: #B0463A; }
+.cal-agenda { display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px; }
+.cal-weekday { text-align: left; border: 0; background: none; font: inherit; font-weight: 800; padding: 10px 2px 2px; color: var(--text); cursor: pointer; }
+.cal-weekday.today { color: var(--brand); }
+.cal-item { border: 1px solid #E9DCC9; border-radius: 14px; background: var(--card-bg); overflow: hidden; }
+.cal-item.done .cal-item-text strong { text-decoration: line-through; color: var(--muted); }
+.cal-item-head { display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 10px 8px 0; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer; }
+.cal-bar { align-self: stretch; width: 5px; border-radius: 0 3px 3px 0; }
+.cal-event .cal-bar { background: #4C6E85; } .cal-task .cal-bar { background: #4C6B45; } .cal-shipment .cal-bar { background: #D47629; } .cal-health .cal-bar { background: #B0463A; }
+.cal-item-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.cal-item-text small { color: var(--muted); }
+.cal-detail { padding: 0 12px 10px 15px; display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+.cal-detail .chip { width: 100%; }

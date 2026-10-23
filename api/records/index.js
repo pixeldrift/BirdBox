@@ -108,6 +108,9 @@ async function cleanupAfterDelete(type, id) {
   }
   const careTarget = { locations: 'location', buildings: 'building', rooms: 'room', cages: 'cage' }[type];
   if (careTarget) steps.push(['delete from care_items where target_type = $1 and target_id = $2', [careTarget, id]]);
+  if (type === 'events') steps.push(['delete from event_links where event_id = $1', [id]]);
+  if (type === 'contacts') steps.push(['update events set contact_id = null where contact_id = $1', [id]]);
+  if (type === 'users') steps.push(['update events set assigned_to = null where assigned_to = $1', [id]]);
   if (type === 'tasks') steps.push(['delete from task_done where task_id = $1', [id]]);
   if (type === 'users') {
     steps.push(['update tasks set assigned_to = null where assigned_to = $1', [id]]);

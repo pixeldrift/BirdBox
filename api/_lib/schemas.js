@@ -96,6 +96,31 @@ const SCHEMAS = {
       notes: { col: 'notes', type: 'text', max: 600 },
     },
   },
+  // Calendar events and what they're linked to (see sql/025_events.sql).
+  events: {
+    table: 'events', pk: 'id', idPrefix: 'ev-', order: 'start_date, start_time',
+    fields: {
+      title: { col: 'title', type: 'text', required: true, max: 160 },
+      kind: { col: 'kind', type: 'enum', required: true, options: ['Appointment', 'Meetup', 'Tour', 'Call', 'Other'] },
+      notes: { col: 'notes', type: 'text', max: 2000 },
+      place: { col: 'place', type: 'text', max: 200 },
+      startDate: { col: 'start_date', type: 'date', required: true },
+      endDate: { col: 'end_date', type: 'date' },
+      allDay: { col: 'all_day', type: 'boolean' },
+      startTime: { col: 'start_time', type: 'text', max: 5 },
+      endTime: { col: 'end_time', type: 'text', max: 5 },
+      contactId: { col: 'contact_id', type: 'text', ref: 'contact' },
+      assignedTo: { col: 'assigned_to', type: 'text', ref: 'user' },
+    },
+  },
+  eventlinks: {
+    table: 'event_links', pk: 'id', idPrefix: 'evl-', order: 'id',
+    fields: {
+      eventId: { col: 'event_id', type: 'text', required: true, max: 80 },
+      targetType: { col: 'target_type', type: 'text', required: true, max: 20 },
+      targetId: { col: 'target_id', type: 'text', required: true, max: 80 },
+    },
+  },
   transactions: {
     table: 'transactions', pk: 'id', idPrefix: 'tx-', order: 'date desc',
     fields: {

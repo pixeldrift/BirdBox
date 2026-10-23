@@ -20,6 +20,7 @@
     'mybirds/genetics': typeof GeneticsScreen !== 'undefined' ? GeneticsScreen : null,
     'mybirds/genealogy': typeof GenealogyScreen !== 'undefined' ? GenealogyScreen : null,
     'mybirds/health': typeof HealthScreen !== 'undefined' ? HealthScreen : null,
+    'aviary/calendar': typeof CalendarScreen !== 'undefined' ? CalendarScreen : null,
     'aviary/tasks': typeof TasksScreen !== 'undefined' ? TasksScreen.tasks : null,
     'aviary/cleaning': typeof TasksScreen !== 'undefined' ? TasksScreen.cleaning : null,
     'aviary/feedwater': typeof FeedWaterScreen !== 'undefined' ? FeedWaterScreen : null,
@@ -214,7 +215,7 @@
   window.addEventListener('hashchange', route);
 
   main.textContent = 'Loading…';
-  Promise.all([birdsLoaded, contactsLoaded, transactionsLoaded, healthLoaded, buildingsLoaded, waybillsLoaded, transfersLoaded, usersLoaded, suppliesLoaded, careLoaded, tasksLoaded, locationsLoaded, roomsLoaded, aviaryLoaded, cagesLoaded, filesLoaded, navigationLoaded]).then(route);
+  Promise.all([birdsLoaded, contactsLoaded, transactionsLoaded, healthLoaded, buildingsLoaded, waybillsLoaded, transfersLoaded, usersLoaded, suppliesLoaded, careLoaded, tasksLoaded, eventsLoaded, locationsLoaded, roomsLoaded, aviaryLoaded, cagesLoaded, filesLoaded, navigationLoaded]).then(route);
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {

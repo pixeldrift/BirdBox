@@ -316,3 +316,10 @@ basic genealogy navigation and are the data these features would eventually buil
 - **Who did it:** ticking a task currently records the assigned team member (or nobody); with logins it will record whoever is signed in. A "working as" choice could come sooner.
 - **Reminders and notifications** for tasks that are due or overdue, and low-stock supplies in the to-do list.
 - **Feeding that uses up stock:** ticking a feeding off could subtract the amounts from the supplies.
+
+## Calendar — later
+
+- **Repeating events** (a weekly tour day) and drag-to-reschedule.
+- **Reminders** and an invite/confirmation message to the client.
+- **Birthdays / hatch anniversaries** and breeding milestones (egg due dates) as an optional layer once Production exists.
+- **Sync** with Google/Apple calendars (an iCal feed).
