@@ -1908,3 +1908,5 @@ button.care-food { cursor: pointer; }
 .loc-tree { position: relative; }
 .loc-insert { position: absolute; height: 4px; border-radius: 2px; background: #4C6B45; pointer-events: none; z-index: 5; box-shadow: 0 0 0 2px rgba(76, 107, 69, 0.2); }
 .photo-big { display: block; width: 100%; height: auto; border-radius: 12px; }
+
+#update-bar { position: fixed; left: 12px; right: 12px; bottom: calc(12px + var(--safe-bottom)); z-index: 3000; padding: 12px 14px; border: 0; border-radius: 14px; background: var(--brand); color: #fff; font: inherit; font-weight: 700; font-size: 0.88rem; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25); cursor: pointer; }
