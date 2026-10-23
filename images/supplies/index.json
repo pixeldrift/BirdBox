@@ -1,0 +1,177 @@
+{
+  "equine-pellets": {
+    "name": "Equine Pellets",
+    "images": [
+      {
+        "what": "Bag",
+        "file": "images/supplies/equine-pellets-bag.jpg"
+      },
+      {
+        "what": "Sample",
+        "file": "images/supplies/equine-pellets-sample.jpg"
+      }
+    ]
+  },
+  "fine-feathers-millet": {
+    "name": "Fine Feathers Millet",
+    "images": [
+      {
+        "what": "Bag",
+        "file": "images/supplies/fine-feathers-millet-bag.jpg"
+      },
+      {
+        "what": "Sample",
+        "file": "images/supplies/fine-feathers-millet-sample.jpg"
+      },
+      {
+        "what": "Label",
+        "file": "images/supplies/fine-feathers-millet-label.jpg"
+      }
+    ]
+  },
+  "kruse-ar-pellets": {
+    "name": "Kruse AR Pellets",
+    "images": [
+      {
+        "what": "Bag",
+        "file": "images/supplies/kruse-ar-pellets-bag.jpg"
+      },
+      {
+        "what": "Sample",
+        "file": "images/supplies/kruse-ar-pellets-sample.jpg"
+      },
+      {
+        "what": "Pallet",
+        "file": "images/supplies/kruse-ar-pellets-pallet.jpg"
+      },
+      {
+        "what": "Label",
+        "file": "images/supplies/kruse-ar-pellets-label.jpg"
+      }
+    ]
+  },
+  "kruse-game-bird-crumble": {
+    "name": "Kruse Game Bird Crumble",
+    "images": [
+      {
+        "what": "Bag",
+        "file": "images/supplies/kruse-game-bird-crumble-bag.jpg"
+      },
+      {
+        "what": "Sample",
+        "file": "images/supplies/kruse-game-bird-crumble-sample.jpg"
+      },
+      {
+        "what": "Label",
+        "file": "images/supplies/kruse-game-bird-crumble-label.jpg"
+      }
+    ]
+  },
+  "kruse-pigeon-pellets": {
+    "name": "Kruse Pigeon Pellets",
+    "images": [
+      {
+        "what": "Bag",
+        "file": "images/supplies/kruse-pigeon-pellets-bag.jpg"
+      },
+      {
+        "what": "Label",
+        "file": "images/supplies/kruse-pigeon-pellets-label.jpg"
+      }
+    ]
+  },
+  "kruse-sprout-mix": {
+    "name": "Kruse Sprout Mix",
+    "images": [
+      {
+        "what": "Bag",
+        "file": "images/supplies/kruse-sprout-mix-bag.jpg"
+      },
+      {
+        "what": "Sample",
+        "file": "images/supplies/kruse-sprout-mix-sample.jpg"
+      },
+      {
+        "what": "Label",
+        "file": "images/supplies/kruse-sprout-mix-label.jpg"
+      }
+    ]
+  },
+  "magnolia-seed-mix": {
+    "name": "Magnolia Seed Mix",
+    "images": [
+      {
+        "what": "Bag",
+        "file": "images/supplies/magnolia-seed-mix-bag.jpg"
+      },
+      {
+        "what": "Sample",
+        "file": "images/supplies/magnolia-seed-mix-sample.jpg"
+      },
+      {
+        "what": "Pallet",
+        "file": "images/supplies/magnolia-seed-mix-pallet.jpg"
+      }
+    ]
+  },
+  "meal-worms": {
+    "name": "Meal Worms",
+    "images": [
+      {
+        "what": "Box",
+        "file": "images/supplies/meal-worms-box.jpg"
+      },
+      {
+        "what": "Bucket",
+        "file": "images/supplies/meal-worms-bucket.jpg"
+      },
+      {
+        "what": "Sample",
+        "file": "images/supplies/meal-worms-sample.jpg"
+      }
+    ]
+  },
+  "mice": {
+    "name": "Mice",
+    "images": [
+      {
+        "what": "Bag",
+        "file": "images/supplies/mice-bag.jpg"
+      },
+      {
+        "what": "Box",
+        "file": "images/supplies/mice-box.jpg"
+      }
+    ]
+  },
+  "super-worms": {
+    "name": "Super Worms",
+    "images": [
+      {
+        "what": "Box",
+        "file": "images/supplies/super-worms-box.jpg"
+      },
+      {
+        "what": "Bucket",
+        "file": "images/supplies/super-worms-bucket.jpg"
+      },
+      {
+        "what": "Sample",
+        "file": "images/supplies/super-worms-sample.jpg"
+      }
+    ]
+  },
+  "zupreme-pellets": {
+    "name": "Zupreme Pellets",
+    "images": [
+      {
+        "what": "Bag",
+        "file": "images/supplies/zupreme-pellets-bag.jpg"
+      },
+      {
+        "what": "Sample",
+        "file": "images/supplies/zupreme-pellets-sample.jpg"
+      }
+    ]
+  }
+}

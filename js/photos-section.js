@@ -14,6 +14,20 @@ const PhotosSection = (function () {
     var section = el('div', 'detail-section');
     section.appendChild(el('h3', '', o.title || 'Photos'));
     var grid = el('div', 'photo-grid');
+    // Photos that came with the app (not in the Media library): shown first, tap to view full size.
+    (o.fixed || []).forEach(function (url) {
+      var tile = el('button', 'photo-tile');
+      tile.type = 'button';
+      var img = el('img');
+      img.src = url;
+      img.alt = '';
+      img.loading = 'lazy';
+      tile.appendChild(img);
+      tile.addEventListener('click', function () {
+        Modal.open({ title: o.name || 'Photo', build: function (body) { var big = el('img', 'photo-big'); big.src = url; big.alt = ''; body.appendChild(big); } });
+      });
+      grid.appendChild(tile);
+    });
     o.photos.forEach(function (photo) {
       var tile = el('button', 'photo-tile' + (photo.isPrimary ? ' primary' : ''));
       tile.type = 'button';

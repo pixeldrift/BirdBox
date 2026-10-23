@@ -97,7 +97,7 @@ const FeedWaterScreen = (function () {
         var b = el('button', 'list-row');
         b.type = 'button';
         var av = el('span', 'list-row-avatar');
-        var url = s ? mediaMainPhotoUrl('supply', s.id) : '';
+        var url = s ? supplyThumbUrl(s) : '';
         av.appendChild(makeThumb(url ? { src: url } : { icon: 'icons/tinted/aviary/FeedWater.png' }));
         b.appendChild(av);
         var info = el('span', 'list-row-info');

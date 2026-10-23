@@ -351,7 +351,7 @@ const Picker = (function () {
     if (kind === 'supplies') {
       return SUPPLIES_SAMPLE.filter(keep).map(function (s) {
         var sub = [s.category, supplyAmount(s)].filter(Boolean).join(' · ');
-        var url = mediaMainPhotoUrl('supply', s.id);
+        var url = supplyThumbUrl(s);
         return { id: s.id, title: s.name, sub: sub, hay: lowerJoin([s.brand, s.category, s.description]),
           lead: function () { return pickLead(makeThumb(url ? { src: url } : { icon: 'icons/tinted/aviary/Supplies.png' }), s.name, sub); } };
       });

@@ -19,7 +19,7 @@ const SuppliesScreen = (function () {
   }
 
   function thumbFor(s) {
-    var url = mediaMainPhotoUrl('supply', s.id);
+    var url = supplyThumbUrl(s);
     return makeThumb(url ? { src: url } : { icon: 'icons/tinted/aviary/Supplies.png' });
   }
 
@@ -133,7 +133,7 @@ const SuppliesScreen = (function () {
     if (facts.firstChild) wrap.appendChild(facts);
     if (s.description) { var d = el('div', 'detail-section'); d.appendChild(el('h3', '', 'About it')); d.appendChild(el('p', 'notes-text', s.description)); wrap.appendChild(d); }
 
-    wrap.appendChild(PhotosSection.render({ ownerType: 'supply', ownerId: s.id, name: s.name, photos: mediaPhotos('supply', s.id), refresh: again }));
+    wrap.appendChild(PhotosSection.render({ ownerType: 'supply', ownerId: s.id, name: s.name, photos: mediaPhotos('supply', s.id), fixed: s.images || [], refresh: again }));
 
     var used = supplyUsage(s.id);
     var usage = el('div', 'detail-section');

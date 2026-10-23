@@ -21,6 +21,11 @@ function getSupply(id) {
   return SUPPLIES_SAMPLE.filter(function (s) { return s.id === id; })[0] || null;
 }
 
+// The picture to show for a supply: its main uploaded photo, else the first of the photos that came with the app.
+function supplyThumbUrl(s) {
+  return mediaMainPhotoUrl('supply', s.id) || (s.images && s.images[0]) || '';
+}
+
 // "12 bags" / "3.5 lb" — the amount on hand with its unit.
 function supplyAmount(s, qty) {
   var q = qty === undefined ? s.quantity : qty;

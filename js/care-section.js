@@ -22,7 +22,7 @@ const CareSection = (function () {
     var sup = c.supplyId ? getSupply(c.supplyId) : null;
     var lead = el(sup ? 'button' : 'span', 'care-food');
     if (sup) { lead.type = 'button'; lead.addEventListener('click', function () { location.hash = '#/aviary/supplies/' + sup.id; }); }
-    var url = sup ? mediaMainPhotoUrl('supply', sup.id) : '';
+    var url = sup ? supplyThumbUrl(sup) : '';
     var thumb = makeThumb(url ? { src: url } : { icon: 'icons/tinted/aviary/FeedWater.png' });
     thumb.classList.add('care-thumb');
     lead.appendChild(thumb);
