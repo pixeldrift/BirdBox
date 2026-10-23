@@ -67,7 +67,7 @@ const FeedWaterScreen = (function () {
           var b = el('button', 'list-row');
           b.type = 'button';
           var av = el('span', 'list-row-avatar');
-          av.appendChild(makeThumb({ icon: 'icons/tinted/aviary/Caging.png' }));
+          fillThumb(av, { icon: 'icons/tinted/aviary/Caging.png' });
           b.appendChild(av);
           var info = el('span', 'list-row-info');
           info.appendChild(el('span', 'list-row-title', r.cage.code));
@@ -98,7 +98,7 @@ const FeedWaterScreen = (function () {
         b.type = 'button';
         var av = el('span', 'list-row-avatar');
         var url = s ? supplyThumbUrl(s) : '';
-        av.appendChild(makeThumb(url ? { src: url } : { icon: 'icons/tinted/aviary/FeedWater.png' }));
+        fillThumb(av, url ? { src: url } : { icon: 'icons/tinted/aviary/FeedWater.png' });
         b.appendChild(av);
         var info = el('span', 'list-row-info');
         info.appendChild(el('span', 'list-row-title', s ? s.name : f.label));

@@ -1911,3 +1911,11 @@ button.care-food { cursor: pointer; }
 
 #update-bar { position: fixed; left: 12px; right: 12px; bottom: calc(12px + var(--safe-bottom)); z-index: 3000; padding: 12px 14px; border: 0; border-radius: 14px; background: var(--brand); color: #fff; font: inherit; font-weight: 700; font-size: 0.88rem; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25); cursor: pointer; }
 .photo-zoom { position: absolute; left: 4px; bottom: 4px; width: 24px; height: 24px; border-radius: 50%; background: rgba(255, 255, 255, 0.88); color: var(--text); font-size: 0.85rem; line-height: 24px; text-align: center; cursor: pointer; }
+
+/* Pictures fill their whole box (no frame around a photo), and icons use most of it */
+.list-row-avatar img.thumb-photo, .detail-avatar img.thumb-photo { width: 100%; height: 100%; object-fit: cover; }
+.list-row-avatar img:not(.thumb-photo):not(.avatar-photo) { width: 74%; height: 74%; object-fit: contain; }
+.detail-avatar img:not(.thumb-photo):not(.avatar-photo) { width: 76%; height: 76%; object-fit: contain; }
+.chip-thumb img:not(.thumb-photo):not(.avatar-photo) { width: 74%; height: 74%; object-fit: contain; }
+.loc-thumb img:not(.thumb-photo):not(.avatar-photo), .loc-items.grid .loc-thumb img:not(.thumb-photo):not(.avatar-photo), .loc-head-thumb img:not(.thumb-photo):not(.avatar-photo) { width: 76%; height: 76%; }
+.care-thumb img:not(.thumb-photo) { width: 76%; height: 76%; }

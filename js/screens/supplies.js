@@ -18,16 +18,16 @@ const SuppliesScreen = (function () {
     return b;
   }
 
-  function thumbFor(s) {
+  function supplySpec(s) {
     var url = supplyThumbUrl(s);
-    return makeThumb(url ? { src: url } : { icon: 'icons/tinted/aviary/Supplies.png' });
+    return url ? { src: url } : { icon: 'icons/tinted/aviary/Supplies.png' };
   }
 
   function row(s, navigate) {
     var b = el('button', 'list-row');
     b.type = 'button';
     var av = el('span', 'list-row-avatar');
-    av.appendChild(thumbFor(s));
+    fillThumb(av, supplySpec(s));
     b.appendChild(av);
     var info = el('span', 'list-row-info');
     info.appendChild(el('span', 'list-row-title', s.name));
@@ -98,7 +98,7 @@ const SuppliesScreen = (function () {
 
     var header = el('div', 'detail-header');
     var av = el('span', 'detail-avatar');
-    av.appendChild(thumbFor(s));
+    fillThumb(av, supplySpec(s));
     header.appendChild(av);
     var t = el('div', 'detail-title');
     t.appendChild(el('h2', '', s.name));
