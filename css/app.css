@@ -1856,3 +1856,6 @@ button.care-food { cursor: pointer; }
 .cal-item-text small { color: var(--muted); }
 .cal-detail { padding: 0 12px 10px 15px; display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
 .cal-detail .chip { width: 100%; }
+
+.action-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 12px; }
+.action-row .add-record-btn { flex: 1 1 auto; margin: 0; padding: 10px 12px; font-size: 0.85rem; }

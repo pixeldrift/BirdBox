@@ -11,18 +11,18 @@ const SoldFollowUp = (function () {
     return e;
   }
 
-  function render(container, bird, onDone) {
+  function render(container, bird, onDone, opts) {
     clearEl(container);
-    var buyerId = '';
+    var buyerId = (opts && opts.buyerId) || '';
     var box = el('div', 'detail-section ownership-prompt');
-    box.appendChild(el('h3', '', 'Marked as Sold — what happens next?'));
+    box.appendChild(el('h3', '', opts && opts.title ? opts.title : 'Marked as Sold — what happens next?'));
 
     // Who bought it (optional, but it pre-fills everything below).
     var buyerField = el('div', 'form-field');
     buyerField.appendChild(el('span', 'form-label', 'Who bought it?'));
     var actions = el('div');
     var message = el('div');
-    buyerField.appendChild(Picker.contacts({ placeholder: 'Search contacts…', allowClear: true, onChange: function (id) { buyerId = id; drawActions(); } }).el);
+    if (!buyerId) buyerField.appendChild(Picker.contacts({ placeholder: 'Search contacts…', allowClear: true, onChange: function (id) { buyerId = id; drawActions(); } }).el);
 
     function button(label, primary, onClick) {
       var b = el('button', primary ? 'save-btn' : 'add-record-btn', label);
@@ -49,7 +49,7 @@ const SoldFollowUp = (function () {
       actions.appendChild(button('Not now', false, function () { onDone(); }));
     }
 
-    box.appendChild(buyerField);
+    if (!buyerId) box.appendChild(buyerField);
     box.appendChild(actions);
     box.appendChild(message);
     container.appendChild(box);

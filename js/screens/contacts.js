@@ -185,6 +185,7 @@ const ContactsScreen = (function () {
     ].forEach(function (f) { factsGrid.appendChild(factRow(f[0], f[1])); });
 
     wrap.appendChild(header);
+    if (!contact.userId) wrap.appendChild(BirdActions.contactRow(contact, function () { clearEl(main); renderDetail(main, id, navigate, setTitle); }));
     wrap.appendChild(factsGrid);
 
     var owned = contact.birdsOwned.map(getBird).filter(Boolean);

@@ -332,8 +332,8 @@ basic genealogy navigation and are the data these features would eventually buil
 
 Principle: `docs/principles.md` ("many ways in; everything linked both directions"). Entry points still missing, each pre-filled from where you are:
 
-- **Bird page:** "Ship this bird" (new shipment with this bird and, if known, its buyer); "Schedule" (new event or task for this bird).
-- **Contact page:** "+ New shipment" for this client; "+ New accounting entry" for them; "+ New event" with them.
+- **Bird page:** ~~"Ship this bird"~~ and ~~"Sell this bird"~~ are built (`js/bird-actions.js`); still to do: "Schedule" (new event or task for this bird).
+- **Contact page:** ~~"Ship to…", "Sell a bird to…", "Receive a shipment"~~ are built; still to do: "+ New accounting entry" for them; "+ New event" with them.
 - **Shipment page:** "+ Add a new bird" (not just link an existing one); "Log the shipping expense" (new accounting entry pre-filled with the cost, category Expense, linked to the shipment); "Add to calendar".
 - **Accounting entry page:** "Set up the shipment" or link an existing one; "+ Add a bird" it relates to.
 - **Cage / place pages:** "+ New task" and "+ New event" for this place.

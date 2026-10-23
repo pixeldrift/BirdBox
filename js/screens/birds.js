@@ -405,6 +405,7 @@ const BirdsScreen = (function () {
     moneySection.appendChild(moneyGrid);
 
     wrap.appendChild(header);
+    wrap.appendChild(BirdActions.row(bird, again));
     wrap.appendChild(buildPhotosSection(bird, function () { renderDetail(main, id, navigate, setTitle); }));
     wrap.appendChild(vitalsGrid);
     wrap.appendChild(placeGrid);
