@@ -323,3 +323,20 @@ basic genealogy navigation and are the data these features would eventually buil
 - **Reminders** and an invite/confirmation message to the client.
 - **Birthdays / hatch anniversaries** and breeding milestones (egg due dates) as an optional layer once Production exists.
 - **Sync** with Google/Apple calendars (an iCal feed).
+
+## Home screen — later
+
+- **Today at a glance:** a compact schedule strip on the home screen — what's due today (tasks, feedings), what's on the calendar (appointments, shipments going out), anything running low or overdue — each tappable. Same data as the Tasks and Calendar tabs (`taskOccurrences`, `calendarItems`).
+
+## Connect everything, from anywhere — to build out
+
+Principle: `docs/principles.md` ("many ways in; everything linked both directions"). Entry points still missing, each pre-filled from where you are:
+
+- **Bird page:** "Ship this bird" (new shipment with this bird and, if known, its buyer); "Schedule" (new event or task for this bird).
+- **Contact page:** "+ New shipment" for this client; "+ New accounting entry" for them; "+ New event" with them.
+- **Shipment page:** "+ Add a new bird" (not just link an existing one); "Log the shipping expense" (new accounting entry pre-filled with the cost, category Expense, linked to the shipment); "Add to calendar".
+- **Accounting entry page:** "Set up the shipment" or link an existing one; "+ Add a bird" it relates to.
+- **Cage / place pages:** "+ New task" and "+ New event" for this place.
+- **Supply page:** "Add to a care plan" (pick a cage, bird or place).
+- **Calendar and Tasks:** start a shipment, health record or bird from an entry.
+- **A shared "Add new…" menu** that offers whatever makes sense in the current context.
