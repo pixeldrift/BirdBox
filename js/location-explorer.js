@@ -29,6 +29,32 @@ const LocationExplorer = (function () {
     return b;
   }
 
+  // Small line icons for the controls (no text labels): they take their colour from the button.
+  var ICON_PATHS = {
+    funnel: 'M3 4h18l-7 8.5V19l-4 2v-8.5z',
+    list: 'M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01',
+    grid: 'M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z',
+    expand: 'M6 5l6 6 6-6M6 13l6 6 6-6',
+    collapse: 'M6 11l6-6 6 6M6 19l6-6 6 6',
+  };
+  function icon(name) {
+    var s = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    s.setAttribute('viewBox', '0 0 24 24');
+    s.setAttribute('class', 'loc-icon');
+    s.setAttribute('aria-hidden', 'true');
+    var p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    p.setAttribute('d', ICON_PATHS[name]);
+    s.appendChild(p);
+    return s;
+  }
+  function iconBtn(cls, name, label, onClick) {
+    var b = btn(cls, '', onClick);
+    b.appendChild(icon(name));
+    b.setAttribute('aria-label', label);
+    b.title = label;
+    return b;
+  }
+
   function plural(n, one, many) { return n + ' ' + (n === 1 ? one : many); }
 
   var ICONS = {
@@ -213,7 +239,8 @@ const LocationExplorer = (function () {
     function segmented(options, current, onPick, cls) {
       var seg = el('div', 'loc-seg' + (cls ? ' ' + cls : ''));
       options.forEach(function (o) {
-        var b = btn('loc-seg-btn' + (o[0] === current ? ' active' : ''), o[1], function () { onPick(o[0]); });
+        var b = btn('loc-seg-btn' + (o[0] === current ? ' active' : ''), typeof o[1] === 'string' ? o[1] : '', function () { onPick(o[0]); });
+        if (typeof o[1] !== 'string') { b.appendChild(icon(o[1].icon)); b.setAttribute('aria-label', o[1].label); b.title = o[1].label; }
         seg.appendChild(b);
       });
       return seg;
@@ -245,9 +272,6 @@ const LocationExplorer = (function () {
       clearEl(wrap);
       var focus = model.byId[state.focus];
 
-      // 1. mode
-      wrap.appendChild(segmented([['browse', 'Browse'], ['tree', 'Tree'], ['all', 'All']], state.mode, function (m) { state.mode = m; state.editing = false; state.moveNote = null; draw(); }, 'loc-modes'));
-
       // 2. one search box, with Add new beside it
       var bar = el('div', 'loc-searchbar');
       var search = el('input', 'search-input loc-search');
@@ -273,14 +297,18 @@ const LocationExplorer = (function () {
       sortWrap.appendChild(sel);
       ctl.appendChild(sortWrap);
       var activeCount = ['unassigned', 'birds', 'empty', 'notSetUp'].filter(function (k) { return state.filters[k]; }).length;
-      ctl.appendChild(btn('loc-filter-btn' + (activeCount ? ' on' : ''), activeCount ? 'Filter · ' + activeCount : 'Filter', openFilters));
-      ctl.appendChild(el('span', 'loc-spacer'));
-      var treeCtl = ctl;
+      var filterBtn = iconBtn('loc-filter-btn' + (activeCount ? ' on' : ''), 'funnel', activeCount ? 'Filter — ' + activeCount + ' on' : 'Filter', openFilters);
+      if (activeCount) filterBtn.appendChild(el('span', 'loc-filter-count', String(activeCount)));
+      ctl.appendChild(filterBtn);
+      // Browse / Tree / All, small, in the middle
+      ctl.appendChild(segmented([['browse', 'Browse'], ['tree', 'Tree'], ['all', 'All']], state.mode, function (m) { state.mode = m; state.editing = false; state.moveNote = null; draw(); }, 'loc-modes-mini'));
       if (state.mode === 'tree') {
-        treeCtl.appendChild(btn('loc-mini', 'Expand', function () { LocationModel.descendants(model.root, model.byId).forEach(function (n) { if (n.children.length) state.expanded[n.id] = true; }); state.expanded[model.root.id] = true; drawResults(); }));
-        treeCtl.appendChild(btn('loc-mini', 'Collapse', function () { state.expanded = {}; drawResults(); }));
+        var group = el('div', 'loc-seg loc-present');
+        group.appendChild(iconBtn('loc-seg-btn', 'expand', 'Expand all', function () { LocationModel.descendants(model.root, model.byId).forEach(function (n) { if (n.children.length) state.expanded[n.id] = true; }); state.expanded[model.root.id] = true; drawResults(); }));
+        group.appendChild(iconBtn('loc-seg-btn', 'collapse', 'Collapse all', function () { state.expanded = {}; drawResults(); }));
+        ctl.appendChild(group);
       } else {
-        ctl.appendChild(segmented([['list', '☰ List'], ['grid', '▦ Grid']], state.present, function (p) { state.present = p; draw(); }, 'loc-present'));
+        ctl.appendChild(segmented([['list', { icon: 'list', label: 'List' }], ['grid', { icon: 'grid', label: 'Grid' }]], state.present, function (p) { state.present = p; draw(); }, 'loc-present'));
       }
       wrap.appendChild(ctl);
 
@@ -431,7 +459,13 @@ const LocationExplorer = (function () {
           r.appendChild(twirl);
           var it = item(n, { onOpen: function () { state.focus = n.id; drawResults(); } });
           if (state.focus === n.id) it.classList.add('selected');
-          if (state.editing && KIND_PARENTS[n.kind]) { var h = el('span', 'loc-handle', '≡'); h.setAttribute('aria-hidden', 'true'); h.dataset.id = n.id; r.insertBefore(h, twirl); }
+          if (state.editing) {
+            var chev = it.querySelector('.loc-chev');
+            if (chev) {
+              if (KIND_PARENTS[n.kind]) { chev.className = 'loc-handle'; chev.textContent = '≡'; chev.dataset.id = n.id; chev.addEventListener('click', function (e) { e.stopPropagation(); }); }
+              else chev.parentNode.removeChild(chev);
+            }
+          }
           r.appendChild(it);
           node.appendChild(r);
           if (hasKids && open) {
@@ -468,14 +502,16 @@ const LocationExplorer = (function () {
         var node = model.byId[h.dataset.id];
         var rowEl = h.closest('.loc-tree-row');
         var rect = rowEl.getBoundingClientRect();
-        var ghost = rowEl.querySelector('.loc-item').cloneNode(true);
+        var itemEl = rowEl.querySelector('.loc-item');
+        var irect = itemEl.getBoundingClientRect();
+        var ghost = itemEl.cloneNode(true);
         ghost.classList.add('loc-ghost');
-        ghost.style.width = rect.width - 40 + 'px';
-        ghost.style.left = rect.left + 'px';
-        ghost.style.top = rect.top + 'px';
+        ghost.style.width = irect.width + 'px';
+        ghost.style.left = irect.left + 'px';
+        ghost.style.top = irect.top + 'px';
         document.body.appendChild(ghost);
         rowEl.classList.add('drag-source');
-        drag = { node: node, ghost: ghost, rowEl: rowEl, dx: e.clientX - rect.left, dy: e.clientY - rect.top, over: null };
+        drag = { node: node, ghost: ghost, rowEl: rowEl, dx: e.clientX - irect.left, dy: e.clientY - irect.top, over: null };
         body.classList.add('dragging-now');
         e.preventDefault();
       });

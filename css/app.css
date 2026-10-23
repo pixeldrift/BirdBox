@@ -1876,3 +1876,20 @@ button.care-food { cursor: pointer; }
 /* Bigger tree arrows: the glyph grows in place and the tap area reaches out over empty space — layout unchanged. */
 .loc-twirl { position: relative; font-size: 1.75rem; line-height: 1; padding: 0; display: flex; align-items: center; justify-content: center; }
 .loc-twirl::after { content: ''; position: absolute; top: -14px; bottom: -14px; left: -8px; right: -4px; }
+
+/* Caging controls: icon-only filter and view toggles, small mode switch in the middle */
+.loc-icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; display: block; }
+.loc-filter-btn { position: relative; display: flex; align-items: center; justify-content: center; padding: 0; width: 38px; height: 34px; }
+.loc-filter-btn::before { content: none; }
+.loc-filter-count { position: absolute; top: -6px; right: -6px; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px; background: var(--brand); color: #fff; font-size: 0.68rem; font-weight: 800; line-height: 16px; text-align: center; }
+.loc-modes-mini { flex: 0 1 auto; margin: 0 auto; }
+.loc-modes-mini .loc-seg-btn { flex: 0 0 auto; padding: 6px 8px; font-size: 0.72rem; }
+.loc-present .loc-seg-btn { display: flex; align-items: center; justify-content: center; width: 36px; height: 32px; padding: 0; color: var(--muted); }
+.loc-present .loc-seg-btn.active { color: var(--text); }
+.loc-sort .loc-select { max-width: 78px; }
+/* edit mode: the grab handle lives inside the item, where the arrow was */
+.loc-item .loc-handle { width: 34px; font-size: 1.5rem; text-align: center; flex: 0 0 auto; }
+/* bigger disclosure triangles, and a smaller indent since the lines show the nesting */
+.loc-twirl { font-size: 2.3rem; width: 26px; }
+.loc-tree-kids { margin-left: 10px; padding-left: 8px; }
+.loc-tree-kids > .loc-tree-node > .loc-tree-row::before { left: -8px; width: 6px; }
