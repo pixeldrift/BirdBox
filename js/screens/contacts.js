@@ -188,6 +188,8 @@ const ContactsScreen = (function () {
     if (!contact.userId) wrap.appendChild(BirdActions.contactRow(contact, function () { clearEl(main); renderDetail(main, id, navigate, setTitle); }));
     wrap.appendChild(factsGrid);
 
+    wrap.appendChild(PhotosSection.render({ ownerType: 'contact', ownerId: contact.id, name: contact.name, photos: mediaPhotos('contact', contact.id), refresh: function () { clearEl(main); renderDetail(main, id, navigate, setTitle); } }));
+
     var owned = contact.birdsOwned.map(getBird).filter(Boolean);
     var purchasing = contact.birdsPurchasing.map(getBird).filter(Boolean);
 

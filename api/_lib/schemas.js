@@ -52,6 +52,7 @@ const SCHEMAS = {
       price: { col: 'price', type: 'number' },
       vendorId: { col: 'vendor_id', type: 'text', ref: 'contact' },
       images: { col: 'images', type: 'textarray', readOnly: true }, // web-sized photos shipped with the app (images/supplies/)
+      mainImage: { col: 'main_image', type: 'text', max: 300 }, // which of those is the main picture ('' = the first)
       source: { col: 'source', type: 'text', max: 300 },
       notes: { col: 'notes', type: 'text', max: 4000 },
     },

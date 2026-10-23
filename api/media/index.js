@@ -41,7 +41,7 @@ async function ensureMainPhoto(targetType, targetId) {
     select l.media_id, l.target_type, l.target_id from media_links l join media m on m.id = l.media_id
     where l.target_type = ${targetType} and l.target_id = ${targetId} and m.type = 'photo' order by l.created_at limit 1)`;
 }
-const HAS_MAIN_PHOTO = ['bird', 'aviary', 'location', 'building', 'room', 'cage', 'supply'];
+const HAS_MAIN_PHOTO = ['bird', 'aviary', 'location', 'building', 'room', 'cage', 'supply', 'contact', 'waybill'];
 
 module.exports = async function handler(req, res) {
   const query = req.query || {};

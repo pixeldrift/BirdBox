@@ -97,7 +97,7 @@ function reindexMedia() {
         if (rec) rec.attachments.push({ id: m.id, name: m.title || m.filename, kind: mediaIsImage(m) ? 'image' : 'pdf', url: m.url, size: m.size });
       } else if (l.targetType === 'waybill') {
         var wb = WAYBILLS_SAMPLE.filter(function (w) { return w.id === l.targetId; })[0];
-        if (wb) wb.files.push({ id: m.id, kind: m.type, filename: m.title || m.filename, contentType: m.contentType, size: m.size, url: m.url });
+        if (wb) wb.files.push({ id: m.id, kind: m.type, filename: m.title || m.filename, contentType: m.contentType, size: m.size, url: m.url, isPrimary: !!l.isPrimary });
       } else if (l.targetType === 'transaction') {
         var tx = TRANSACTIONS_SAMPLE.filter(function (t) { return t.id === l.targetId; })[0];
         if (tx) tx.files.push({ id: m.id, kind: m.type, filename: m.title || m.filename, contentType: m.contentType, size: m.size, url: m.url });

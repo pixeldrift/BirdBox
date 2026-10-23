@@ -1910,3 +1910,4 @@ button.care-food { cursor: pointer; }
 .photo-big { display: block; width: 100%; height: auto; border-radius: 12px; }
 
 #update-bar { position: fixed; left: 12px; right: 12px; bottom: calc(12px + var(--safe-bottom)); z-index: 3000; padding: 12px 14px; border: 0; border-radius: 14px; background: var(--brand); color: #fff; font: inherit; font-weight: 700; font-size: 0.88rem; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25); cursor: pointer; }
+.photo-zoom { position: absolute; left: 4px; bottom: 4px; width: 24px; height: 24px; border-radius: 50%; background: rgba(255, 255, 255, 0.88); color: var(--text); font-size: 0.85rem; line-height: 24px; text-align: center; cursor: pointer; }

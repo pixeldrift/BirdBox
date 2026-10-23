@@ -23,6 +23,7 @@ function getSupply(id) {
 
 // The picture to show for a supply: its main uploaded photo, else the first of the photos that came with the app.
 function supplyThumbUrl(s) {
+  if (s.mainImage) return s.mainImage;
   return mediaMainPhotoUrl('supply', s.id) || (s.images && s.images[0]) || '';
 }
 

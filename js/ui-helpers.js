@@ -204,10 +204,11 @@ function healthChip(record, onClick) {
 function waybillThumbSpec(wb) {
   var files = wb.files || [];
   function isImage(f) { return /^image\//.test(f.contentType); }
-  var doc = files.filter(function (f) { return (f.kind === 'receipt' || f.kind === 'waybill') && isImage(f); })[0];
-  if (doc) return { src: doc.url };
-  var photo = files.filter(function (f) { return f.kind === 'photo'; })[0];
+  var photos = files.filter(function (f) { return f.kind === 'photo'; });
+  var photo = photos.filter(function (f) { return f.isPrimary; })[0] || photos[0]; // the main photo, if you've chosen one
   if (photo) return { src: photo.url };
+  var doc = files.filter(function (f) { return (f.kind === 'receipt' || f.kind === 'waybill' || f.kind === 'invoice') && isImage(f); })[0];
+  if (doc) return { src: doc.url };
   if (files.some(function (f) { return f.kind === 'receipt' || f.kind === 'waybill'; })) return { text: 'PDF' };
   return { icon: 'icons/tinted/business/Shipping.png' };
 }

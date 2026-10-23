@@ -162,16 +162,18 @@ const ShippingScreen = (function () {
 
   // Photos, the receipt and the waybill copy attached to a shipment.
   function renderFiles(wb, refresh) {
-    return FilesUI.render({
+    var box = document.createElement('div');
+    box.appendChild(PhotosSection.render({ ownerType: 'waybill', ownerId: wb.id, name: 'this shipment', photos: mediaPhotos('waybill', wb.id), refresh: refresh }));
+    box.appendChild(FilesUI.render({
       ownerType: 'waybill', ownerId: wb.id, refresh: refresh,
       items: function () { return wb.files || []; },
       kinds: [
-        { kind: 'photo', title: 'Photos', addLabel: '+ Add Photos', accept: 'image/*', grid: true, empty: 'The crate, the handoff, the bird at the airport — add photos if you have them.' },
         { kind: 'receipt', title: 'Payment receipt', addLabel: '+ Add payment receipt', accept: 'image/*,application/pdf' },
         { kind: 'invoice', title: 'Invoice', addLabel: '+ Add invoice', accept: 'image/*,application/pdf' },
         { kind: 'waybill', title: 'Air waybill', addLabel: '+ Add air waybill', accept: 'image/*,application/pdf' },
       ],
-    });
+    }));
+    return box;
   }
 
   function todayIso() {

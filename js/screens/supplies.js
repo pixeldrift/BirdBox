@@ -133,7 +133,9 @@ const SuppliesScreen = (function () {
     if (facts.firstChild) wrap.appendChild(facts);
     if (s.description) { var d = el('div', 'detail-section'); d.appendChild(el('h3', '', 'About it')); d.appendChild(el('p', 'notes-text', s.description)); wrap.appendChild(d); }
 
-    wrap.appendChild(PhotosSection.render({ ownerType: 'supply', ownerId: s.id, name: s.name, photos: mediaPhotos('supply', s.id), fixed: s.images || [], refresh: again }));
+    wrap.appendChild(PhotosSection.render({ ownerType: 'supply', ownerId: s.id, name: s.name, photos: mediaPhotos('supply', s.id), fixed: s.images || [], fixedMain: s.mainImage || '', refresh: again,
+      onFixedMain: function (url) { return updateRecord('supplies', s.id, { mainImage: url }); },
+      onMediaMain: function () { return s.mainImage ? updateRecord('supplies', s.id, { mainImage: '' }) : null; } }));
 
     var used = supplyUsage(s.id);
     var usage = el('div', 'detail-section');
