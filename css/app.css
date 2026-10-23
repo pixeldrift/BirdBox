@@ -1872,3 +1872,7 @@ button.care-food { cursor: pointer; }
 .loc-tree-row.drop-ok > .loc-item, .loc-drop-root.drop-ok { outline: 3px solid #4C6B45; background: #E7EDE2; }
 .dragging-now { cursor: grabbing; }
 .loc-ghost { position: fixed; z-index: 2000; pointer-events: none; opacity: 0.93; box-shadow: 0 10px 26px rgba(60, 46, 34, 0.3); }
+
+/* Bigger tree arrows: the glyph grows in place and the tap area reaches out over empty space — layout unchanged. */
+.loc-twirl { position: relative; font-size: 1.75rem; line-height: 1; padding: 0; display: flex; align-items: center; justify-content: center; }
+.loc-twirl::after { content: ''; position: absolute; top: -14px; bottom: -14px; left: -8px; right: -4px; }
