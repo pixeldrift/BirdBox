@@ -9,7 +9,7 @@ const ShippingAddScreen = (function () {
   function newDraft() {
     return {
       direction: 'Outgoing', pending: false, method: '', carrier: '', date: '', from: '', to: '',
-      waybill: '', cost: '', notes: '', clientId: '', birdIds: [], files: { photo: [], receipt: [], waybill: [] },
+      waybill: '', cost: '', notes: '', clientId: '', birdIds: [], files: { photo: [], receipt: [], invoice: [], waybill: [] },
     };
   }
 
@@ -210,11 +210,11 @@ const ShippingAddScreen = (function () {
     }
 
     // Files to attach once the shipment is saved.
-    var attachBox = section('Photos & papers', 'Optional. Photos of the crate or the handoff, the shipping receipt, a copy of the waybill.');
+    var attachBox = section('Receipt, invoice, air waybill & photos', 'Optional — add them now or later on the shipment. A phone photo or a PDF of each is fine.');
     var attachList = el('div');
     function drawAttach() {
       clearEl(attachList);
-      [['photo', '+ Add Photos', 'image/*'], ['receipt', '+ Add Receipt', 'image/*,application/pdf'], ['waybill', '+ Add Waybill', 'image/*,application/pdf']].forEach(function (k) {
+      [['receipt', '+ Add payment receipt', 'image/*,application/pdf'], ['invoice', '+ Add invoice', 'image/*,application/pdf'], ['waybill', '+ Add air waybill', 'image/*,application/pdf'], ['photo', '+ Add photos of the crate or handoff', 'image/*']].forEach(function (k) {
         draft.files[k[0]].forEach(function (f, i) {
           var row = el('div', 'file-row');
           row.appendChild(el('span', '', SHIP_FILE_KINDS[k[0]] + ': ' + (f.name || 'file')));

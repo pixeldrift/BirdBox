@@ -340,3 +340,7 @@ Principle: `docs/principles.md` ("many ways in; everything linked both direction
 - **Supply page:** "Add to a care plan" (pick a cage, bird or place).
 - **Calendar and Tasks:** start a shipment, health record or bird from an entry.
 - **A shared "Add new…" menu** that offers whatever makes sense in the current context.
+
+## Shipping — later
+
+- **Booking and label helper:** a tool that fills out the carrier's booking forms and prints shipping labels for you from what BirdBox already knows — the client's name, address and phone from the address book, your own details from My Aviary, the birds (species, band, count) and the route/date — so you're not retyping it each time. Starts as printable/copyable forms for the carriers you use most, with the waybill number and the saved PDFs filed back onto the shipment.

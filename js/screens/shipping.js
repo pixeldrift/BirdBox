@@ -167,8 +167,9 @@ const ShippingScreen = (function () {
       items: function () { return wb.files || []; },
       kinds: [
         { kind: 'photo', title: 'Photos', addLabel: '+ Add Photos', accept: 'image/*', grid: true, empty: 'The crate, the handoff, the bird at the airport — add photos if you have them.' },
-        { kind: 'receipt', title: 'Receipt', addLabel: '+ Add Receipt', accept: 'image/*,application/pdf' },
-        { kind: 'waybill', title: 'Waybill', addLabel: '+ Add Waybill', accept: 'image/*,application/pdf' },
+        { kind: 'receipt', title: 'Payment receipt', addLabel: '+ Add payment receipt', accept: 'image/*,application/pdf' },
+        { kind: 'invoice', title: 'Invoice', addLabel: '+ Add invoice', accept: 'image/*,application/pdf' },
+        { kind: 'waybill', title: 'Air waybill', addLabel: '+ Add air waybill', accept: 'image/*,application/pdf' },
       ],
     });
   }

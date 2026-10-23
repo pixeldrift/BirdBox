@@ -66,8 +66,9 @@ var SHIP_METHODS = ['Air cargo', 'Courier', 'Ground delivery', 'Other'];
 // Kinds of attachment on a shipment (stored by js/data/files.js).
 var SHIP_FILE_KINDS = {
   photo: 'Photos',
-  receipt: 'Receipt',
-  waybill: 'Waybill',
+  receipt: 'Payment receipt',
+  invoice: 'Invoice',
+  waybill: 'Air waybill',
 };
 
 function addWaybillFile(wb, kind, file) {
