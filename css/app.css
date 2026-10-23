@@ -1893,3 +1893,13 @@ button.care-food { cursor: pointer; }
 .loc-twirl { font-size: 2rem; width: 26px; color: #6F5F50; }
 .loc-tree-kids { margin-left: 10px; padding-left: 8px; }
 .loc-tree-kids > .loc-tree-node > .loc-tree-row::before { left: -8px; width: 6px; }
+
+/* Edit mode: pencil in the search row, per-item rename / delete / grab icons */
+.loc-edit-inline { flex: 0 0 auto; width: 40px; height: 44px; border-radius: 999px; border: 1px solid #E9DCC9; background: rgba(255, 253, 248, 0.9); color: var(--muted); font-size: 1.15rem; opacity: 0.6; cursor: pointer; }
+.loc-edit-inline.on { opacity: 1; background: var(--brand); border-color: var(--brand); color: #fff; }
+.loc-tools { display: flex; align-items: center; flex: 0 0 auto; gap: 2px; }
+.loc-act { display: flex; align-items: center; justify-content: center; width: 32px; height: 36px; color: var(--muted); cursor: pointer; }
+.loc-act .loc-icon { width: 17px; height: 17px; }
+.loc-act:hover { color: var(--text); }
+.loc-tree.editing .loc-badge { display: none; }
+.loc-tools .loc-handle { width: 30px; }

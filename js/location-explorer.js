@@ -36,6 +36,8 @@ const LocationExplorer = (function () {
     grid: 'M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z',
     expand: 'M6 5l6 6 6-6M6 13l6 6 6-6',
     collapse: 'M6 11l6-6 6 6M6 19l6-6 6 6',
+    pencil: 'M4 20h4L19 9l-4-4L4 16zM14 6l4 4',
+    trash: 'M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6',
   };
   function icon(name) {
     var s = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -282,7 +284,19 @@ const LocationExplorer = (function () {
       bar.appendChild(search);
       var addTarget = state.mode === 'all' ? null : focus;
       var opts = state.mode === 'all' ? [{ kind: state.allKind, label: LocationModel.KINDS[state.allKind], prefill: {} }] : addOptions(addTarget);
-      if (opts.length) bar.appendChild(btn('loc-add', '+ Add new', function () { openAddMenu(opts); }));
+      if (opts.length && (state.mode !== 'tree' || state.editing)) bar.appendChild(btn('loc-add', '+ Add new', function () { openAddMenu(opts); }));
+      if (state.mode === 'tree') {
+        // The pencil (as on the Home Screen) turns edit mode on; in edit mode "+ Add new" appears beside it, and items can be dragged, renamed or deleted.
+        var edit = btn('loc-edit-inline' + (state.editing ? ' on' : ''), state.editing ? '✓' : '✎', function () {
+          state.editing = !state.editing;
+          state.moveNote = null;
+          if (state.editing) LocationModel.descendants(model.root, model.byId).forEach(function (n) { if (n.children.length) state.expanded[n.id] = true; });
+          draw();
+        });
+        edit.setAttribute('aria-label', state.editing ? 'Done editing' : 'Edit the tree');
+        edit.title = state.editing ? 'Done' : 'Edit — move, rename or delete items';
+        bar.appendChild(edit);
+      }
       wrap.appendChild(bar);
 
       // 3. sort (a dropdown), filter (a button), list / grid together
@@ -326,18 +340,7 @@ const LocationExplorer = (function () {
 
       var body = el('div', 'loc-body');
       wrap.appendChild(body);
-      if (state.mode === 'tree') {
-        // A faded pencil (like the Home Screen's) switches the tree into edit mode, where items can be dragged onto their new parent.
-        var edit = btn('home-edit loc-edit' + (state.editing ? ' on' : ''), state.editing ? '✓' : '✎', function () {
-          state.editing = !state.editing;
-          state.moveNote = null;
-          if (state.editing) LocationModel.descendants(model.root, model.byId).forEach(function (n) { if (n.children.length) state.expanded[n.id] = true; });
-          draw();
-        });
-        edit.setAttribute('aria-label', state.editing ? 'Done editing' : 'Edit the tree');
-        edit.title = state.editing ? 'Done' : 'Edit — drag items to move them';
-        wrap.appendChild(edit);
-      }
+
 
       function scopeText() {
         var searching = state.query.trim() || filtersActive();
@@ -426,7 +429,7 @@ const LocationExplorer = (function () {
           });
         }
         if (state.editing) {
-          body.appendChild(el('p', 'loc-edit-hint', 'Drag ≡ onto a place to move it there — a cage onto a room or building, a room onto a building or location, a building onto a location. Drop on the strip below to take it out.'));
+          body.appendChild(el('p', 'loc-edit-hint', 'Drag ≡ onto a place to move it — a cage onto a room or building, a room onto a building or location, a building onto a location. Drop on the strip to take it out. ✎ renames and 🗑 deletes.'));
         }
         if (state.moveNote) {
           var note = el('div', 'loc-move-note');
@@ -462,8 +465,11 @@ const LocationExplorer = (function () {
           if (state.editing) {
             var chev = it.querySelector('.loc-chev');
             if (chev) {
-              if (KIND_PARENTS[n.kind]) { chev.className = 'loc-handle'; chev.textContent = '≡'; chev.dataset.id = n.id; chev.addEventListener('click', function (e) { e.stopPropagation(); }); }
-              else chev.parentNode.removeChild(chev);
+              var tools = el('span', 'loc-tools');
+              if (n.kind !== 'loose') tools.appendChild(toolBtn('pencil', n.kind === 'cage' ? 'Edit' : 'Rename', function () { renameNode(n); }));
+              if (n.kind !== 'loose' && !(n.kind === 'cage' && !n.setUp)) tools.appendChild(toolBtn('trash', 'Delete', function () { deleteNode(n); }));
+              if (KIND_PARENTS[n.kind]) { var hd = el('span', 'loc-handle', '≡'); hd.dataset.id = n.id; hd.addEventListener('click', function (e) { e.stopPropagation(); }); tools.appendChild(hd); }
+              chev.parentNode.replaceChild(tools, chev);
             }
           }
           r.appendChild(it);
@@ -479,6 +485,60 @@ const LocationExplorer = (function () {
         sortChildren(model.root).forEach(function (c) { row(c, tree); });
         body.appendChild(tree);
         if (!tree.querySelector('.loc-tree-node') || (show && Object.keys(show).length === 0)) body.appendChild(empty('Nothing matches.'));
+      }
+
+      // ---- rename and delete in edit mode ----
+      function toolBtn(name, label, onClick) {
+        var b = el('span', 'loc-act');
+        b.setAttribute('role', 'button');
+        b.tabIndex = 0;
+        b.setAttribute('aria-label', label);
+        b.title = label;
+        b.appendChild(icon(name));
+        b.addEventListener('pointerdown', function (e) { e.stopPropagation(); });
+        b.addEventListener('click', function (e) { e.stopPropagation(); onClick(); });
+        return b;
+      }
+
+      var NAME_FIELD = { location: ['locations', 'name'], building: ['buildings', 'nickname'], room: ['rooms', 'name'] };
+
+      function renameNode(n) {
+        if (n.kind === 'cage') { navigate('edit~cage~' + n.key); return; } // a cage's number is its identity; its other details are on the edit page
+        var f = NAME_FIELD[n.kind];
+        var current = n.kind === 'building' ? n.record.nickname : n.record.name;
+        Modal.open({
+          title: 'Rename ' + n.typeLabel.toLowerCase(),
+          build: function (mbody, close) {
+            var inp = el('input', 'form-input');
+            inp.value = current;
+            var msg = el('div');
+            var go = btn('save-btn', 'Save', function () {
+              var v = inp.value.trim();
+              if (!v) { clearEl(msg); msg.appendChild(el('p', 'form-message error', 'Give it a name.')); return; }
+              go.disabled = true;
+              var change = {}; change[f[1]] = v;
+              updateRecord(f[0], n.key, change).then(function () { close(); state.moveNote = { text: 'Renamed to “' + (n.kind === 'building' ? 'Building ' + v : v) + '”.' }; draw(); }).catch(function (err) { go.disabled = false; clearEl(msg); msg.appendChild(el('p', 'form-message error', err.message)); });
+            });
+            if (n.kind === 'building') mbody.appendChild(el('p', 'form-note', 'The name after “Building” — its code (' + n.key + ') stays the same.'));
+            mbody.appendChild(inp);
+            mbody.appendChild(msg);
+            mbody.appendChild(go);
+            inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') go.click(); });
+            setTimeout(function () { inp.focus(); inp.select(); }, 50);
+          },
+        });
+      }
+
+      function deleteNode(n) {
+        var type = { location: 'locations', building: 'buildings', room: 'rooms', cage: 'cages' }[n.kind];
+        var note = n.kind === 'location' ? ' Its buildings and rooms stay, just no longer on a location.'
+          : n.kind === 'building' ? ' Its rooms and cages stay, just no longer filed under it.'
+          : n.kind === 'room' ? ' Its cages stay, just no longer in a room.'
+          : (n.directBirds ? ' The ' + n.directBirds + ' bird' + (n.directBirds === 1 ? '' : 's') + ' in it will be left with no cage.' : '');
+        Modal.confirm({
+          title: 'Delete ' + n.typeLabel.toLowerCase() + '?', message: 'Delete “' + n.name + '”?' + note + ' This can’t be undone.', confirmLabel: 'Delete', danger: true,
+          onConfirm: function () { deleteRecord(type, n.key).then(function () { state.moveNote = { text: 'Deleted ' + n.name + '.' }; draw(); }).catch(failMove); },
+        });
       }
 
       // ---- drag and drop in edit mode (pointer events, so it works on touch too) ----
