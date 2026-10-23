@@ -39,6 +39,7 @@ const RecordForm = (function () {
 
     def.fields.forEach(function (f) {
       if (f.createOnly && editing) return;
+      if (opts.hide && opts.hide.indexOf(f.key) !== -1) return; // e.g. someone editing their own profile doesn't change their own role
       var control, get;
       var current = base[f.key] === null || base[f.key] === undefined ? '' : base[f.key];
       if (f.ref) {
@@ -104,7 +105,7 @@ const RecordForm = (function () {
     wrap.appendChild(form);
 
     // Delete — only when editing, and only after confirming.
-    if (editing && !def.noDelete) {
+    if (editing && !def.noDelete && !opts.noDelete) {
       var danger = el('div', 'detail-section');
       var del = el('button', 'add-record-btn danger-btn', 'Delete this ' + def.singular);
       del.type = 'button';

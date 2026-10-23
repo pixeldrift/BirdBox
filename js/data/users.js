@@ -25,6 +25,19 @@ var usersLoaded = fetch('/api/records?type=users')
     console.error('Could not load the team from the server:', err);
   });
 
+// "Who am I": until there are logins, this browser remembers which team member you are, so Settings can show and edit
+// your own profile. When logins arrive this becomes the signed-in user.
+function currentUserId() {
+  try { return localStorage.getItem('birdbox-me') || ''; } catch (e) { return ''; }
+}
+function setCurrentUser(id) {
+  try { if (id) localStorage.setItem('birdbox-me', id); else localStorage.removeItem('birdbox-me'); } catch (e) { /* storage blocked: it just won't be remembered */ }
+}
+function currentUser() {
+  var u = currentUserId() ? getUser(currentUserId()) : null;
+  return u || null;
+}
+
 function getUser(id) {
   return USERS_SAMPLE.filter(function (u) { return u.id === id; })[0] || null;
 }

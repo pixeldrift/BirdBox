@@ -1931,3 +1931,5 @@ button.care-food { cursor: pointer; }
 .photo-main-btn { margin-top: 12px; width: 100%; }
 .media-source-icon { display: flex; }
 .media-source-svg { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+/* a photo box inside another card */
+.photo-sub { margin-top: 14px; padding-top: 12px; border-top: 1px solid #F0E6D8; }

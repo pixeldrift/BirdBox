@@ -20,7 +20,9 @@ const TeamScreen = (function () {
 
   function avatar(u, cls) {
     var a = el('span', cls || 'list-row-avatar');
-    a.appendChild(el('span', 'initials-avatar', initials(u)));
+    var contact = getContact('c-' + u.id); // a photo on their address-book entry is their picture
+    if (contact && contact.photoUrl) fillThumb(a, { src: contact.photoUrl });
+    else a.appendChild(el('span', 'initials-avatar', initials(u)));
     return a;
   }
 
@@ -29,7 +31,7 @@ const TeamScreen = (function () {
     btn.type = 'button';
     btn.appendChild(avatar(u));
     var info = el('span', 'list-row-info');
-    info.appendChild(el('span', 'list-row-title', userFullName(u)));
+    info.appendChild(el('span', 'list-row-title', userFullName(u) + (currentUserId() === u.id ? ' (you)' : '')));
     info.appendChild(el('span', 'list-row-sub', [u.email, u.phone].filter(Boolean).join(' · ') || 'No contact details yet'));
     btn.appendChild(info);
     btn.appendChild(el('span', 'type-badge ' + (u.status === 'Inactive' ? 'status-inactive-user' : roleClass(u.role)), u.status === 'Inactive' ? 'Inactive' : u.role));
