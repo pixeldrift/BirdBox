@@ -68,6 +68,34 @@ const SCHEMAS = {
       notes: { col: 'notes', type: 'text', max: 600 },
     },
   },
+  // Jobs to do, one-off or repeating (see sql/024_tasks.sql), and each day they're ticked off.
+  tasks: {
+    table: 'tasks', pk: 'id', idPrefix: 'task-', order: 'start_date, title',
+    fields: {
+      title: { col: 'title', type: 'text', required: true, max: 160 },
+      kind: { col: 'kind', type: 'enum', required: true, options: ['Feeding', 'Cleaning', 'Health', 'Maintenance', 'General'] },
+      notes: { col: 'notes', type: 'text', max: 2000 },
+      startDate: { col: 'start_date', type: 'date', required: true },
+      timeOfDay: { col: 'time_of_day', type: 'enum', required: true, options: ['Morning', 'Midday', 'Evening', 'Night', 'Anytime'] },
+      repeat: { col: 'repeat', type: 'enum', required: true, options: ['None', 'Daily', 'Weekly', 'Monthly', 'Custom'] },
+      every: { col: 'every', type: 'number' },
+      weekdays: { col: 'weekdays', type: 'text', max: 20 },
+      endDate: { col: 'end_date', type: 'date' },
+      assignedTo: { col: 'assigned_to', type: 'text', ref: 'user' },
+      targetType: { col: 'target_type', type: 'text', max: 20 },
+      targetId: { col: 'target_id', type: 'text', max: 80 },
+    },
+  },
+  taskdone: {
+    table: 'task_done', pk: 'id', idPrefix: 'done-', order: 'on_date',
+    fields: {
+      taskId: { col: 'task_id', type: 'text', required: true, max: 80 },
+      onDate: { col: 'on_date', type: 'date', required: true },
+      subKey: { col: 'sub_key', type: 'text', max: 80 },
+      doneBy: { col: 'done_by', type: 'text', ref: 'user' },
+      notes: { col: 'notes', type: 'text', max: 600 },
+    },
+  },
   transactions: {
     table: 'transactions', pk: 'id', idPrefix: 'tx-', order: 'date desc',
     fields: {

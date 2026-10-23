@@ -271,6 +271,17 @@ const Picker = (function () {
     }));
   }
 
+  function users(opts) {
+    return create(Object.assign({ placeholder: 'Search your team…' }, opts, {
+      items: function () {
+        return USERS_SAMPLE.map(function (u) {
+          return { id: u.id, title: userFullName(u), sub: u.role, hay: u.role + ' ' + u.email,
+            lead: function () { return pickLead(makeThumb({ text: ((u.firstName || '').charAt(0) + (u.lastName || '').charAt(0)).toUpperCase() }), userFullName(u), u.role); } };
+        });
+      },
+    }));
+  }
+
   function rooms(opts) {
     return create(Object.assign({ placeholder: 'Search rooms…' }, opts, {
       items: function () {
@@ -361,5 +372,5 @@ const Picker = (function () {
     return [];
   }
 
-  return { listItems: listItems, create: create, birds: birds, contacts: contacts, locations: locations, rooms: rooms, buildings: buildings, cages: cages };
+  return { listItems: listItems, create: create, birds: birds, contacts: contacts, locations: locations, users: users, rooms: rooms, buildings: buildings, cages: cages };
 })();

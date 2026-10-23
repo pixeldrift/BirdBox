@@ -65,6 +65,11 @@ function deleteRecord(type, id) {
       TRANSFERS_SAMPLE.forEach(function (t) { if (t.contactId === id) t.contactId = null; });
       SUPPLIES_SAMPLE.forEach(function (s) { if (s.vendorId === id) s.vendorId = null; });
     }
+    if (type === 'tasks') { for (var k = TASK_DONE_SAMPLE.length - 1; k >= 0; k--) if (TASK_DONE_SAMPLE[k].taskId === id) TASK_DONE_SAMPLE.splice(k, 1); }
+    if (type === 'users') {
+      TASKS_SAMPLE.forEach(function (t) { if (t.assignedTo === id) t.assignedTo = null; });
+      TASK_DONE_SAMPLE.forEach(function (d) { if (d.doneBy === id) d.doneBy = null; });
+    }
     if (type === 'rooms') CAGES_SAMPLE.forEach(function (c) { if (c.roomId === id) c.roomId = null; });
     if (type === 'cages') BIRDS_SAMPLE.forEach(function (b) { if (b.cage === id) b.cage = null; });
     if (type === 'buildings') { CAGES_SAMPLE.forEach(function (c) { if (c.buildingCode === id) c.buildingCode = null; }); ROOMS_SAMPLE.forEach(function (r) { if (r.buildingCode === id) r.buildingCode = null; }); }

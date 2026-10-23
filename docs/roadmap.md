@@ -310,3 +310,9 @@ basic genealogy navigation and are the data these features would eventually buil
 - **More species gene profiles** for the mutation predictor (Budgerigar, Quaker, Sun Conure, Lineolated, and the rest of the Tree of Birds list).
 - **Production (pairs, clutches, eggs)**, built on the same pairings the family tree shows.
 - **Genealogy diagram export** (image / print) and a printable pedigree certificate.
+
+## Tasks — later
+
+- **Who did it:** ticking a task currently records the assigned team member (or nobody); with logins it will record whoever is signed in. A "working as" choice could come sooner.
+- **Reminders and notifications** for tasks that are due or overdue, and low-stock supplies in the to-do list.
+- **Feeding that uses up stock:** ticking a feeding off could subtract the amounts from the supplies.

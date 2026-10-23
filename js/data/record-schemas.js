@@ -65,6 +65,20 @@ var RECORD_TYPES_UI = {
     fields: [],
     defaults: {},
   },
+  tasks: {
+    singular: 'task', pk: 'id', hash: '#/aviary/tasks/',
+    list: function () { return TASKS_SAMPLE; },
+    nameOf: function (r) { return r.title; },
+    fields: [],
+    defaults: {},
+  },
+  taskdone: {
+    singular: 'tick', pk: 'id', hash: '#/aviary/tasks/',
+    list: function () { return TASK_DONE_SAMPLE; },
+    nameOf: function (r) { return r.taskId; },
+    fields: [],
+    defaults: {},
+  },
   transactions: {
     singular: 'entry', pk: 'id', hash: '#/business/accounting/',
     list: function () { return TRANSACTIONS_SAMPLE; },

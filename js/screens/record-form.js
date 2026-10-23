@@ -9,7 +9,7 @@ const RecordForm = (function () {
     return e;
   }
 
-  var PICKERS = { contact: 'contacts', bird: 'birds', location: 'locations', building: 'buildings', room: 'rooms' };
+  var PICKERS = { contact: 'contacts', bird: 'birds', location: 'locations', building: 'buildings', room: 'rooms', user: 'users' };
 
   // Handles the "new" and "edit~<id>" routes for a screen. Returns true if it took over.
   function route(main, id, type, navigate, setTitle) {
