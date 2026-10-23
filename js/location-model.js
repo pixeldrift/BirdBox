@@ -58,7 +58,7 @@ const LocationModel = (function () {
       if (!n.directBirds) n.flags.push('Empty');
     });
 
-    var loose = BIRDS_SAMPLE.filter(function (b) { return !b.cage && !birdIsGone(b); });
+    var loose = BIRDS_SAMPLE.filter(function (b) { return !b.cage && !birdIsArchived(b); });
     if (loose.length) {
       var ln = add(make('loose', 'none', 'Unassigned birds', null), root);
       ln.directBirds = loose.length;

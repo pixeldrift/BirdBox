@@ -43,7 +43,7 @@ const BirdsScreen = (function () {
 
     function draw() {
       clearEl(chipsWrap);
-      STATUSES.forEach(function (s) {
+      STATUSES.concat(['Archived']).forEach(function (s) {
         var chip = document.createElement('button');
         chip.type = 'button';
         chip.className = 'filter-chip' + (state.status === s ? ' active' : '');
@@ -57,15 +57,18 @@ const BirdsScreen = (function () {
 
       var q = state.query.trim().toLowerCase();
       var results = BIRDS_SAMPLE.filter(function (b) {
-        if (state.status !== 'All' && b.status !== state.status) return false;
-        if (state.status !== 'Sold' && birdIsGone(b)) return false; // sold and gone: only under the Sold filter
+        if (state.status === 'Archived') { if (!birdIsArchived(b)) return false; }
+        else {
+          if (state.status !== 'All' && b.status !== state.status) return false;
+          if (state.status !== 'Sold' && birdIsArchived(b)) return false; // archived birds only show under Archived (or Sold)
+        }
         if (!q) return true;
         var hay = [b.band, b.name, b.speciesName, b.scientificName, b.species, b.subspecies, b.mutation].filter(Boolean).join(' ').toLowerCase();
         return hay.indexOf(q) !== -1;
       });
 
-      var goneHidden = state.status === 'Sold' ? 0 : BIRDS_SAMPLE.filter(birdIsGone).length;
-      countLabel.textContent = results.length + (results.length === 1 ? ' bird' : ' birds') + (goneHidden ? ' · ' + goneHidden + ' sold and gone hidden' : '');
+      var goneHidden = state.status === 'Sold' || state.status === 'Archived' ? 0 : BIRDS_SAMPLE.filter(birdIsArchived).length;
+      countLabel.textContent = results.length + (results.length === 1 ? ' bird' : ' birds') + (goneHidden ? ' · ' + goneHidden + ' archived' : '');
 
       clearEl(listWrap);
       if (results.length === 0) {
@@ -174,6 +177,7 @@ const BirdsScreen = (function () {
     var h2 = document.createElement('h2');
     h2.textContent = birdIdentifier(bird);
     titleWrap.appendChild(h2);
+    if (birdIsArchived(bird)) titleWrap.appendChild(Object.assign(document.createElement('span'), { className: 'type-badge status-inactive-user', textContent: 'Archived' }));
 
     header.appendChild(avatar);
     header.appendChild(titleWrap);

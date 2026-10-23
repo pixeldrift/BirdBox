@@ -114,7 +114,7 @@ function allCages() {
 }
 
 function birdsInCage(code) {
-  return BIRDS_SAMPLE.filter(function (b) { return b.cage === code && !birdIsGone(b); });
+  return BIRDS_SAMPLE.filter(function (b) { return b.cage === code && !birdIsArchived(b); });
 }
 
 // "Building 2 · Home farm" for a cage — whatever of it is known.

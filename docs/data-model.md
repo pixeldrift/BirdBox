@@ -552,3 +552,7 @@ The faded ✎ on the home screen (and Account → Customize) opens a drag-and-dr
 ## Calendar and events
 
 `events(id, title, kind, notes, place, start_date, end_date, all_day, start_time, end_time, contact_id, assigned_to)` and `event_links(id, event_id, target_type, target_id)` (`sql/025_events.sql`). Events are client appointments, meetups, aviary tours, calls and the like; they link to the records they're about (birds, contacts, shipments, cages) so one entry leads to all the details. The Calendar shows **events plus, automatically, task occurrences, shipments (by their date) and health visits**, all through one function, `calendarItems()` in `js/data/events.js`, so month, week and day views draw them identically. A shipment on the calendar expands to its client, route and birds. Times use the in-app time picker (`js/app-time.js`).
+
+## Archived birds
+
+A bird is **archived** when it's been sold and is now owned by someone else (`birdIsArchived()` in `js/data/transfers-sample.js`): no longer in your possession. Nothing is deleted — the full record stays — but it isn't treated as part of the current collection: it's left out of the main Birds list, cage lists and cage counts. Find it under the **Archived** filter (or Sold) on the Birds list; its own page shows an "Archived" badge. Selling a bird and handing over ownership is what archives it.

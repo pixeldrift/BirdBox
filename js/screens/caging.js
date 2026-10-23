@@ -108,7 +108,7 @@ const CagingScreen = (function () {
 
   function renderCage(main, id, navigate, setTitle) {
     var isLoose = id === UNASSIGNED;
-    var birds = isLoose ? BIRDS_SAMPLE.filter(function (b) { return !b.cage && !birdIsGone(b); }) : birdsInCage(id);
+    var birds = isLoose ? BIRDS_SAMPLE.filter(function (b) { return !b.cage && !birdIsArchived(b); }) : birdsInCage(id);
     var rec = isLoose ? null : getCage(id);
     if (!isLoose && !rec && !birds.length) { main.appendChild(el('p', '', 'Cage not found.')); return; }
     setTitle(isLoose ? 'Unassigned birds' : id);
