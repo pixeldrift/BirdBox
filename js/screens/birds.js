@@ -60,14 +60,14 @@ const BirdsScreen = (function () {
         if (state.status === 'Archived') { if (!birdIsArchived(b)) return false; }
         else {
           if (state.status !== 'All' && b.status !== state.status) return false;
-          if (state.status !== 'Sold' && birdIsArchived(b)) return false; // archived birds only show under Archived (or Sold)
+          if (state.status !== 'Sold' && state.status !== 'Deceased' && birdIsArchived(b)) return false; // archived birds only show under Archived, Sold or Deceased
         }
         if (!q) return true;
         var hay = [b.band, b.name, b.speciesName, b.scientificName, b.species, b.subspecies, b.mutation].filter(Boolean).join(' ').toLowerCase();
         return hay.indexOf(q) !== -1;
       });
 
-      var goneHidden = state.status === 'Sold' || state.status === 'Archived' ? 0 : BIRDS_SAMPLE.filter(birdIsArchived).length;
+      var goneHidden = state.status === 'Sold' || state.status === 'Deceased' || state.status === 'Archived' ? 0 : BIRDS_SAMPLE.filter(birdIsArchived).length;
       countLabel.textContent = results.length + (results.length === 1 ? ' bird' : ' birds') + (goneHidden ? ' · ' + goneHidden + ' archived' : '');
 
       clearEl(listWrap);

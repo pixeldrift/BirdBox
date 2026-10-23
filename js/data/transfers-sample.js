@@ -37,11 +37,11 @@ function addTransfer(data) {
 }
 
 // Who owns a bird: the contact that lists it as owned, or null when it's yours.
-// Archived: sold and now owned by someone else, so no longer in your possession. The record is kept in full
+// Archived: no longer in your possession — sold and now owned by someone else, or deceased. The record is kept in full
 // (find it under the Archived filter, or on its own page) but it isn't counted as part of your current collection —
 // it's left out of the main bird list, cage lists and cage counts.
 function birdIsArchived(bird) {
-  return bird.status === 'Sold' && !!birdOwner(bird.id);
+  return bird.status === 'Deceased' || (bird.status === 'Sold' && !!birdOwner(bird.id));
 }
 
 function birdOwner(birdId) {

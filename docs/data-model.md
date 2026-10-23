@@ -555,4 +555,4 @@ The faded ✎ on the home screen (and Account → Customize) opens a drag-and-dr
 
 ## Archived birds
 
-A bird is **archived** when it's been sold and is now owned by someone else (`birdIsArchived()` in `js/data/transfers-sample.js`): no longer in your possession. Nothing is deleted — the full record stays — but it isn't treated as part of the current collection: it's left out of the main Birds list, cage lists and cage counts. Find it under the **Archived** filter (or Sold) on the Birds list; its own page shows an "Archived" badge. Selling a bird and handing over ownership is what archives it.
+A bird is **archived** when it's no longer in your possession: sold and now owned by someone else, or deceased (`birdIsArchived()` in `js/data/transfers-sample.js`). Nothing is deleted — the full record stays — but it isn't treated as part of the current collection: it's left out of the main Birds list, cage lists and cage counts. Find it under the **Archived** filter (or Sold) on the Birds list; its own page shows an "Archived" badge. Selling a bird and handing over ownership, or marking it Deceased, is what archives it.
