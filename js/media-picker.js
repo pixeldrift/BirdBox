@@ -28,7 +28,18 @@ const MediaPicker = (function () {
         // 1. Take a new one, or choose from the device.
         function deviceButton(label, capture) {
           var btn = el('label', 'media-source');
-          btn.appendChild(el('span', 'media-source-icon', capture ? '📷' : '🖼'));
+          var ic = el('span', 'media-source-icon');
+          var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+          svg.setAttribute('viewBox', '0 0 24 24');
+          svg.setAttribute('class', 'media-source-svg');
+          svg.setAttribute('aria-hidden', 'true');
+          // a plain line camera, and an upload arrow into a tray
+          var d = capture ? 'M4 8h3l1.5-2h7L17 8h3v11H4zM12 16.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z' : 'M12 16V4M7 9l5-5 5 5M4 15v5h16v-5';
+          var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+          path.setAttribute('d', d);
+          svg.appendChild(path);
+          ic.appendChild(svg);
+          btn.appendChild(ic);
           btn.appendChild(el('span', '', label));
           var input = document.createElement('input');
           input.type = 'file';

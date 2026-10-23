@@ -1929,3 +1929,5 @@ button.care-food { cursor: pointer; }
 .photo-act-del { right: 5px; color: #A6543D; }
 .photo-act-icon { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
 .photo-main-btn { margin-top: 12px; width: 100%; }
+.media-source-icon { display: flex; }
+.media-source-svg { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
