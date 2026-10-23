@@ -3,7 +3,8 @@
 // Every connected family gets ONE species (siblings can't be different species), and several unrelated
 // families share a species so pairings between families give a low inbreeding coefficient.
 const fs = require('fs');
-const rows = fs.readFileSync(process.argv[2], 'utf8').split(/\r?\n/).filter(Boolean).map((l) => l.split('\t'));
+function load(path) {
+const rows = fs.readFileSync(path, 'utf8').split(/\r?\n/).filter(Boolean).map((l) => l.split('\t'));
 const head = rows.shift();
 const col = (r, k) => (r[head.indexOf(k)] || '').trim();
 const birds = rows.filter((r) => (r[head.indexOf('id')] || '').trim()).map((r) => ({ id: col(r, 'id').padStart(3, '0'), name: col(r, 'name'), sex: col(r, 'sex'), father: col(r, 'fatherID') && col(r, 'fatherID').padStart(3, '0'), mother: col(r, 'motherID') && col(r, 'motherID').padStart(3, '0'), mutation: col(r, 'mutation'), splits: col(r, 'splits') }));
@@ -43,8 +44,12 @@ Object.values(fam).forEach((list) => {
 const order = ['gcc', 'cockatiel', 'ringneck', 'lovebird', 'sun'];
 founders.forEach((b, i) => { speciesOf[b.id] = order[i % order.length]; });
 
+  return { birds, speciesOf, SP, fam, MUT };
+}
+if (require.main === module) {
 const q = (s) => "'" + String(s).replace(/'/g, "''") + "'";
 const sex = (s) => (s === 'M' ? 'Male' : s === 'F' ? 'Female' : 'Unsexed');
+const { birds, speciesOf, SP, fam, MUT } = load(process.argv[2]);
 const lines = birds.map((b) => {
   const sp = SP[speciesOf[b.id]];
   const mut = MUT[speciesOf[b.id]][b.mutation.toLowerCase()] || null;
@@ -71,3 +76,5 @@ on conflict (id) do nothing;
 fs.writeFileSync('sql/020_test_pedigree.sql', sql);
 const counts = {}; Object.values(speciesOf).forEach((s) => { counts[s] = (counts[s] || 0) + 1; });
 console.log(birds.length, 'birds', counts, 'families', Object.keys(fam).length);
+}
+module.exports = { load };
