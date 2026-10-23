@@ -1859,3 +1859,16 @@ button.care-food { cursor: pointer; }
 
 .action-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 12px; }
 .action-row .add-record-btn { flex: 1 1 auto; margin: 0; padding: 10px 12px; font-size: 0.85rem; }
+
+/* Caging tree edit mode */
+.home-edit.loc-edit { position: fixed; z-index: 30; }
+.home-edit.loc-edit.on { opacity: 0.95; background: var(--brand); color: #fff; }
+.loc-edit-hint { margin: 6px 2px 8px; font-size: 0.8rem; color: var(--muted); }
+.loc-move-note { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 12px; margin-bottom: 8px; border-radius: 10px; background: #EEF1E6; color: var(--brand); font-size: 0.85rem; font-weight: 600; }
+.loc-drop-root { padding: 12px; margin-bottom: 8px; border: 2px dashed #D4C6B0; border-radius: 12px; text-align: center; font-size: 0.82rem; color: var(--muted); }
+.loc-handle { flex: 0 0 auto; width: 26px; text-align: center; font-size: 1.3rem; color: var(--muted); cursor: grab; touch-action: none; user-select: none; }
+.loc-tree.editing .loc-twirl { width: 22px; }
+.loc-tree-row.drag-source { opacity: 0.35; }
+.loc-tree-row.drop-ok > .loc-item, .loc-drop-root.drop-ok { outline: 3px solid #4C6B45; background: #E7EDE2; }
+.dragging-now { cursor: grabbing; }
+.loc-ghost { position: fixed; z-index: 2000; pointer-events: none; opacity: 0.93; box-shadow: 0 10px 26px rgba(60, 46, 34, 0.3); }

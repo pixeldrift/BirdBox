@@ -9,8 +9,11 @@ const LocationExplorer = (function () {
   var state = {
     mode: 'browse', present: 'list', focus: 'aviary:main', allKind: 'cage',
     query: '', sort: 'name', filters: { unassigned: false, birds: false, empty: false, notSetUp: false },
-    expanded: {}, prefill: null,
+    expanded: {}, prefill: null, editing: false, moveNote: null,
   };
+
+  // What each kind of place can be dragged onto in the tree's edit mode.
+  var KIND_PARENTS = { cage: ['room', 'building'], room: ['building', 'location'], building: ['location'] };
 
   function el(tag, cls, text) {
     var e = document.createElement(tag);
@@ -243,7 +246,7 @@ const LocationExplorer = (function () {
       var focus = model.byId[state.focus];
 
       // 1. mode
-      wrap.appendChild(segmented([['browse', 'Browse'], ['tree', 'Tree'], ['all', 'All']], state.mode, function (m) { state.mode = m; draw(); }, 'loc-modes'));
+      wrap.appendChild(segmented([['browse', 'Browse'], ['tree', 'Tree'], ['all', 'All']], state.mode, function (m) { state.mode = m; state.editing = false; state.moveNote = null; draw(); }, 'loc-modes'));
 
       // 2. one search box, with Add new beside it
       var bar = el('div', 'loc-searchbar');
@@ -295,6 +298,18 @@ const LocationExplorer = (function () {
 
       var body = el('div', 'loc-body');
       wrap.appendChild(body);
+      if (state.mode === 'tree') {
+        // A faded pencil (like the Home Screen's) switches the tree into edit mode, where items can be dragged onto their new parent.
+        var edit = btn('home-edit loc-edit' + (state.editing ? ' on' : ''), state.editing ? '✓' : '✎', function () {
+          state.editing = !state.editing;
+          state.moveNote = null;
+          if (state.editing) LocationModel.descendants(model.root, model.byId).forEach(function (n) { if (n.children.length) state.expanded[n.id] = true; });
+          draw();
+        });
+        edit.setAttribute('aria-label', state.editing ? 'Done editing' : 'Edit the tree');
+        edit.title = state.editing ? 'Done' : 'Edit — drag items to move them';
+        wrap.appendChild(edit);
+      }
 
       function scopeText() {
         var searching = state.query.trim() || filtersActive();
@@ -382,16 +397,32 @@ const LocationExplorer = (function () {
             if (matchesQuery(n, model) && matchesFilters(n)) { show[n.id] = true; LocationModel.ancestors(n, model.byId).forEach(function (a) { show[a.id] = true; }); }
           });
         }
-        body.appendChild(inspector(focus));
+        if (state.editing) {
+          body.appendChild(el('p', 'loc-edit-hint', 'Drag ≡ onto a place to move it there — a cage onto a room or building, a room onto a building or location, a building onto a location. Drop on the strip below to take it out.'));
+        }
+        if (state.moveNote) {
+          var note = el('div', 'loc-move-note');
+          note.appendChild(el('span', '', state.moveNote.text));
+          if (state.moveNote.undo) note.appendChild(btn('pick-link', 'Undo', function () { var u = state.moveNote.undo; state.moveNote = null; u(); }));
+          body.appendChild(note);
+        }
+        if (!state.editing) body.appendChild(inspector(focus));
         if (!state.treeOpened) { // first time in Tree: open every branch so the whole hierarchy is visible
           state.treeOpened = true;
           LocationModel.descendants(model.root, model.byId).forEach(function (n) { if (n.children.length) state.expanded[n.id] = true; });
         }
-        var tree = el('div', 'loc-tree');
+        var tree = el('div', 'loc-tree' + (state.editing ? ' editing' : ''));
+        if (state.editing) {
+          var rootDrop = el('div', 'loc-drop-root');
+          rootDrop.dataset.id = model.root.id;
+          rootDrop.textContent = 'Drop here to take it out of its parent';
+          tree.appendChild(rootDrop);
+        }
         function row(n, parentEl) {
           if (show && !show[n.id]) return;
           var node = el('div', 'loc-tree-node');
           var r = el('div', 'loc-tree-row');
+          r.dataset.id = n.id;
           var hasKids = n.children.length > 0;
           var open = show ? true : !!state.expanded[n.id];
           var twirl = btn('loc-twirl' + (hasKids ? '' : ' none'), open ? '▾' : '▸', function () { state.expanded[n.id] = !state.expanded[n.id]; drawResults(); });
@@ -400,6 +431,7 @@ const LocationExplorer = (function () {
           r.appendChild(twirl);
           var it = item(n, { onOpen: function () { state.focus = n.id; drawResults(); } });
           if (state.focus === n.id) it.classList.add('selected');
+          if (state.editing && KIND_PARENTS[n.kind]) { var h = el('span', 'loc-handle', '≡'); h.setAttribute('aria-hidden', 'true'); h.dataset.id = n.id; r.insertBefore(h, twirl); }
           r.appendChild(it);
           node.appendChild(r);
           if (hasKids && open) {
@@ -414,6 +446,101 @@ const LocationExplorer = (function () {
         body.appendChild(tree);
         if (!tree.querySelector('.loc-tree-node') || (show && Object.keys(show).length === 0)) body.appendChild(empty('Nothing matches.'));
       }
+
+      // ---- drag and drop in edit mode (pointer events, so it works on touch too) ----
+      var drag = null;
+      function canDrop(node, target) {
+        if (!node || !target || target.id === node.id) return false;
+        if (target.kind === 'aviary') return node.parentId !== model.root.id;
+        if (target.id === node.parentId) return false;
+        return (KIND_PARENTS[node.kind] || []).indexOf(target.kind) !== -1;
+      }
+
+      function targetAt(x, y) {
+        var under = document.elementFromPoint(x, y);
+        var zone = under && under.closest && under.closest('.loc-tree-row, .loc-drop-root');
+        return zone && model.byId[zone.dataset.id] ? { zone: zone, node: model.byId[zone.dataset.id] } : null;
+      }
+
+      body.addEventListener('pointerdown', function (e) {
+        var h = e.target.closest && e.target.closest('.loc-handle');
+        if (!h || !state.editing) return;
+        var node = model.byId[h.dataset.id];
+        var rowEl = h.closest('.loc-tree-row');
+        var rect = rowEl.getBoundingClientRect();
+        var ghost = rowEl.querySelector('.loc-item').cloneNode(true);
+        ghost.classList.add('loc-ghost');
+        ghost.style.width = rect.width - 40 + 'px';
+        ghost.style.left = rect.left + 'px';
+        ghost.style.top = rect.top + 'px';
+        document.body.appendChild(ghost);
+        rowEl.classList.add('drag-source');
+        drag = { node: node, ghost: ghost, rowEl: rowEl, dx: e.clientX - rect.left, dy: e.clientY - rect.top, over: null };
+        body.classList.add('dragging-now');
+        e.preventDefault();
+      });
+
+      function markTargets(t) {
+        Array.prototype.forEach.call(body.querySelectorAll('.drop-ok'), function (z) { z.classList.remove('drop-ok'); });
+        if (t && canDrop(drag.node, t.node)) { t.zone.classList.add('drop-ok'); drag.over = t.node; } else drag.over = null;
+      }
+
+      function onMove(e) {
+        if (!drag) return;
+        drag.ghost.style.left = (e.clientX - drag.dx) + 'px';
+        drag.ghost.style.top = (e.clientY - drag.dy) + 'px';
+        if (e.clientY < 90) window.scrollBy(0, -14); else if (e.clientY > window.innerHeight - 90) window.scrollBy(0, 14);
+        markTargets(targetAt(e.clientX, e.clientY));
+      }
+
+      function onUp() {
+        if (!drag) return;
+        var d = drag;
+        drag = null;
+        d.ghost.parentNode.removeChild(d.ghost);
+        d.rowEl.classList.remove('drag-source');
+        body.classList.remove('dragging-now');
+        Array.prototype.forEach.call(body.querySelectorAll('.drop-ok'), function (z) { z.classList.remove('drop-ok'); });
+        if (d.over) moveNode(d.node, d.over);
+      }
+      if (state.unbind) state.unbind(); // one set of listeners at a time, however often the tree is redrawn
+      window.addEventListener('pointermove', onMove);
+      window.addEventListener('pointerup', onUp);
+      window.addEventListener('pointercancel', onUp);
+      state.unbind = function () { window.removeEventListener('pointermove', onMove); window.removeEventListener('pointerup', onUp); window.removeEventListener('pointercancel', onUp); };
+
+      // What to save to put `node` under `target` (and to put it back).
+      function moveChanges(node, target) {
+        var key = target.kind === 'aviary' ? '' : target.key;
+        if (node.kind === 'cage') {
+          var rec = getCage(node.key) || {};
+          return { type: 'cages', id: node.key, exists: !!getCage(node.key),
+            to: { roomId: target.kind === 'room' ? key : '', buildingCode: target.kind === 'building' ? key : '' }, from: { roomId: rec.roomId || '', buildingCode: rec.buildingCode || '' } };
+        }
+        if (node.kind === 'room') {
+          return { type: 'rooms', id: node.key, exists: true,
+            to: { buildingCode: target.kind === 'building' ? key : '', locationId: target.kind === 'location' ? key : '' }, from: { buildingCode: node.record.buildingCode || '', locationId: node.record.locationId || '' } };
+        }
+        return { type: 'buildings', id: node.key, exists: true, to: { locationId: target.kind === 'location' ? key : '' }, from: { locationId: node.record.locationId || '' } };
+      }
+
+      function save(c, values) {
+        return c.exists || getCage(c.id) || c.type !== 'cages' ? updateRecord(c.type, c.id, values) : createRecord('cages', Object.assign({ code: c.id }, values));
+      }
+
+      function moveNode(node, target) {
+        var c = moveChanges(node, target);
+        var where = target.kind === 'aviary' ? 'out of its parent' : 'to ' + target.name;
+        save(c, c.to).then(function () {
+          var after = LocationModel.build().byId[node.id];
+          var landed = after && (target.kind === 'aviary' ? after.parentId === 'aviary:main' : after.parentId === target.id);
+          state.moveNote = landed ? { text: 'Moved ' + node.name + ' ' + where + '.', undo: function () { save(c, c.from).then(function () { state.moveNote = { text: 'Put ' + node.name + ' back.' }; draw(); }).catch(failMove); } }
+            : { text: node.name + ' stays where its number puts it (it starts with its building’s code).', undo: null };
+          draw();
+        }).catch(failMove);
+      }
+
+      function failMove(err) { state.moveNote = { text: (err && err.message) || 'That didn’t move — try again.' }; draw(); }
 
       function drawAll() {
         var kinds = [['location', 'Locations'], ['building', 'Buildings'], ['room', 'Rooms'], ['cage', 'Cages']];
