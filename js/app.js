@@ -34,6 +34,7 @@
     'business/media': typeof MediaScreen !== 'undefined' ? MediaScreen : null,
     'account/customize': typeof CustomizeScreen !== 'undefined' ? CustomizeScreen : null,
     'account/myteam': typeof TeamScreen !== 'undefined' ? TeamScreen : null,
+    'account/myprofile': typeof MyProfileScreen !== 'undefined' ? MyProfileScreen : null,
     'account/settings': typeof SettingsScreen !== 'undefined' ? SettingsScreen : null,
     'account/about': typeof AboutScreen !== 'undefined' ? AboutScreen : null,
     'account/credits': typeof CreditsScreen !== 'undefined' ? CreditsScreen : null,
