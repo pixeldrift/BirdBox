@@ -31,7 +31,17 @@ function supplyThumbUrl(s) {
 function supplyAmount(s, qty) {
   var q = qty === undefined ? s.quantity : qty;
   if (q === null || q === undefined || q === '') return 'Not counted';
-  return q + (s.unit ? ' ' + s.unit : '');
+  return q + (s.unit ? ' ' + pluralUnit(s.unit, Number(q)) : '');
+}
+
+// "bag" -> "bags", "box" -> "boxes", "lb" stays "lb"; exactly one stays singular.
+function pluralUnit(unit, n) {
+  var u = String(unit).trim();
+  if (n === 1 || !u) return u;
+  if (/^(lbs?|oz|kg|g|ml|l|gal|ct|pcs?)$/i.test(u)) return u; // measurements don't get an s
+  if (/(s|x|z|ch|sh)$/i.test(u)) return u + 'es';
+  if (/[^aeiou]y$/i.test(u)) return u.slice(0, -1) + 'ies';
+  return u + 's';
 }
 
 // Running low: a reorder level is set and the amount on hand is at or under it.

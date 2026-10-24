@@ -61,7 +61,7 @@ const PhotosSection = (function () {
         body.appendChild(el('p', 'confirm-text', 'Take this ' + noun + ' off ' + (o.name || 'this record') + '? It stays in the Media library' + (others ? ' and on the ' + others + ' other record' + (others === 1 ? '' : 's') + ' it’s linked to' : '') + '.'));
         var unlink = el('button', 'save-btn', 'Remove from ' + (o.name || 'this record'));
         unlink.type = 'button';
-        unlink.addEventListener('click', function () { close(); unlinkMedia(o.mediaId, o.ownerType, o.ownerId).then(o.onDone).catch(function () {}); });
+        unlink.addEventListener('click', function () { close(); unlinkMedia(o.mediaId, o.ownerType, o.ownerId).then(o.onDone).catch(failed); });
         var del = el('button', 'add-record-btn danger-btn', 'Delete the ' + noun + ' completely');
         del.type = 'button';
         del.addEventListener('click', function () {
@@ -69,7 +69,7 @@ const PhotosSection = (function () {
           Modal.confirm({
             title: 'Delete for good?', confirmLabel: 'Delete completely', danger: true,
             message: 'Delete this ' + noun + ' from the Media library' + (others ? ', and take it off the ' + others + ' other record' + (others === 1 ? '' : 's') + ' that use it' : '') + '? This can’t be undone.',
-            onConfirm: function () { deleteMedia(o.mediaId).then(o.onDone).catch(function () {}); },
+            onConfirm: function () { deleteMedia(o.mediaId).then(o.onDone).catch(failed); },
           });
         });
         var cancel = el('button', 'add-record-btn', 'Cancel');
@@ -89,6 +89,8 @@ const PhotosSection = (function () {
     b.addEventListener('click', function (e) { e.stopPropagation(); onClick(); });
     return b;
   }
+
+  function failed(err) { Modal.alert((err && err.message) || 'That didn’t save — try again.', 'Couldn’t save that'); }
 
   var editing = {}; // which photo boxes are in edit mode, kept across redraws
 
@@ -112,7 +114,7 @@ const PhotosSection = (function () {
 
     (o.fixed || []).forEach(function (url) {
       var isMain = fixedMain ? url === fixedMain : !hasPrimaryUpload && url === o.fixed[0];
-      var makeMain = o.onFixedMain && !isMain ? function () { o.onFixedMain(url).then(o.refresh).catch(function () {}); } : null;
+      var makeMain = o.onFixedMain && !isMain ? function () { o.onFixedMain(url).then(o.refresh).catch(failed); } : null;
       var tile = el('button', 'photo-tile' + (isMain ? ' primary' : ''));
       tile.type = 'button';
       var img = el('img');
@@ -129,7 +131,7 @@ const PhotosSection = (function () {
     o.photos.forEach(function (photo) {
       var isMain = photo.isPrimary && !fixedMain && !((o.fixed || []).length && !hasPrimaryUpload);
       var makeMain = isMain ? null : function () {
-        setMainPhotoFor(o.ownerType, o.ownerId, photo.id).then(function () { return o.onMediaMain ? o.onMediaMain() : null; }).then(o.refresh).catch(function () {});
+        setMainPhotoFor(o.ownerType, o.ownerId, photo.id).then(function () { return o.onMediaMain ? o.onMediaMain() : null; }).then(o.refresh).catch(failed);
       };
       var tile = el('button', 'photo-tile' + (isMain ? ' primary' : ''));
       tile.type = 'button';

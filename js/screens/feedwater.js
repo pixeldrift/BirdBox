@@ -102,7 +102,7 @@ const FeedWaterScreen = (function () {
         b.appendChild(av);
         var info = el('span', 'list-row-info');
         info.appendChild(el('span', 'list-row-title', s ? s.name : f.label));
-        info.appendChild(el('span', 'list-row-sub', 'In ' + f.uses.length + (f.uses.length === 1 ? ' plan' : ' plans') + (s ? ' · ' + supplyAmount(s) + ' on hand' : '')));
+        info.appendChild(el('span', 'list-row-sub', 'In ' + f.uses.length + (f.uses.length === 1 ? ' plan' : ' plans') + (s ? ' · ' + supplyAmount(s) + ' in stock' : '')));
         b.appendChild(info);
         if (s && supplyIsLow(s)) b.appendChild(el('span', 'type-badge supply-low', 'Low'));
         if (s) b.addEventListener('click', function () { location.hash = '#/aviary/supplies/' + s.id; });

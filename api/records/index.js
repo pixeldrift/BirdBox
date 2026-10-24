@@ -209,6 +209,8 @@ module.exports = async function handler(req, res) {
 
     res.status(405).json({ error: 'Method not allowed' });
   } catch (err) {
-    res.status(500).json({ error: 'Could not handle that record' });
+    // 42703 / 42P01: the database is missing a column or table the code expects — a newer SQL file hasn't been run yet.
+    const behind = err && (err.code === '42703' || err.code === '42P01');
+    res.status(500).json({ error: behind ? 'The database needs its latest update for this — run the newest SQL file (see the sql folder).' : 'Could not handle that record' });
   }
 };

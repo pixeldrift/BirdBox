@@ -109,7 +109,7 @@ const SuppliesScreen = (function () {
 
     // Stock: the amount on hand, with quick adjust.
     var stock = el('div', 'detail-section');
-    stock.appendChild(el('h3', '', 'On hand'));
+    stock.appendChild(el('h3', '', 'Inventory'));
     var line = el('div', 'stock-line');
     line.appendChild(el('strong', 'stock-amount' + (supplyIsLow(s) ? ' low' : ''), supplyAmount(s)));
     if (supplyIsLow(s)) line.appendChild(el('span', 'type-badge supply-low', 'Running low'));
@@ -129,9 +129,9 @@ const SuppliesScreen = (function () {
     var facts = el('div', 'fact-grid');
     if (s.brand) facts.appendChild(factRow('Brand', s.brand));
     if (s.price !== null && s.price !== undefined) facts.appendChild(factRow('Price each', formatMoney(s.price)));
-    if (s.source) facts.appendChild(factRow('Where to get it', s.source));
+    if (s.source) facts.appendChild(factRow('Source details', s.source));
     if (facts.firstChild) wrap.appendChild(facts);
-    if (s.description) { var d = el('div', 'detail-section'); d.appendChild(el('h3', '', 'About it')); d.appendChild(el('p', 'notes-text', s.description)); wrap.appendChild(d); }
+    if (s.description) { var d = el('div', 'detail-section'); d.appendChild(el('h3', '', 'About')); d.appendChild(el('p', 'notes-text', s.description)); wrap.appendChild(d); }
 
     wrap.appendChild(PhotosSection.render({ ownerType: 'supply', ownerId: s.id, name: s.name, photos: mediaPhotos('supply', s.id), fixed: s.images || [], fixedMain: s.mainImage || '', refresh: again,
       onFixedMain: function (url) { return updateRecord('supplies', s.id, { mainImage: url }); },
@@ -154,7 +154,7 @@ const SuppliesScreen = (function () {
     wrap.appendChild(usage);
 
     wrap.appendChild(Relations.one({
-      title: 'Bought from', parentName: 'supply', value: s.vendorId || '', find: getContact,
+      title: 'Source', parentName: 'supply', value: s.vendorId || '', find: getContact,
       render: function (c) { return contactChip(c, function () { location.hash = '#/business/contacts/' + c.id; }); },
       picker: function (cfg) { return Picker.contacts(Object.assign({ placeholder: 'Pick the vendor — search contacts…' }, cfg)); },
       set: function (cid) { return updateRecord('supplies', s.id, { vendorId: cid || '' }); }, refresh: again,
