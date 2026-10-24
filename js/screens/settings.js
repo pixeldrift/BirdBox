@@ -132,8 +132,8 @@ const SettingsScreen = (function () {
     credit.appendChild(document.createTextNode('The artwork in these styles belongs to its artists. '));
     var creditLink = document.createElement('a');
     creditLink.className = 'ext-link';
-    creditLink.href = '#/account/credits';
-    creditLink.textContent = 'See Credits';
+    creditLink.href = '#/account/about';
+    creditLink.textContent = 'See About';
     credit.appendChild(creditLink);
     section.appendChild(credit);
 

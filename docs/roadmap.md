@@ -180,7 +180,7 @@ How it fits the plan above:
 
 ## Credits, partners and affiliate links
 
-Account -> Credits (`js/screens/credits.js`, data in `js/data/credits.js`) lists the sources, artists
+Account -> About lists credits (data in `js/data/credits.js`) lists the sources, artists
 and partners behind the app with a short description of each and an external link: Birds of the
 World, eBird / the Clements Checklist, Avibase, the IOC list, Birdorable, TeraTigerStudio, Dribbr
 and Gencalc. Fonts and other technical credits are deliberately not listed in the app — the audience

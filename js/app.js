@@ -37,7 +37,6 @@
     'account/myprofile': typeof MyProfileScreen !== 'undefined' ? MyProfileScreen : null,
     'account/settings': typeof SettingsScreen !== 'undefined' ? SettingsScreen : null,
     'account/about': typeof AboutScreen !== 'undefined' ? AboutScreen : null,
-    'account/credits': typeof CreditsScreen !== 'undefined' ? CreditsScreen : null,
     'business/reports': typeof ReportsScreen !== 'undefined' ? ReportsScreen : null,
   };
 

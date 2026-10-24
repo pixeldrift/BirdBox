@@ -53,7 +53,6 @@ select * from (values
   ('account/privacy', 'account', 'Privacy', 'icons/tinted/account/Privacy.png', 'Control what''s public, member-only, or private.', 60, true, false),
   ('account/help', 'account', 'Help', 'icons/tinted/account/Help.png', 'Guides, FAQs, and support.', 90, true, false),
   ('account/about', 'account', 'About', 'icons/tinted/mybirds/Birds.png', 'Who made BirdBox, who it’s for, and where it’s headed.', 100, true, false),
-  ('account/customize', 'account', 'Customize', 'icons/tinted/account/Settings.png', 'Reorder and hide the home screen tiles and the tabs inside each section.', 110, true, false),
-  ('account/credits', 'account', 'Credits', 'icons/tinted/classifieds/Notes.png', 'The sources, artists, and partners behind BirdBox.', 120, true, false)
+  ('account/customize', 'account', 'Customize', 'icons/tinted/account/Settings.png', 'Reorder and hide the home screen tiles and the tabs inside each section.', 110, true, false)
 ) as seed(id, parent_id, label, icon, blurb, sort, visible, home_tile)
 where not exists (select 1 from navigation limit 1);

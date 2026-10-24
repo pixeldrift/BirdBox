@@ -1,4 +1,4 @@
-// Sources, artists and partners credited on Account -> Credits. Add an entry here and it appears
+// Sources, artists and partners credited on Account -> About. Add an entry here and it appears
 // on that screen — nothing else to change.
 //
 // relationship: 'courtesy' (we simply recommend them — the default), 'partner' (a cross-promotion
