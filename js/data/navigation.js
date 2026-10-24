@@ -66,7 +66,15 @@ function saveNavigation(changes) {
     return chain.then(function () {
       var body = {};
       ['sort', 'visible', 'homeTile', 'label', 'parentId'].forEach(function (k) { if (c[k] !== undefined) body[k] = c[k]; });
-      return recordsRequest('PATCH', 'navigation', c.id, body);
+      if (navRow(c.id)) return recordsRequest('PATCH', 'navigation', c.id, body);
+      // A menu item that has no saved row yet (a tab added to the app after the table was seeded): create it, so moving it works too.
+      var grp = NAV_DEFAULT.filter(function (g) { return g.id === c.id; })[0];
+      var tab = NAV_SCREENS.filter(function (s) { return s.key === c.id; })[0];
+      var def = grp || tab || {};
+      return recordsRequest('POST', 'navigation', null, Object.assign({
+        id: c.id, label: def.label || c.label || c.id, icon: def.icon || '', blurb: def.blurb || '', parentId: grp ? '' : (tab ? tab.home : ''),
+        sort: 0, visible: true, homeTile: grp ? grp.homeTile !== false : false,
+      }, body));
     });
   }, Promise.resolve()).then(function () {
     return fetch('/api/records?type=navigation').then(function (r) { return r.json(); }).then(function (rows) {
@@ -84,5 +92,5 @@ function resetNavigation() {
     changes.push({ id: g.id, sort: (gi + 1) * 10, visible: true, homeTile: g.homeTile !== false, label: g.label });
     g.screens.forEach(function (s, si) { changes.push({ id: s.key, parentId: g.id, sort: (si + 1) * 10 + gi * 100, visible: true, label: s.label }); });
   });
-  return saveNavigation(changes.filter(function (c) { return navRow(c.id); }));
+  return saveNavigation(changes);
 }

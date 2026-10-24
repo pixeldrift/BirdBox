@@ -1,6 +1,16 @@
 // Small shared helpers for list/detail screens (Birds, Contacts, Accounting, ...).
 // Kept intentionally minimal — screen-specific row/card markup stays in each screen module.
 
+// Phone numbers are shown and saved as xxx-xxx-xxxx (the server does the same, so it never depends on this).
+function formatPhone(input) {
+  var raw = String(input == null ? '' : input).trim();
+  if (!raw) return '';
+  var digits = raw.replace(/\D/g, '');
+  if (digits.length === 11 && digits[0] === '1') digits = digits.slice(1);
+  if (digits.length === 10 && !/[a-z]/i.test(raw) && !/^\+(?!1)/.test(raw)) return digits.slice(0, 3) + '-' + digits.slice(3, 6) + '-' + digits.slice(6);
+  return raw;
+}
+
 function clearEl(el) {
   while (el.firstChild) el.removeChild(el.firstChild);
 }

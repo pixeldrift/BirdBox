@@ -51,8 +51,6 @@ select * from (values
   ('account/myteam', 'account', 'My Team', 'icons/tinted/account/My_Team.png', 'Manage collaborators who can access your records.', 40, true, false),
   ('account/settings', 'account', 'Settings', 'icons/tinted/account/Settings.png', 'App preferences and configuration.', 50, true, false),
   ('account/privacy', 'account', 'Privacy', 'icons/tinted/account/Privacy.png', 'Control what''s public, member-only, or private.', 60, true, false),
-  ('account/cloudsync', 'account', 'Cloud Sync', 'icons/tinted/account/Cloud_Sync.png', 'Back up and sync your data across devices.', 70, true, false),
-  ('account/ondevice', 'account', 'On Device', 'icons/tinted/account/On_Device.png', 'Keep data stored locally on this device only.', 80, true, false),
   ('account/help', 'account', 'Help', 'icons/tinted/account/Help.png', 'Guides, FAQs, and support.', 90, true, false),
   ('account/about', 'account', 'About', 'icons/tinted/mybirds/Birds.png', 'Who made BirdBox, who it’s for, and where it’s headed.', 100, true, false),
   ('account/customize', 'account', 'Customize', 'icons/tinted/account/Settings.png', 'Reorder and hide the home screen tiles and the tabs inside each section.', 110, true, false),

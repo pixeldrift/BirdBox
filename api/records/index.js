@@ -1,5 +1,6 @@
 const { neon } = require('@neondatabase/serverless');
 const { SCHEMAS } = require('../_lib/schemas');
+const { normalizePhone } = require('../_lib/phone');
 
 const sql = neon(process.env.DATABASE_URL);
 
@@ -68,6 +69,8 @@ function clean(schema, input, creating) {
       v = String(v == null ? '' : v).trim();
       if (!v && !f.required) { values[f.col] = ''; continue; }
       if (!f.options.includes(v)) return { error: label(key) + ' must be one of: ' + f.options.join(', ') };
+    } else if (f.type === 'phone') {
+      v = normalizePhone(v).slice(0, f.max || 40);
     } else {
       v = String(v == null ? '' : v).trim().slice(0, f.max || 500);
       if (!v && f.required) return { error: label(key) + ' is required' };
@@ -167,6 +170,11 @@ module.exports = async function handler(req, res) {
         if (!newId) { res.status(400).json({ error: 'Code is required (letters and numbers, e.g. F7 or F2-010)' }); return; }
         const taken = await sql(`select 1 from ${schema.table} where code = $1`, [newId]);
         if (taken.length) { res.status(409).json({ error: 'There is already one with that code' }); return; }
+      } else if (schema.customId && body.id) { // rows whose id is meaningful (menu items like 'mybirds/genealogy')
+        newId = String(body.id).trim().slice(0, 80);
+        if (!/^[a-z0-9][a-z0-9/_-]*$/.test(newId)) { res.status(400).json({ error: 'That id isn’t valid' }); return; }
+        const taken = await sql(`select 1 from ${schema.table} where ${schema.pk} = $1`, [newId]);
+        if (taken.length) { res.status(409).json({ error: 'There is already one with that id' }); return; }
       } else {
         newId = schema.idPrefix + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
       }

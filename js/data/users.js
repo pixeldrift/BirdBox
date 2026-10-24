@@ -8,7 +8,7 @@ var USERS_SAMPLE = [];
 var USER_ROLES = [
   { id: 'Owner', blurb: 'Runs the aviary. Full access.' },
   { id: 'Manager', blurb: 'Day-to-day running: birds, shipping, records.' },
-  { id: 'Employee', blurb: 'Paid staff working with the birds and records.' },
+  { id: 'Staff', blurb: 'Paid staff working with the birds and records.' },
   { id: 'Volunteer', blurb: 'Helps out — care tasks and basic records.' },
 ];
 
@@ -20,6 +20,7 @@ var usersLoaded = fetch('/api/records?type=users')
   .then(function (list) {
     USERS_SAMPLE.length = 0;
     Array.prototype.push.apply(USERS_SAMPLE, list);
+    USERS_SAMPLE.forEach(function (u) { if (u.role === 'Employee') u.role = 'Staff'; }); // renamed; saved as Staff next time it's edited (or by sql/029)
   })
   .catch(function (err) {
     console.error('Could not load the team from the server:', err);

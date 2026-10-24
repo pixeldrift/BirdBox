@@ -1717,7 +1717,7 @@ select.app-select-native { position: absolute; width: 1px; height: 1px; opacity:
 .type-team { background: #E4EDF3; color: #4C6E85; }
 .role-owner { background: #F6ECD6; color: #96712B; }
 .role-manager { background: #E4EDF3; color: #4C6E85; }
-.role-employee { background: #E7EDE2; color: #4C6B45; }
+.role-employee, .role-staff { background: #E7EDE2; color: #4C6B45; }
 .role-volunteer { background: #F0E6F3; color: #7A4F8A; }
 .status-inactive-user { background: #EFE9E1; color: var(--muted); }
 .initials-avatar { font-weight: 800; color: #A6543D; font-size: 0.95rem; }

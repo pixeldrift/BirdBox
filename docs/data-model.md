@@ -531,7 +531,7 @@ The faded ✎ on the home screen (and Account → Customize) opens a drag-and-dr
 
 ## Team (users)
 
-`users(id, first_name, last_name, role, status, email, phone, notes)` — the people who help run the aviary. There are no logins yet; this is the record that tasks and permissions will attach to. Roles: Owner, Manager, Employee, Volunteer (each will carry default permissions, see the roadmap). Every user is mirrored automatically into the address book as a contact of type `Team` (`contacts.user_id`, id `c-<user id>`), kept in step by the server when a user is added, changed or removed — so team members appear in pickers and in Contacts → My Team. A team member's details are edited under Account → My Team, not on the contact.
+`users(id, first_name, last_name, role, status, email, phone, notes)` — the people who help run the aviary. There are no logins yet; this is the record that tasks and permissions will attach to. Roles: Owner, Manager, Staff, Volunteer (each will carry default permissions, see the roadmap). Every user is mirrored automatically into the address book as a contact of type `Team` (`contacts.user_id`, id `c-<user id>`), kept in step by the server when a user is added, changed or removed — so team members appear in pickers and in Contacts → My Team. A team member's details are edited under Account → My Team, not on the contact.
 
 ## Genealogy tools
 

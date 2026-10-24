@@ -59,7 +59,8 @@ const RecordForm = (function () {
         get = function () { return control.value; };
       } else {
         control = el('input', 'form-input');
-        control.type = f.type === 'number' ? 'number' : f.type === 'date' ? 'date' : 'text';
+        control.type = f.type === 'number' ? 'number' : f.type === 'date' ? 'date' : f.type === 'phone' ? 'tel' : 'text';
+        if (f.type === 'phone') control.addEventListener('blur', function () { control.value = formatPhone(control.value); });
         if (f.type === 'number') control.step = '0.01';
         control.value = f.type === 'date' ? String(current).slice(0, 10) : current;
         get = function () { return control.value; };

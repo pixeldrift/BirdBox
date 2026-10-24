@@ -17,7 +17,7 @@ const SCHEMAS = {
       city: { col: 'city', type: 'text', max: 80 },
       state: { col: 'state', type: 'text', max: 40 },
       email: { col: 'email', type: 'text', max: 160 },
-      phone: { col: 'phone', type: 'text', max: 40 },
+      phone: { col: 'phone', type: 'phone', max: 40 },
       notes: { col: 'notes', type: 'text', max: 4000 },
       // Who owns which birds is changed through the ownership prompts, not by editing a contact.
       userId: { col: 'user_id', type: 'text', readOnly: true }, // set when this contact mirrors a team member
@@ -31,10 +31,10 @@ const SCHEMAS = {
     fields: {
       firstName: { col: 'first_name', type: 'text', required: true, max: 80 },
       lastName: { col: 'last_name', type: 'text', max: 80 },
-      role: { col: 'role', type: 'enum', required: true, options: ['Owner', 'Manager', 'Employee', 'Volunteer'] },
+      role: { col: 'role', type: 'enum', required: true, options: ['Owner', 'Manager', 'Staff', 'Volunteer'] },
       status: { col: 'status', type: 'enum', required: true, options: ['Active', 'Inactive'] },
       email: { col: 'email', type: 'text', max: 160 },
-      phone: { col: 'phone', type: 'text', max: 40 },
+      phone: { col: 'phone', type: 'phone', max: 40 },
       notes: { col: 'notes', type: 'text', max: 4000 },
     },
   },
@@ -148,7 +148,7 @@ const SCHEMAS = {
   },
   // The app's menus: home tiles and the tabs inside them (see sql/017_navigation.sql).
   navigation: {
-    table: 'navigation', pk: 'id', idPrefix: 'nav-', order: 'sort, id',
+    table: 'navigation', pk: 'id', idPrefix: 'nav-', order: 'sort, id', customId: true,
     fields: {
       parentId: { col: 'parent_id', type: 'text', max: 80 },
       label: { col: 'label', type: 'text', required: true, max: 60 },
@@ -172,7 +172,7 @@ const SCHEMAS = {
       name: { col: 'name', type: 'text', required: true, max: 120 },
       description: { col: 'description', type: 'text', max: 600 },
       address: { col: 'address', type: 'text', max: 300 },
-      phone: { col: 'phone', type: 'text', max: 60 },
+      phone: { col: 'phone', type: 'phone', max: 60 },
       email: { col: 'email', type: 'text', max: 160 },
       website: { col: 'website', type: 'text', max: 200 },
       socials: { col: 'socials', type: 'text', max: 400 },

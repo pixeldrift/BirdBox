@@ -299,7 +299,7 @@ basic genealogy navigation and are the data these features would eventually buil
 
 ## Team and permissions — later
 
-- **Permissions system:** granular control over what each user can see or edit, by area (birds, shipping, accounting, contacts, places, media, settings…) and by action (see / add / change / delete). Each **role** (Owner, Manager, Employee, Volunteer) gets a default permission set, and a role's defaults can be customised, as can an individual's. Users are defined already (see below); this is what gives them teeth.
+- **Permissions system:** granular control over what each user can see or edit, by area (birds, shipping, accounting, contacts, places, media, settings…) and by action (see / add / change / delete). Each **role** (Owner, Manager, Staff, Volunteer) gets a default permission set, and a role's defaults can be customised, as can an individual's. Users are defined already (see below); this is what gives them teeth.
 - **Logins:** sign-in for team members, tied to their user record, so the permissions actually apply.
 - **Assign team members:** to tasks, calendar events, shipments and care routines once those sections exist (a nullable `assigned_to` reference to `users.id` on each).
 
@@ -344,3 +344,12 @@ Principle: `docs/principles.md` ("many ways in; everything linked both direction
 ## Shipping — later
 
 - **Booking and label helper:** a tool that fills out the carrier's booking forms and prints shipping labels for you from what BirdBox already knows — the client's name, address and phone from the address book, your own details from My Aviary, the birds (species, band, count) and the route/date — so you're not retyping it each time. Starts as printable/copyable forms for the carriers you use most, with the waybill number and the saved PDFs filed back onto the shipment.
+
+## Offline mode — later (important)
+
+Many users will work in rural areas with poor or no signal while in the aviary, so BirdBox has to keep working offline.
+
+- **Work offline:** records, photos and ticked-off tasks entered with no connection are kept on the device and queued, then pushed to the server automatically when there's signal again, with sensible handling of conflicts.
+- **A sync status indicator, not a menu section:** a small icon in the top bar showing **clean** (everything saved to the server) or **dirty** (changes waiting to sync, with how many), and tapping it shows what's pending and lets you retry. The "On Device" and "Cloud Sync" icons (`icons/tinted/account/On_Device.png`, `Cloud_Sync.png`) are kept for this.
+- **What must be available offline:** the birds, cages and places, care plans and today's tasks and calendar, supplies, and contacts — read and write; photos queued for upload.
+- **Safety:** warn before anything that would lose unsynced changes (sign out, clear data), and never silently drop a failed save.
