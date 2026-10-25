@@ -15,17 +15,6 @@ const BirdsScreen = (function () {
     var wrap = document.createElement('div');
     wrap.className = 'list-screen';
 
-    var actions = document.createElement('div');
-    actions.className = 'list-actions';
-    [['+ Add Bird', 'new'], ['Import CSV', 'import']].forEach(function (a) {
-      var btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'add-record-btn';
-      btn.textContent = a[0];
-      btn.addEventListener('click', function () { navigate(a[1]); });
-      actions.appendChild(btn);
-    });
-
     var tools = ListTools.create({
       screen: 'birds', placeholder: 'Search birds…', ariaLabel: 'Search birds', query: state.query,
       onQuery: function (v) { state.query = v; draw(); }, onRedraw: function () { draw(); },
@@ -35,6 +24,29 @@ const BirdsScreen = (function () {
 
     var countLabel = document.createElement('p');
     countLabel.className = 'list-count';
+    var countRow = document.createElement('div');
+    countRow.className = 'count-row';
+    countRow.appendChild(countLabel);
+    var addMini = document.createElement('button');
+    addMini.type = 'button';
+    addMini.className = 'add-mini';
+    addMini.textContent = '+ Add New Item';
+    addMini.addEventListener('click', function () {
+      Modal.open({
+        title: 'Add new',
+        build: function (body, close) {
+          [['+ Add a bird', 'new'], ['Import birds from a CSV file', 'import']].forEach(function (a) {
+            var b = document.createElement('button');
+            b.type = 'button';
+            b.className = 'add-record-btn loc-add-row';
+            b.textContent = a[0];
+            b.addEventListener('click', function () { close(); navigate(a[1]); });
+            body.appendChild(b);
+          });
+        },
+      });
+    });
+    countRow.appendChild(addMini);
 
     var listWrap = document.createElement('div');
     listWrap.className = 'list-rows';
@@ -56,7 +68,11 @@ const BirdsScreen = (function () {
       });
 
       var goneHidden = state.status.some(function (s) { return s === 'Sold' || s === 'Deceased' || s === 'Archived'; }) ? 0 : BIRDS_SAMPLE.filter(birdIsArchived).length;
-      countLabel.textContent = results.length + (results.length === 1 ? ' bird' : ' birds') + (goneHidden ? ' · ' + goneHidden + ' archived' : '');
+      clearEl(countLabel);
+      var num = document.createElement('strong');
+      num.textContent = String(results.length);
+      countLabel.appendChild(num);
+      countLabel.appendChild(document.createTextNode((results.length === 1 ? ' bird' : ' birds') + (goneHidden ? ' · ' + goneHidden + ' archived' : '')));
 
       clearEl(listWrap);
       listWrap.className = tools.view === 'grid' ? 'tile-grid' : 'list-rows';
@@ -74,10 +90,9 @@ const BirdsScreen = (function () {
 
     draw();
 
-    wrap.appendChild(actions);
     wrap.appendChild(tools.bar);
     wrap.appendChild(tools.chips);
-    wrap.appendChild(countLabel);
+    wrap.appendChild(countRow);
     wrap.appendChild(listWrap);
     main.appendChild(wrap);
   }
