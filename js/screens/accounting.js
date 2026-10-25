@@ -17,27 +17,33 @@ const AccountingScreen = (function () {
     var wrap = document.createElement('div');
     wrap.className = 'list-screen';
 
+    var years = TRANSACTIONS_SAMPLE.map(function (t) { return +String(t.date).slice(0, 4); }).filter(Boolean);
+    var period = PeriodBar.create({ firstYear: years.length ? Math.min.apply(null, years) : undefined, onChange: function () { draw(); } });
+
     var summary = document.createElement('div');
     summary.className = 'summary-strip';
-    var income = transactionsTotal(TRANSACTIONS_SAMPLE, function (t) { return t.amount > 0; });
-    var expense = transactionsTotal(TRANSACTIONS_SAMPLE, function (t) { return t.amount < 0; });
-    [
-      ['Income', formatMoney(income)],
-      ['Expense', formatMoney(expense)],
-      ['Net', formatMoney(income + expense)],
-    ].forEach(function (s) {
-      var tile = document.createElement('div');
-      tile.className = 'summary-tile';
-      var l = document.createElement('span');
-      l.className = 'summary-tile-label';
-      l.textContent = s[0];
-      var v = document.createElement('span');
-      v.className = 'summary-tile-value';
-      v.textContent = s[1];
-      tile.appendChild(l);
-      tile.appendChild(v);
-      summary.appendChild(tile);
-    });
+    function drawSummary(rows) {
+      clearEl(summary);
+      var income = transactionsTotal(rows, function (t) { return t.amount > 0; });
+      var expense = transactionsTotal(rows, function (t) { return t.amount < 0; });
+      [
+        ['Income', formatMoney(income)],
+        ['Expense', formatMoney(expense)],
+        ['Net', formatMoney(income + expense)],
+      ].forEach(function (s) {
+        var tile = document.createElement('div');
+        tile.className = 'summary-tile';
+        var l = document.createElement('span');
+        l.className = 'summary-tile-label';
+        l.textContent = s[0];
+        var v = document.createElement('span');
+        v.className = 'summary-tile-value';
+        v.textContent = s[1];
+        tile.appendChild(l);
+        tile.appendChild(v);
+        summary.appendChild(tile);
+      });
+    }
 
     var searchInput = document.createElement('input');
     searchInput.type = 'search';
@@ -69,7 +75,9 @@ const AccountingScreen = (function () {
       });
 
       var q = state.query.trim().toLowerCase();
-      var results = TRANSACTIONS_SAMPLE.filter(function (t) {
+      var inPeriod = TRANSACTIONS_SAMPLE.filter(function (t) { return period.contains(t.date); });
+      drawSummary(inPeriod); // the totals are for the period chosen (not the search or Income/Expense filter)
+      var results = inPeriod.filter(function (t) {
         if (state.filter === 'Income' && t.amount <= 0) return false;
         if (state.filter === 'Expense' && t.amount >= 0) return false;
         if (!q) return true;
@@ -80,13 +88,13 @@ const AccountingScreen = (function () {
         return hay.indexOf(q) !== -1;
       }).slice().sort(function (a, b) { return b.date.localeCompare(a.date); });
 
-      countLabel.textContent = results.length + (results.length === 1 ? ' transaction' : ' transactions');
+      countLabel.textContent = results.length + (results.length === 1 ? ' transaction' : ' transactions') + ' · ' + period.label();
 
       clearEl(listWrap);
       if (results.length === 0) {
         var empty = document.createElement('p');
         empty.className = 'list-empty';
-        empty.textContent = 'No transactions match that search.';
+        empty.textContent = TRANSACTIONS_SAMPLE.length && !inPeriod.length ? 'Nothing recorded for ' + period.label() + '.' : 'No transactions match that search.';
         listWrap.appendChild(empty);
       } else {
         results.forEach(function (t) { listWrap.appendChild(renderRow(t, navigate)); });
@@ -109,6 +117,7 @@ const AccountingScreen = (function () {
     addTx.addEventListener('click', function () { navigate('new'); });
     txActions.appendChild(addTx);
     wrap.appendChild(txActions);
+    wrap.appendChild(period.el);
     wrap.appendChild(summary);
     wrap.appendChild(searchInput);
     wrap.appendChild(chipsWrap);
