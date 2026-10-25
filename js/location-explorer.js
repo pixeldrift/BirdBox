@@ -451,6 +451,7 @@ const LocationExplorer = (function () {
           var twirl = btn('loc-twirl' + (hasKids ? '' : ' none'), open ? '▾' : '▸', function () { state.expanded[n.id] = !state.expanded[n.id]; drawResults(); });
           twirl.setAttribute('aria-label', open ? 'Collapse' : 'Expand');
           twirl.disabled = !hasKids || !!show;
+          if (hasKids && open) r.appendChild(el('span', 'loc-stem'));
           r.appendChild(twirl);
           var it = item(n, { onOpen: function () { state.focus = n.id; drawResults(); } });
           if (state.focus === n.id) it.classList.add('selected');

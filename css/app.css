@@ -1941,17 +1941,11 @@ button.care-food { cursor: pointer; }
 .photo-act { border: 2px solid currentColor; box-sizing: border-box; }
 .task-who { font-weight: 800; color: var(--text); }
 
-/* Menu editor: eye + grab handle on the right, connector lines from a section to its tabs */
+/* Menu editor: eye + grab handle on the right */
 .ne-eye { flex: 0 0 auto; width: 34px; height: 34px; border: 0; background: none; padding: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #4C6B45; }
 .ne-eye.off { color: #B9AC9B; }
 .ne-eye-icon { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
 .ne-handle { padding: 4px 6px; }
-.ne-tabs { position: relative; margin-left: 14px; padding-left: 16px; }
-.ne-tab { position: relative; }
-.ne-tab::before { content: ''; position: absolute; left: -16px; top: 50%; width: 14px; border-top: 2px solid #D9C8B2; }
-.ne-tab::after { content: ''; position: absolute; left: -16px; top: -8px; bottom: -8px; border-left: 2px solid #D9C8B2; }
-.ne-tabs .ne-tab:last-child::after { bottom: 50%; }
-.ne-tab.dragging::before, .ne-tab.dragging::after { display: none; }
 
 /* Tree connectors, drawn per node so the line runs unbroken from the parent down to the last child's branch */
 .loc-tree-kids { border-left: 0; }
@@ -1960,3 +1954,8 @@ button.care-food { cursor: pointer; }
 .loc-tree-kids > .loc-tree-node:last-child > .loc-tree-row::after { content: ''; position: absolute; left: -8px; top: -8px; bottom: 50%; border-left: 1px solid #D8C9B2; }
 .loc-tree-kids > .loc-tree-node > .loc-tree-row::before { left: -8px; width: 8px; }
 .loc-tree-kids > .loc-tree-node > .loc-tree-row:has(> .loc-twirl.none)::before { width: 42px; }
+
+/* the line passes under each open branch's twirl, so there's no gap at the junction */
+.loc-tree-kids { margin-left: 13px; }
+.loc-tree-row .loc-twirl { position: relative; z-index: 1; }
+.loc-stem { position: absolute; left: 13px; top: 50%; bottom: -8px; border-left: 1px solid #D8C9B2; z-index: 0; pointer-events: none; }
