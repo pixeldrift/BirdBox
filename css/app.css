@@ -1940,3 +1940,15 @@ button.care-food { cursor: pointer; }
 .photo-act-del .photo-act-icon { width: 14px; height: 14px; }
 .photo-act { border: 2px solid currentColor; box-sizing: border-box; }
 .task-who { font-weight: 800; color: var(--text); }
+
+/* Menu editor: eye + grab handle on the right, connector lines from a section to its tabs */
+.ne-eye { flex: 0 0 auto; width: 34px; height: 34px; border: 0; background: none; padding: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #4C6B45; }
+.ne-eye.off { color: #B9AC9B; }
+.ne-eye-icon { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.ne-handle { padding: 4px 6px; }
+.ne-tabs { position: relative; margin-left: 14px; padding-left: 16px; }
+.ne-tab { position: relative; }
+.ne-tab::before { content: ''; position: absolute; left: -16px; top: 50%; width: 14px; border-top: 2px solid #D9C8B2; }
+.ne-tab::after { content: ''; position: absolute; left: -16px; top: -8px; bottom: -8px; border-left: 2px solid #D9C8B2; }
+.ne-tabs .ne-tab:last-child::after { bottom: 50%; }
+.ne-tab.dragging::before, .ne-tab.dragging::after { display: none; }

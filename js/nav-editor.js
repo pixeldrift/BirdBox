@@ -15,7 +15,7 @@ const NavEditor = (function () {
     clearEl(container);
     var message = el('div');
     var root = el('div', 'ne-groups');
-    container.appendChild(el('p', 'form-note', 'Drag ≡ to reorder. Drag a tab into another section to move it there. First level = the home screen; second level = the tabs inside it.'));
+    container.appendChild(el('p', 'form-note', 'Drag ≡ to reorder; tap the eye to hide or show. Drag a tab into another section to move it there. First level = the home screen; second level = the tabs inside it.'));
     container.appendChild(message);
     container.appendChild(root);
 
@@ -28,6 +28,27 @@ const NavEditor = (function () {
       if (!changes.length) return Promise.resolve();
       if (!NAV_ROWS.length) { fail(new Error('Run sql/017_navigation.sql in Neon first, then you can customize.')); return Promise.resolve(); }
       return saveNavigation(changes).then(function () { clearEl(message); if (onChange) onChange(); }).catch(fail);
+    }
+
+    // Visibility as an eye (slashed when hidden); same look for tiles and tabs.
+    function eyeButton(hidden, onClick) {
+      var b = el('button', 'ne-eye' + (hidden ? ' off' : ''));
+      b.type = 'button';
+      b.setAttribute('aria-label', hidden ? 'Show' : 'Hide');
+      b.title = hidden ? 'Hidden — tap to show' : 'Showing — tap to hide';
+      var ns = 'http://www.w3.org/2000/svg';
+      var svg = document.createElementNS(ns, 'svg');
+      svg.setAttribute('viewBox', '0 0 24 24');
+      svg.setAttribute('class', 'ne-eye-icon');
+      [['M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z'], ['circle']].forEach(function (p) {
+        var node = p[0] === 'circle' ? document.createElementNS(ns, 'circle') : document.createElementNS(ns, 'path');
+        if (p[0] === 'circle') { node.setAttribute('cx', '12'); node.setAttribute('cy', '12'); node.setAttribute('r', '3'); } else node.setAttribute('d', p[0]);
+        svg.appendChild(node);
+      });
+      if (hidden) { var slash = document.createElementNS(ns, 'path'); slash.setAttribute('d', 'M4 20L20 4'); svg.appendChild(slash); }
+      b.appendChild(svg);
+      b.addEventListener('click', onClick);
+      return b;
     }
 
     function handle() {
@@ -43,13 +64,10 @@ const NavEditor = (function () {
         var group = el('div', 'ne-group');
         group.dataset.id = g.id;
         var head = el('div', 'ne-row ne-head');
-        if (!isAccount) head.appendChild(handle());
         head.appendChild(el('strong', 'ne-label', isAccount ? g.label + ' (the avatar menu)' : g.label));
         if (!isAccount) {
-          var show = el('button', 'nav-move', g.homeTile === false ? 'Show' : 'Hide');
-          show.type = 'button';
-          show.addEventListener('click', function () { save([{ id: g.id, visible: g.homeTile === false, homeTile: true }]).then(draw); });
-          head.appendChild(show);
+          head.appendChild(eyeButton(g.homeTile === false, function () { save([{ id: g.id, visible: g.homeTile === false, homeTile: true }]).then(draw); }));
+          head.appendChild(handle());
         }
         group.appendChild(head);
         var tabs = el('div', 'ne-tabs');
@@ -57,12 +75,9 @@ const NavEditor = (function () {
         g.screens.forEach(function (s) {
           var tab = el('div', 'ne-row ne-tab' + (s.hidden ? ' off' : ''));
           tab.dataset.key = s.key;
-          tab.appendChild(handle());
           tab.appendChild(el('span', 'ne-label', s.label));
-          var eye = el('button', 'nav-move', s.hidden ? 'Show' : 'Hide');
-          eye.type = 'button';
-          eye.addEventListener('click', function () { save([{ id: s.key, visible: !!s.hidden }]).then(draw); });
-          tab.appendChild(eye);
+          tab.appendChild(eyeButton(!!s.hidden, function () { save([{ id: s.key, visible: !!s.hidden }]).then(draw); }));
+          tab.appendChild(handle());
           tabs.appendChild(tab);
         });
         group.appendChild(tabs);
