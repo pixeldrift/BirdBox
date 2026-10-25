@@ -2,7 +2,7 @@
 // when to reorder, who sells it, and photos. Care plans (Feed/Water) link to these, so tapping a food shows
 // its photos, source and stock. Routes: <id> · new · edit~<id>
 const SuppliesScreen = (function () {
-  var state = { query: '', category: 'All', lowOnly: false };
+  var state = { query: '', show: [] }; // show: any of the kinds, plus 'Running low'
   var tools = null;
 
   function el(tag, cls, text) {
@@ -54,8 +54,7 @@ const SuppliesScreen = (function () {
     tools = ListTools.create({
       screen: 'supplies', placeholder: 'Search supplies…', ariaLabel: 'Search supplies', query: state.query,
       onQuery: function (v) { state.query = v; draw(); }, onRedraw: function () { draw(); },
-      filters: [{ key: 'category', label: 'Kind', options: [['All', 'All']].concat(SUPPLY_CATEGORIES.map(function (c) { return [c, c]; })), isOn: function (v) { return v !== 'All'; }, clear: 'All' }],
-      toggles: [{ key: 'lowOnly', label: 'Running low only' }],
+      filters: [{ key: 'show', label: '', options: [['Running low', 'Running low']].concat(SUPPLY_CATEGORIES.map(function (c) { return [c, c]; })) }],
       get: function (k) { return state[k]; }, set: function (k, v) { state[k] = v; },
     });
     var count = el('p', 'list-count');
@@ -66,14 +65,16 @@ const SuppliesScreen = (function () {
       var q = state.query.trim().toLowerCase();
       var lowCount = SUPPLIES_SAMPLE.filter(supplyIsLow).length;
       var results = SUPPLIES_SAMPLE.filter(function (s) {
-        if (state.category !== 'All' && s.category !== state.category) return false;
-        if (state.lowOnly && !supplyIsLow(s)) return false;
+        var kinds = state.show.filter(function (k) { return k !== 'Running low'; });
+        if (kinds.length && kinds.indexOf(s.category) === -1) return false;
+        if (state.show.indexOf('Running low') !== -1 && !supplyIsLow(s)) return false;
         return !q || [s.name, s.brand, s.category, s.source, s.description].join(' ').toLowerCase().indexOf(q) !== -1;
       });
       clearEl(count);
       count.appendChild(document.createTextNode(results.length + (results.length === 1 ? ' supply' : ' supplies')));
       if (lowCount) {
-        var low = btn('pick-link', state.lowOnly ? '  · Show all' : '  · ' + lowCount + ' running low', function () { state.lowOnly = !state.lowOnly; draw(); });
+        var lowOn = state.show.indexOf('Running low') !== -1;
+        var low = btn('pick-link', lowOn ? '  · Show all' : '  · ' + lowCount + ' running low', function () { state.show = lowOn ? state.show.filter(function (k) { return k !== 'Running low'; }) : state.show.concat(['Running low']); draw(); });
         count.appendChild(low);
       }
       clearEl(list);

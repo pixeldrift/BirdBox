@@ -10,7 +10,7 @@ const BirdsScreen = (function () {
 
   function renderList(main, navigate) {
     BirdsAddScreen.afterAdd = null;
-    var state = { query: '', status: 'All' };
+    var state = { query: '', status: [] }; // status: any of the statuses (or Archived); none = everything not archived
 
     var wrap = document.createElement('div');
     wrap.className = 'list-screen';
@@ -29,7 +29,7 @@ const BirdsScreen = (function () {
     var tools = ListTools.create({
       screen: 'birds', placeholder: 'Search birds…', ariaLabel: 'Search birds', query: state.query,
       onQuery: function (v) { state.query = v; draw(); }, onRedraw: function () { draw(); },
-      filters: [{ key: 'status', label: 'Status', options: STATUSES.concat(['Archived']).map(function (s) { return [s, s]; }), isOn: function (v) { return v !== 'All'; }, clear: 'All' }],
+      filters: [{ key: 'status', label: '', options: STATUSES.filter(function (s) { return s !== 'All'; }).concat(['Archived']).map(function (s) { return [s, s]; }) }],
       get: function (k) { return state[k]; }, set: function (k, v) { state[k] = v; },
     });
 
@@ -44,17 +44,18 @@ const BirdsScreen = (function () {
 
       var q = state.query.trim().toLowerCase();
       var results = BIRDS_SAMPLE.filter(function (b) {
-        if (state.status === 'Archived') { if (!birdIsArchived(b)) return false; }
-        else {
-          if (state.status !== 'All' && b.status !== state.status) return false;
-          if (state.status !== 'Sold' && state.status !== 'Deceased' && birdIsArchived(b)) return false; // archived birds only show under Archived, Sold or Deceased
-        }
+        if (!state.status.length) { if (birdIsArchived(b)) return false; }
+        else if (!state.status.some(function (s) {
+          if (s === 'Archived') return birdIsArchived(b);
+          if (b.status !== s) return false;
+          return s === 'Sold' || s === 'Deceased' || !birdIsArchived(b); // archived birds only show under Archived, Sold or Deceased
+        })) return false;
         if (!q) return true;
         var hay = [b.band, b.name, b.speciesName, b.scientificName, b.species, b.subspecies, b.mutation].filter(Boolean).join(' ').toLowerCase();
         return hay.indexOf(q) !== -1;
       });
 
-      var goneHidden = state.status === 'Sold' || state.status === 'Deceased' || state.status === 'Archived' ? 0 : BIRDS_SAMPLE.filter(birdIsArchived).length;
+      var goneHidden = state.status.some(function (s) { return s === 'Sold' || s === 'Deceased' || s === 'Archived'; }) ? 0 : BIRDS_SAMPLE.filter(birdIsArchived).length;
       countLabel.textContent = results.length + (results.length === 1 ? ' bird' : ' birds') + (goneHidden ? ' · ' + goneHidden + ' archived' : '');
 
       clearEl(listWrap);

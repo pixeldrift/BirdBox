@@ -1975,3 +1975,5 @@ button.care-food { cursor: pointer; }
 .tile-title { font-weight: 800; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tile-sub { font-size: 0.78rem; color: var(--muted); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tile-badge { margin-top: 2px; }
+.filter-actions { display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin-top: 14px; }
+.filter-actions .add-record-btn, .filter-actions .save-btn { width: auto; margin: 0; padding-left: 20px; padding-right: 20px; }

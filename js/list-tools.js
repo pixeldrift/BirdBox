@@ -2,9 +2,8 @@
 // of choices; what's switched on shows as ✕ chips under the bar (same as the Caging controls). Grid cards share one look.
 //
 //   var tools = ListTools.create({ screen: 'birds', placeholder, ariaLabel, query, onQuery, onRedraw,
-//                                  filters: [{ key, label, options: [[value, label], …], isOn: fn }, …] ← single choice each
-//                                  toggles: [{ key, label, note }]                                      ← on / off each
-//                                  get(key) → value, set(key, value) })
+//                                  filters: [{ key, label, options: [[value, label], …] }, …]   ← pick any number of each
+//                                  get(key) → array of picked values, set(key, array) })
 //   tools.bar   the search + toggle + filter row     tools.chips   the active-filter chips
 //   tools.view  'list' | 'grid' (remembered)         tools.card(spec) builds a grid card
 const ListTools = (function () {
@@ -79,10 +78,10 @@ const ListTools = (function () {
     function active() {
       var out = [];
       (o.filters || []).forEach(function (f) {
-        var v = o.get(f.key);
-        if (f.isOn(v)) out.push({ key: f.key, label: f.options.filter(function (x) { return x[0] === v; }).map(function (x) { return x[1]; })[0] || String(v), clear: f.clear });
+        (o.get(f.key) || []).forEach(function (v) {
+          out.push({ key: f.key, value: v, label: f.options.filter(function (x) { return x[0] === v; }).map(function (x) { return x[1]; })[0] || String(v) });
+        });
       });
-      (o.toggles || []).forEach(function (t) { if (o.get(t.key)) out.push({ key: t.key, label: t.label, clear: false }); });
       return out;
     }
 
@@ -97,46 +96,49 @@ const ListTools = (function () {
       if (on.length) filterBtn.appendChild(el('span', 'loc-filter-count', String(on.length)));
       clearEl(chips);
       on.forEach(function (a) {
-        chips.appendChild(btn('loc-chip', a.label + '  ✕', function () { o.set(a.key, a.clear); o.onRedraw(); }));
+        chips.appendChild(btn('loc-chip', a.label + '  ✕', function () {
+          o.set(a.key, (o.get(a.key) || []).filter(function (v) { return v !== a.value; }));
+          o.onRedraw();
+        }));
       });
     };
 
+    // Pick as many as you like; nothing picked means no filter. Nothing changes until Apply.
     function openFilters() {
+      var staged = {};
+      (o.filters || []).forEach(function (f) { staged[f.key] = (o.get(f.key) || []).slice(); });
       Modal.open({
         title: 'Filter',
         build: function (body, close) {
           function drawBody() {
             clearEl(body);
             (o.filters || []).forEach(function (f) {
-              body.appendChild(el('p', 'subsection-label', f.label));
+              if (f.label) body.appendChild(el('p', 'subsection-label', f.label));
               var list = el('div', 'app-select-list');
               f.options.forEach(function (opt) {
-                var sel = o.get(f.key) === opt[0];
-                var b = btn('app-select-option' + (sel ? ' selected' : ''), '', function () { o.set(f.key, opt[0]); o.onRedraw(); drawBody(); });
+                var sel = staged[f.key].indexOf(opt[0]) !== -1;
+                var b = btn('app-select-option' + (sel ? ' selected' : ''), '', function () {
+                  var i = staged[f.key].indexOf(opt[0]);
+                  if (i === -1) staged[f.key].push(opt[0]); else staged[f.key].splice(i, 1);
+                  drawBody();
+                });
                 b.appendChild(el('span', '', opt[1]));
                 if (sel) b.appendChild(el('span', 'app-select-check', '✓'));
                 list.appendChild(b);
               });
               body.appendChild(list);
             });
-            (o.toggles || []).forEach(function (t) {
-              var label = el('label', 'loc-filter-row');
-              var cb = el('input');
-              cb.type = 'checkbox';
-              cb.checked = !!o.get(t.key);
-              cb.addEventListener('change', function () { o.set(t.key, cb.checked); o.onRedraw(); });
-              var text = el('span', '', t.label);
-              if (t.note) text.appendChild(el('small', '', t.note));
-              label.appendChild(cb);
-              label.appendChild(text);
-              body.appendChild(label);
-            });
-            body.appendChild(btn('save-btn', 'Done', close));
-            if (active().length) body.appendChild(btn('add-record-btn', 'Clear filters', function () {
-              (o.filters || []).forEach(function (f) { o.set(f.key, f.clear); });
-              (o.toggles || []).forEach(function (t) { o.set(t.key, false); });
-              o.onRedraw(); drawBody();
+            var actions = el('div', 'filter-actions');
+            actions.appendChild(btn('add-record-btn', 'Clear filters', function () {
+              (o.filters || []).forEach(function (f) { staged[f.key] = []; });
+              drawBody();
             }));
+            actions.appendChild(btn('save-btn', 'Apply', function () {
+              (o.filters || []).forEach(function (f) { o.set(f.key, staged[f.key]); });
+              close();
+              o.onRedraw();
+            }));
+            body.appendChild(actions);
           }
           drawBody();
         },
