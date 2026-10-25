@@ -1952,3 +1952,11 @@ button.care-food { cursor: pointer; }
 .ne-tab::after { content: ''; position: absolute; left: -16px; top: -8px; bottom: -8px; border-left: 2px solid #D9C8B2; }
 .ne-tabs .ne-tab:last-child::after { bottom: 50%; }
 .ne-tab.dragging::before, .ne-tab.dragging::after { display: none; }
+
+/* Tree connectors, drawn per node so the line runs unbroken from the parent down to the last child's branch */
+.loc-tree-kids { border-left: 0; }
+.loc-tree-kids > .loc-tree-node { position: relative; }
+.loc-tree-kids > .loc-tree-node:not(:last-child)::before { content: ''; position: absolute; left: -8px; top: -8px; bottom: -8px; border-left: 1px solid #D8C9B2; }
+.loc-tree-kids > .loc-tree-node:last-child > .loc-tree-row::after { content: ''; position: absolute; left: -8px; top: -8px; bottom: 50%; border-left: 1px solid #D8C9B2; }
+.loc-tree-kids > .loc-tree-node > .loc-tree-row::before { left: -8px; width: 8px; }
+.loc-tree-kids > .loc-tree-node > .loc-tree-row:has(> .loc-twirl.none)::before { width: 42px; }
