@@ -1988,3 +1988,8 @@ button.care-food { cursor: pointer; }
 .period-field { flex: 1; min-width: 0; display: block; }
 .period-field-label { display: block; font-size: 0.7rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
 .period-today { display: block; margin: 2px auto 0; }
+
+/* count line with a small add button opposite */
+.count-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 12px 2px 8px; }
+.count-row .list-count { margin: 0; flex: 1; min-width: 0; }
+.add-mini { flex: 0 0 auto; padding: 5px 12px; border-radius: 8px; border: 1px dashed #C9A97C; background: none; font: inherit; font-size: 0.8rem; font-weight: 700; color: var(--brand); cursor: pointer; white-space: nowrap; }

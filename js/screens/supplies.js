@@ -49,8 +49,6 @@ const SuppliesScreen = (function () {
 
   function renderList(main, navigate) {
     var wrap = el('div', 'list-screen');
-    var actions = el('div', 'list-actions');
-    actions.appendChild(btn('add-record-btn', '+ Add supply', function () { navigate('new'); }));
     tools = ListTools.create({
       screen: 'supplies', placeholder: 'Search supplies…', ariaLabel: 'Search supplies', query: state.query,
       onQuery: function (v) { state.query = v; draw(); }, onRedraw: function () { draw(); },
@@ -58,6 +56,9 @@ const SuppliesScreen = (function () {
       get: function (k) { return state[k]; }, set: function (k, v) { state[k] = v; },
     });
     var count = el('p', 'list-count');
+    var countRow = el('div', 'count-row');
+    countRow.appendChild(count);
+    countRow.appendChild(btn('add-mini', '+ Add New Item', function () { navigate('new'); }));
     var list = el('div', 'list-rows');
 
     function draw() {
@@ -71,7 +72,8 @@ const SuppliesScreen = (function () {
         return !q || [s.name, s.brand, s.category, s.source, s.description].join(' ').toLowerCase().indexOf(q) !== -1;
       });
       clearEl(count);
-      count.appendChild(document.createTextNode(results.length + (results.length === 1 ? ' supply' : ' supplies')));
+      count.appendChild(el('strong', '', String(results.length)));
+      count.appendChild(document.createTextNode(results.length === 1 ? ' supply' : ' supplies'));
       if (lowCount) {
         var lowOn = state.show.indexOf('Running low') !== -1;
         var low = btn('pick-link', lowOn ? '  · Show all' : '  · ' + lowCount + ' running low', function () { state.show = lowOn ? state.show.filter(function (k) { return k !== 'Running low'; }) : state.show.concat(['Running low']); draw(); });
@@ -80,10 +82,10 @@ const SuppliesScreen = (function () {
       clearEl(list);
       list.className = tools.view === 'grid' ? 'tile-grid' : 'list-rows';
       results.forEach(function (s) { list.appendChild(tools.view === 'grid' ? tile(s, navigate) : row(s, navigate)); });
-      if (!results.length) list.appendChild(el('p', 'list-empty', SUPPLIES_SAMPLE.length ? 'Nothing matches.' : 'No supplies yet — tap “+ Add supply” to add feed, supplements and the rest of what you keep on hand.'));
+      if (!results.length) list.appendChild(el('p', 'list-empty', SUPPLIES_SAMPLE.length ? 'Nothing matches.' : 'No supplies yet — tap “+ Add New Item” to add feed, supplements and the rest of what you keep on hand.'));
     }
     draw();
-    [actions, tools.bar, tools.chips, count, list].forEach(function (e) { wrap.appendChild(e); });
+    [tools.bar, tools.chips, countRow, list].forEach(function (e) { wrap.appendChild(e); });
     main.appendChild(wrap);
   }
 
