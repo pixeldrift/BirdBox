@@ -1,4 +1,4 @@
-// Copy for Account -> About. Plain-language and friendly; no technical detail. Keep the roadmap in
+// Copy for Account -> About. Plain-language and friendly; no technical detail. Keep comingSoon in
 // step with docs/roadmap.md when plans change (this is the simplified, public-facing version).
 const ABOUT = {
   tagline: 'A cozy home for your birds’ records.',
@@ -8,43 +8,17 @@ const ABOUT = {
   copyrightStartYear: 2026,
   audience: 'Made for bird breeders — hobbyists and small aviaries who want their records tidy, in one place, and easy to find when they need them.',
 
-  features: [
-    { title: 'Your flock', text: 'One record for every bird: band number, species, mutation, hatch date, where it lives, notes, and family links to parents, mates and offspring. Add birds one at a time, or import a whole spreadsheet.' },
-    { title: 'Species made simple', text: 'Search by any name you know — Sun Conure, Goffin’s, African Grey — and BirdBox finds the right species, with a link to learn more about it.' },
-    { title: 'Health records', text: 'Vet visits, DNA certificates, immunizations and surgical sexing reports, each linked to the bird it belongs to.' },
-    { title: 'Registry', text: 'A public band-number lookup, for finding a bird’s pedigree or reuniting a lost one. Your birds stay out of it unless you choose to include them.' },
-    { title: 'Cages', text: 'See which birds live where.' },
-    { title: 'The business side', text: 'Contacts, income and expenses, shipments with costs and waybills, and simple charts that show how the year is going.' },
-    { title: 'Your look', text: 'Pick an icon style — line art, hand-drawn, or cartoon — for birds that don’t have a photo yet.' },
-  ],
-
   // Wishes, not promises — the closing note says so.
-  roadmap: [
-    {
-      title: 'Coming soon',
-      items: [
-        'Photos and documents saved safely, with accounts so your records follow you across devices',
-        'Editing birds, and adding contacts, sales and shipments right in the app',
-      ],
-    },
-    {
-      title: 'On the horizon',
-      items: [
-        'Family trees, inbreeding checks and a pairing planner',
-        'Breeding season tracking: clutches, eggs and hatching, with reports',
-        'Lost & Found alerts and a classifieds board',
-        'Printable labels, cage cards with QR codes, and shipping labels',
-        'Finer control over exactly which details of a bird are public',
-      ],
-    },
-    {
-      title: 'Someday',
-      items: [
-        'A color-mutation guide to go with every species',
-        'Feed, supplies and chores for larger aviaries',
-        'More icon styles',
-      ],
-    },
+  comingSoon: [
+    'Sign-in for you and your team, with control over who can see and change what',
+    'Working offline, for barns and aviaries with no signal — everything syncs when you’re back online',
+    'Today at a glance: what’s due, what’s scheduled, and what’s running low, right on the home screen',
+    'Breeding season tracking: pairs, clutches, eggs and hatching, with reports',
+    'Printable bird labels, cage cards with QR codes, and shipping labels — plus help filling out carrier booking forms',
+    'More species in the mutation predictor, and carrier (split) tracking',
+    'Reminders for tasks, appointments and low supplies',
+    'Lost & Found alerts and a classifieds board',
+    'Finer control over exactly which details of a bird are public',
   ],
   roadmapNote: 'Plans change — think of this as a wish list, not a promise.',
 };

@@ -9,6 +9,28 @@
 // (Fonts and other technical credits are deliberately left out of the app.)
 const CREDITS = [
   {
+    title: 'Illustrations & artwork',
+    blurb: 'The artists behind BirdBox’s icon styles. Choose a style in Account → Settings.',
+    items: [
+      {
+        name: 'Birdorable',
+        by: 'Birdorable.com',
+        url: 'https://www.birdorable.com',
+        description: 'Cute, round cartoon birds, with hundreds of species to browse. Their shop carries gifts and merchandise featuring your favorite birds.',
+        used: 'The Birdorable icon style — one illustration per species.',
+        relationship: 'courtesy',
+      },
+      {
+        name: 'TeraTigerStudio',
+        by: 'TeraTigerStudio',
+        url: 'https://www.etsy.com/shop/TeraTigerStudio',
+        description: 'Warm, hand-drawn parrots and other birds, sold as stickers and merchandise in their Etsy shop.',
+        used: 'The Hand-Drawn icon style.',
+        relationship: 'courtesy',
+      },
+    ],
+  },
+  {
     title: 'Species names & taxonomy',
     blurb: 'How BirdBox names and identifies every species.',
     items: [
@@ -42,50 +64,6 @@ const CREDITS = [
         url: 'https://www.worldbirdnames.org',
         description: 'A widely used alternative checklist. Useful for seeing how another authority names or splits a species when the Clements Checklist and your own records disagree.',
         used: 'Recommended reading — not used inside BirdBox yet.',
-        relationship: 'courtesy',
-      },
-    ],
-  },
-  {
-    title: 'Illustrations & artwork',
-    blurb: 'The artists behind BirdBox’s icon styles. Choose a style in Account → Settings.',
-    items: [
-      {
-        name: 'Birdorable',
-        by: 'Birdorable.com',
-        url: 'https://www.birdorable.com',
-        description: 'Cute, round cartoon birds, with hundreds of species to browse. Their shop carries gifts and merchandise featuring your favorite birds.',
-        used: 'The Birdorable icon style — one illustration per species.',
-        relationship: 'courtesy',
-      },
-      {
-        name: 'TeraTigerStudio',
-        by: 'TeraTigerStudio',
-        url: 'https://www.etsy.com/shop/TeraTigerStudio',
-        description: 'Warm, hand-drawn parrots and other birds, sold as stickers and merchandise in their Etsy shop.',
-        used: 'The Hand-Drawn icon style.',
-        relationship: 'courtesy',
-      },
-    ],
-  },
-  {
-    title: 'Mutations & genetics',
-    blurb: 'Where to look up color mutations and work out what a pairing can produce.',
-    items: [
-      {
-        name: 'Dribbr',
-        by: 'Dribbr',
-        url: 'https://dribbr.app',
-        description: 'An atlas of expert-confirmed color mutations for budgerigars, lovebirds and more, plus a calculator that shows what a pairing can produce.',
-        used: 'Recommended reading — not used inside BirdBox.',
-        relationship: 'courtesy',
-      },
-      {
-        name: 'Gencalc',
-        by: 'Gencalc',
-        url: 'https://www.gencalc.com',
-        description: 'A genetics calculator for working out what a pairing can produce.',
-        used: 'Recommended reading — not used inside BirdBox.',
         relationship: 'courtesy',
       },
     ],

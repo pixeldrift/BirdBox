@@ -353,3 +353,10 @@ Many users will work in rural areas with poor or no signal while in the aviary, 
 - **A sync status indicator, not a menu section:** a small icon in the top bar showing **clean** (everything saved to the server) or **dirty** (changes waiting to sync, with how many), and tapping it shows what's pending and lets you retry. The "On Device" and "Cloud Sync" icons (`icons/tinted/account/On_Device.png`, `Cloud_Sync.png`) are kept for this.
 - **What must be available offline:** the birds, cages and places, care plans and today's tasks and calendar, supplies, and contacts — read and write; photos queued for upload.
 - **Safety:** warn before anything that would lose unsynced changes (sign out, clear data), and never silently drop a failed save.
+
+## Genetics references (kept for later)
+
+Removed from the in-app Credits, but worth keeping for when we add more species to the predictor engine:
+
+- **Dribbr** — https://dribbr.app — atlas of expert-confirmed color mutations (budgerigars, lovebirds and more) plus a pairing calculator.
+- **Gencalc** — https://www.gencalc.com — genetics calculator for working out what a pairing can produce.

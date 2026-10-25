@@ -1,4 +1,4 @@
-// Account -> About: who made BirdBox and who it's for, what it does today, a plain-language
+// Account -> About: who made BirdBox and who it's for, a plain-language
 // look at what's coming, and the sources behind it (used first, then recommended reading). Copy lives in js/data/about.js.
 const AboutScreen = (function () {
   function el(tag, className, text) {
@@ -38,7 +38,7 @@ const AboutScreen = (function () {
 
   function sourcesSections(wrap) {
     var used = el('div', 'detail-section');
-    used.appendChild(el('h3', '', 'Sources we use'));
+    used.appendChild(el('h3', '', 'Sources'));
     used.appendChild(el('p', 'form-note', 'BirdBox builds on the work of others. These are the sources and artists behind the species information and artwork in the app. Links open in a new tab.'));
     var more = el('div', 'detail-section');
     more.appendChild(el('h3', '', 'More to explore'));
@@ -76,24 +76,11 @@ const AboutScreen = (function () {
     who.appendChild(el('p', 'notes-text', ABOUT.audience));
     wrap.appendChild(who);
 
-    var features = el('div', 'detail-section');
-    features.appendChild(el('h3', '', 'What you can do today'));
-    ABOUT.features.forEach(function (f) {
-      var item = el('div', 'about-item');
-      item.appendChild(el('h4', 'about-item-title', f.title));
-      item.appendChild(el('p', 'about-item-text', f.text));
-      features.appendChild(item);
-    });
-    wrap.appendChild(features);
-
     var road = el('div', 'detail-section');
-    road.appendChild(el('h3', '', 'Where it’s headed'));
-    ABOUT.roadmap.forEach(function (stage) {
-      road.appendChild(el('p', 'subsection-label', stage.title));
-      var ul = el('ul', 'about-list');
-      stage.items.forEach(function (t) { ul.appendChild(el('li', '', t)); });
-      road.appendChild(ul);
-    });
+    road.appendChild(el('h3', '', 'Coming soon'));
+    var ul = el('ul', 'about-list');
+    ABOUT.comingSoon.forEach(function (t) { ul.appendChild(el('li', '', t)); });
+    road.appendChild(ul);
     road.appendChild(el('p', 'form-note', ABOUT.roadmapNote));
     wrap.appendChild(road);
 
