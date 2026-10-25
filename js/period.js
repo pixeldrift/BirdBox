@@ -2,13 +2,14 @@
 // with ‹ ›, jump straight to any date / month / year, pick a custom date range, or look at All time.
 // Everything is shared, so Accounting keeps the period you chose.
 //
-//   var period = PeriodBar.create({ onChange: function () { … }, firstYear: 2019 });
+//   var period = PeriodBar.create({ onChange: function () { … }, firstYear: 2019, dates: [every record's date] });
+//   Opens on the current year, or the latest year with records if this year has none.
 //   period.el          the bar          period.range()  → { start, end } ISO dates (inclusive), or null for All time
 //   period.label()     'October 2026'   period.contains(isoDate) → boolean
 const PeriodBar = (function () {
   var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-  var MODES = [['day', 'Day'], ['week', 'Week'], ['month', 'Month'], ['year', 'Year'], ['range', 'Range'], ['all', 'All']];
-  var shared = { mode: 'month', anchor: '', from: '', to: '' };
+  var MODES = [['year', 'Year'], ['month', 'Month'], ['week', 'Week'], ['day', 'Day'], ['range', 'Range'], ['all', 'All']];
+  var shared = { mode: 'year', anchor: '', from: '', to: '', touched: false };
 
   function el(tag, cls, text) {
     var e = document.createElement(tag);
@@ -70,10 +71,18 @@ const PeriodBar = (function () {
 
   function create(o) {
     init();
+    // Until you choose something yourself: open on the current year, or — if nothing is recorded in it — the latest year that has entries.
+    if (!shared.touched) {
+      var dates = (o.dates || []).map(function (d) { return String(d).slice(0, 10); }).filter(Boolean).sort();
+      var thisYear = String(parts(todayISO()).y);
+      shared.mode = 'year';
+      shared.anchor = todayISO();
+      if (dates.length && !dates.some(function (d) { return d.slice(0, 4) === thisYear; })) shared.anchor = dates[dates.length - 1];
+    }
     var bar = el('div', 'period-bar');
     var firstYear = o.firstYear || new Date().getFullYear();
 
-    function changed() { draw(); if (o.onChange) o.onChange(); }
+    function changed() { shared.touched = true; draw(); if (o.onChange) o.onChange(); }
 
     function dateInput(value, onPick, placeholder) {
       var i = el('input', 'form-input');

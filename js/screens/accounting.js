@@ -18,7 +18,7 @@ const AccountingScreen = (function () {
     wrap.className = 'list-screen';
 
     var years = TRANSACTIONS_SAMPLE.map(function (t) { return +String(t.date).slice(0, 4); }).filter(Boolean);
-    var period = PeriodBar.create({ firstYear: years.length ? Math.min.apply(null, years) : undefined, onChange: function () { draw(); } });
+    var period = PeriodBar.create({ dates: TRANSACTIONS_SAMPLE.map(function (t) { return t.date; }), firstYear: years.length ? Math.min.apply(null, years) : undefined, onChange: function () { draw(); } });
 
     var summary = document.createElement('div');
     summary.className = 'summary-strip';
