@@ -30,15 +30,15 @@ const BirdsScreen = (function () {
     var addMini = document.createElement('button');
     addMini.type = 'button';
     addMini.className = 'add-mini';
-    addMini.textContent = '+ Add New Item';
+    addMini.textContent = '+ Add Bird';
     addMini.addEventListener('click', function () {
       Modal.open({
-        title: 'Add new',
+        title: 'Add a bird',
         build: function (body, close) {
-          [['+ Add a bird', 'new'], ['Import birds from a CSV file', 'import']].forEach(function (a) {
+          [['+ Add one bird', 'new'], ['Import many birds from a CSV file', 'import']].forEach(function (a) {
             var b = document.createElement('button');
             b.type = 'button';
-            b.className = 'add-record-btn loc-add-row';
+            b.className = 'btn-positive loc-add-row';
             b.textContent = a[0];
             b.addEventListener('click', function () { close(); navigate(a[1]); });
             body.appendChild(b);
@@ -72,7 +72,16 @@ const BirdsScreen = (function () {
       var num = document.createElement('strong');
       num.textContent = String(results.length);
       countLabel.appendChild(num);
-      countLabel.appendChild(document.createTextNode((results.length === 1 ? ' bird' : ' birds') + (goneHidden ? ' · ' + goneHidden + ' archived' : '')));
+      countLabel.appendChild(document.createTextNode(results.length === 1 ? ' bird' : ' birds'));
+      if (goneHidden) {
+        countLabel.appendChild(document.createTextNode(' · '));
+        var arch = document.createElement('button');
+        arch.type = 'button';
+        arch.className = 'pick-link count-link';
+        arch.textContent = goneHidden + ' archived';
+        arch.addEventListener('click', function () { state.status = ['Archived']; draw(); });
+        countLabel.appendChild(arch);
+      }
 
       clearEl(listWrap);
       listWrap.className = tools.view === 'grid' ? 'tile-grid' : 'list-rows';
@@ -100,7 +109,13 @@ const BirdsScreen = (function () {
   function renderTile(bird, navigate, tools) {
     var thumb = document.createElement('span');
     fillBirdAvatar(thumb, bird);
-    return tools.card({ thumb: thumb, title: birdShortLabel(bird), sub: [birdBandLabel(bird), bird.sex].filter(Boolean).join(' · '),
+    var sub = document.createElement('span');
+    sub.appendChild(document.createTextNode(birdBandLabel(bird) + (bird.sex ? ' · ' : '')));
+    var sexWord = document.createElement('span');
+    sexWord.className = sexTextClass(bird.sex);
+    sexWord.textContent = bird.sex || '';
+    sub.appendChild(sexWord);
+    return tools.card({ thumb: thumb, title: birdShortLabel(bird), sub: sub,
       badge: bird.status, badgeClass: 'status-badge ' + statusClass(bird.status), onClick: function () { navigate(bird.id); } });
   }
 
@@ -325,7 +340,7 @@ const BirdsScreen = (function () {
 
     var addHealthBtn = document.createElement('button');
     addHealthBtn.type = 'button';
-    addHealthBtn.className = 'add-record-btn';
+    addHealthBtn.className = 'btn-positive';
     addHealthBtn.textContent = '+ Add Health Record';
     addHealthBtn.addEventListener('click', function () {
       HealthScreen.pendingBirdId = bird.id;
@@ -385,7 +400,7 @@ const BirdsScreen = (function () {
     }
     var transferBtn = document.createElement('button');
     transferBtn.type = 'button';
-    transferBtn.className = 'add-record-btn';
+    transferBtn.className = 'btn-positive';
     transferBtn.textContent = '+ Record Transfer';
     transferBtn.addEventListener('click', function () { TransferScreen.start(bird.id); });
     transferSection.appendChild(transferBtn);

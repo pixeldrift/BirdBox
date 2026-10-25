@@ -524,7 +524,7 @@ const BirdsAddScreen = (function () {
       'Only sex and species are required — a band number is optional, for birds that don’t have one. For species, use the name you know the bird by — Sun Conure, African Grey, Goffin’s Cockatoo — and we’ll match it to the standard species list. You’ll see a preview before anything is added.';
     var tplBtn = document.createElement('button');
     tplBtn.type = 'button';
-    tplBtn.className = 'add-record-btn';
+    tplBtn.className = 'btn-positive';
     tplBtn.textContent = 'Download CSV template';
     tplBtn.addEventListener('click', downloadTemplate);
     var fileInput = input('file', { accept: '.csv,text/csv' });

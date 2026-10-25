@@ -4,6 +4,7 @@
 //   var tools = ListTools.create({ screen: 'birds', placeholder, ariaLabel, query, onQuery, onRedraw,
 //                                  filters: [{ key, label, options: [[value, label], …] }, …]   ← pick any number of each
 //                                  get(key) → array of picked values, set(key, array) })
+//   noSearch / noView leave out the search box / list-grid toggle; tools.filterBtn is the button on its own
 //   tools.bar   the search + toggle + filter row     tools.chips   the active-filter chips
 //   tools.view  'list' | 'grid' (remembered)         tools.card(spec) builds a grid card
 const ListTools = (function () {
@@ -49,7 +50,7 @@ const ListTools = (function () {
     search.setAttribute('aria-label', o.ariaLabel || 'Search');
     search.value = o.query || '';
     search.addEventListener('input', function (e) { o.onQuery(e.target.value); });
-    bar.appendChild(search);
+    if (!o.noSearch) bar.appendChild(search);
 
     var seg = el('div', 'loc-seg loc-present');
     function drawSeg() {
@@ -65,12 +66,13 @@ const ListTools = (function () {
       });
     }
     drawSeg();
-    bar.appendChild(seg);
+    if (!o.noView) bar.appendChild(seg);
 
     var filterBtn = btn('loc-filter-btn', '', function () { openFilters(); });
     filterBtn.appendChild(icon('funnel'));
     bar.appendChild(filterBtn);
     api.bar = bar;
+    api.filterBtn = filterBtn;
 
     var chips = el('div', 'loc-chips');
     api.chips = chips;
@@ -150,7 +152,7 @@ const ListTools = (function () {
       t.appendChild(spec.thumb);
       c.appendChild(t);
       c.appendChild(el('span', 'tile-title', spec.title));
-      if (spec.sub) c.appendChild(el('span', 'tile-sub', spec.sub));
+      if (spec.sub) { var sub = el('span', 'tile-sub'); if (typeof spec.sub === 'string') sub.textContent = spec.sub; else sub.appendChild(spec.sub); c.appendChild(sub); }
       if (spec.badge) c.appendChild(el('span', 'tile-badge ' + (spec.badgeClass || ''), spec.badge));
       return c;
     };

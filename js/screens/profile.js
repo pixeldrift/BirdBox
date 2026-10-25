@@ -37,7 +37,7 @@ const ProfileUI = (function () {
       if (USERS_SAMPLE.length) {
         section.appendChild(Picker.users({ placeholder: 'I’m… search the team', onChange: function (id) { if (id) { setCurrentUser(id); again(); } } }).el);
       }
-      section.appendChild(button('add-record-btn', '+ Create my profile', function () { createProfile(again); }));
+      section.appendChild(button('btn-positive', '+ Create My Profile', function () { createProfile(again); }));
       return section;
     }
     var head = document.createElement('div');
@@ -65,7 +65,7 @@ const ProfileUI = (function () {
     facts.appendChild(factRow('Phone', me.phone || '—'));
     section.appendChild(facts);
     section.appendChild(noteEl('This is your team entry too, so editing it here updates My Team and the address book.'));
-    section.appendChild(button('add-record-btn', 'Edit my profile', function () { location.hash = editHash; }));
+    section.appendChild(button('btn-positive', 'Edit my profile', function () { location.hash = editHash; }));
     var photo = PhotosSection.render({
       title: 'My photo', ownerType: 'contact', ownerId: 'c-' + me.id, name: userFullName(me), photos: mediaPhotos('contact', 'c-' + me.id), refresh: again,
     });

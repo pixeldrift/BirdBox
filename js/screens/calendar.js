@@ -86,8 +86,8 @@ const CalendarScreen = (function () {
       Modal.open({
         title: 'Add to ' + dateOf(d).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
         build: function (body, close) {
-          body.appendChild(btn('add-record-btn loc-add-row', '+ Event — appointment, meetup, tour…', function () { close(); state.prefillDate = d; navigate('new'); }));
-          body.appendChild(btn('add-record-btn loc-add-row', '+ Task — feeding, cleaning…', function () { close(); TasksScreen.setPrefill({ startDate: d }); location.hash = '#/aviary/tasks/new'; }));
+          body.appendChild(btn('btn-positive loc-add-row', '+ Add Event — appointment, meetup, tour…', function () { close(); state.prefillDate = d; navigate('new'); }));
+          body.appendChild(btn('btn-positive loc-add-row', '+ Add Task — feeding, cleaning…', function () { close(); TasksScreen.setPrefill({ startDate: d }); location.hash = '#/aviary/tasks/new'; }));
         },
       });
     }
@@ -105,7 +105,7 @@ const CalendarScreen = (function () {
       var seg = el('div', 'loc-seg');
       [['month', 'Month'], ['week', 'Week'], ['day', 'Day']].forEach(function (v) { seg.appendChild(btn('loc-seg-btn' + (state.view === v[0] ? ' active' : ''), v[1], function () { state.view = v[0]; draw(); })); });
       row.appendChild(seg);
-      row.appendChild(btn('loc-add', '+ Add', add));
+      row.appendChild(btn('loc-add', '+ Add Event or Task', add));
       wrap.appendChild(row);
 
       var layers = el('div', 'gen-toggles cal-layers');
@@ -320,7 +320,7 @@ const CalendarScreen = (function () {
       }));
       sec.appendChild(row);
     });
-    sec.appendChild(btn('add-record-btn care-add', '+ Link a record', function () { linkPopup(e, again); }));
+    sec.appendChild(btn('btn-positive care-add', '+ Link a Record', function () { linkPopup(e, again); }));
     wrap.appendChild(sec);
     main.appendChild(wrap);
   }

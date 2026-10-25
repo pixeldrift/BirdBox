@@ -42,7 +42,7 @@ select * from (values
   ('registry/register', 'registry', 'Register', 'icons/tinted/registry/Labels.png', 'Register a new band number and start its official record.', 20, true, false),
   ('registry/lostfound', 'registry', 'Lost & Found', 'icons/tinted/registry/Notifications.png', 'Post or search Lost & Found alerts for missing birds.', 30, true, false),
   ('classifieds', null::text, 'Classifieds', 'icons/tinted/classifieds/Classifieds.png', 'Buy, sell, and browse listings from other breeders.', 50, true, true),
-  ('classifieds/browse', 'classifieds', 'Browse', 'icons/tinted/classifieds/Classifieds.png', 'Browse birds for sale from other breeders.', 10, true, false),
+  ('classifieds/browse', 'classifieds', 'Classifieds', 'icons/tinted/classifieds/Classifieds.png', 'Browse birds for sale from other breeders.', 10, true, false),
   ('classifieds/mylistings', 'classifieds', 'My Listings', 'icons/tinted/classifieds/Notes.png', 'Manage the listings you''ve posted.', 20, true, false),
   ('account', null::text, 'Account', 'icons/tinted/account/My_Profile.png', 'Your profile, messages, and app settings.', 60, true, false),
   ('account/myprofile', 'account', 'My Profile', 'icons/tinted/account/My_Profile.png', 'Your personal info and account details.', 10, true, false),

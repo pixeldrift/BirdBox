@@ -110,7 +110,7 @@ const TransferScreen = (function () {
         clearEl(promptBox);
         if (changed !== null) done.insertBefore(el('p', 'form-message info', changed ? 'Ownership updated.' : 'Ownership left as it was.'), promptBox);
         if (t.method === 'Shipped') {
-          var ship = el('button', 'add-record-btn', 'Add shipping details');
+          var ship = el('button', 'btn-positive', 'Add Shipping Details');
           ship.type = 'button';
           ship.addEventListener('click', function () {
             ShippingAddScreen.prefill({ birdIds: [bird.id], clientId: t.contactId, direction: t.direction === 'Out' ? 'Outgoing' : 'Incoming', date: t.date || '' });

@@ -68,7 +68,7 @@ const CagingScreen = (function () {
   }
 
   function addButton(label, onClick) {
-    var b = el('button', 'add-record-btn', label);
+    var b = el('button', 'btn-positive', label);
     b.type = 'button';
     b.addEventListener('click', onClick);
     return b;

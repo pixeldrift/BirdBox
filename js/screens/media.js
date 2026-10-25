@@ -29,7 +29,7 @@ const MediaScreen = (function () {
     var wrap = el('div', 'list-screen');
 
     var actions = el('div', 'list-actions');
-    var up = el('button', 'add-record-btn', '+ Upload');
+    var up = el('button', 'btn-positive', '+ Upload File');
     up.type = 'button';
     up.addEventListener('click', function () { navigate('new'); });
     actions.appendChild(up);
@@ -181,7 +181,7 @@ const MediaScreen = (function () {
     name.value = m.title;
     name.placeholder = m.filename || 'Add a title';
     nameField.appendChild(name);
-    var rename = el('button', 'add-record-btn', 'Save title');
+    var rename = el('button', 'btn-positive', 'Save title');
     rename.type = 'button';
     var msg = el('div');
     rename.addEventListener('click', function () {
@@ -255,7 +255,7 @@ const MediaScreen = (function () {
 
     // Deleting removes it everywhere it's linked.
     var danger = el('div', 'detail-section');
-    var del = el('button', 'add-record-btn', 'Delete this file');
+    var del = el('button', 'add-record-btn danger-btn', 'Delete this file');
     del.type = 'button';
     del.addEventListener('click', function () {
       var n = m.links.length;

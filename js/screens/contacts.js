@@ -78,7 +78,7 @@ const ContactsScreen = (function () {
     contactActions.className = 'list-actions';
     var addContact = document.createElement('button');
     addContact.type = 'button';
-    addContact.className = 'add-record-btn';
+    addContact.className = 'btn-positive';
     addContact.textContent = '+ Add Contact';
     addContact.addEventListener('click', function () { navigate('new'); });
     contactActions.appendChild(addContact);

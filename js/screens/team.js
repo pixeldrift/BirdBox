@@ -42,7 +42,7 @@ const TeamScreen = (function () {
   function renderList(main, navigate) {
     var wrap = el('div', 'list-screen');
     var actions = el('div', 'list-actions');
-    var add = el('button', 'add-record-btn', '+ Add team member');
+    var add = el('button', 'btn-positive', '+ Add Team Member');
     add.type = 'button';
     add.addEventListener('click', function () { navigate('new'); });
     actions.appendChild(add);

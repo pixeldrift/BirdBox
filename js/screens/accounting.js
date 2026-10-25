@@ -112,8 +112,8 @@ const AccountingScreen = (function () {
     txActions.className = 'list-actions';
     var addTx = document.createElement('button');
     addTx.type = 'button';
-    addTx.className = 'add-record-btn';
-    addTx.textContent = '+ Add Entry';
+    addTx.className = 'btn-positive';
+    addTx.textContent = '+ Add Transaction';
     addTx.addEventListener('click', function () { navigate('new'); });
     txActions.appendChild(addTx);
     wrap.appendChild(txActions);

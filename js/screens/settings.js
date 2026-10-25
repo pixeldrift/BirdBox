@@ -74,7 +74,7 @@ const SettingsScreen = (function () {
     [['Name', AVIARY.name], ['About', AVIARY.description], ['Address', AVIARY.address], ['Phone', AVIARY.phone], ['Email', AVIARY.email], ['Website', AVIARY.website], ['Social', AVIARY.socials]].forEach(function (f) { if (f[1]) facts.appendChild(factRow(f[0], f[1])); });
     section.appendChild(facts);
     section.appendChild(noteEl('Everything is optional apart from the name. These details can be used later in the public directory.'));
-    section.appendChild(button('add-record-btn', 'Edit my aviary', function () { location.hash = '#/account/settings/edit~main'; }));
+    section.appendChild(button('btn-positive', 'Edit my aviary', function () { location.hash = '#/account/settings/edit~main'; }));
     var photos = PhotosSection.render({
       title: 'Logo & photos', ownerType: 'aviary', ownerId: 'main', name: AVIARY.name, photos: mediaPhotos('aviary', 'main'),
       refresh: function () { renderList(main); },

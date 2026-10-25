@@ -207,7 +207,7 @@ const LocationExplorer = (function () {
         title: 'Add new',
         build: function (body, close) {
           options.forEach(function (o) {
-            var row = btn('add-record-btn loc-add-row', '+ ' + o.label, function () { close(); startAdd(o.kind, o.prefill); });
+            var row = btn('btn-positive loc-add-row', '+ ' + o.label, function () { close(); startAdd(o.kind, o.prefill); });
             body.appendChild(row);
           });
         },

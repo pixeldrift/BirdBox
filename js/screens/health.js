@@ -15,49 +15,39 @@ const HealthScreen = (function () {
   }
 
   function renderList(main, navigate) {
-    var state = { query: '', type: 'All' };
+    var state = { query: '', types: [] };
 
     var wrap = document.createElement('div');
     wrap.className = 'list-screen';
 
-    var addBtn = document.createElement('button');
-    addBtn.type = 'button';
-    addBtn.className = 'add-record-btn';
-    addBtn.textContent = '+ Add Health Record';
-    addBtn.addEventListener('click', function () { navigate('new'); });
-
-    var searchInput = document.createElement('input');
-    searchInput.type = 'search';
-    searchInput.placeholder = 'Search bird, provider, notes…';
-    searchInput.className = 'search-input';
-    searchInput.setAttribute('aria-label', 'Search health records');
-
-    var chipsWrap = document.createElement('div');
-    chipsWrap.className = 'filter-chips';
+    var tools = ListTools.create({
+      screen: 'health', noView: true, placeholder: 'Search health records…', ariaLabel: 'Search health records', query: state.query,
+      onQuery: function (v) { state.query = v; draw(); }, onRedraw: function () { draw(); },
+      filters: [{ key: 'types', label: '', options: RECORD_TYPES.map(function (t) { return [t, t]; }) }],
+      get: function (k) { return state[k]; }, set: function (k, v) { state[k] = v; },
+    });
 
     var countLabel = document.createElement('p');
     countLabel.className = 'list-count';
+    var countRow = document.createElement('div');
+    countRow.className = 'count-row';
+    countRow.appendChild(countLabel);
+    var addBtn = document.createElement('button');
+    addBtn.type = 'button';
+    addBtn.className = 'add-mini';
+    addBtn.textContent = '+ Add Health Record';
+    addBtn.addEventListener('click', function () { navigate('new'); });
+    countRow.appendChild(addBtn);
 
     var listWrap = document.createElement('div');
     listWrap.className = 'list-rows';
 
     function draw() {
-      clearEl(chipsWrap);
-      FILTERS.forEach(function (f) {
-        var chip = document.createElement('button');
-        chip.type = 'button';
-        chip.className = 'filter-chip' + (state.type === f ? ' active' : '');
-        chip.textContent = f;
-        chip.addEventListener('click', function () {
-          state.type = f;
-          draw();
-        });
-        chipsWrap.appendChild(chip);
-      });
+      tools.refresh();
 
       var q = state.query.trim().toLowerCase();
       var results = HEALTH_RECORDS_SAMPLE.filter(function (r) {
-        if (state.type !== 'All' && r.type !== state.type) return false;
+        if (state.types.length && state.types.indexOf(r.type) === -1) return false;
         if (!q) return true;
         var bird = getBird(r.birdId);
         var hay = [bird ? birdShortLabel(bird) : '', bird ? bird.band : '', r.provider, r.notes]
@@ -65,7 +55,11 @@ const HealthScreen = (function () {
         return hay.indexOf(q) !== -1;
       }).slice().sort(function (a, b) { return b.date.localeCompare(a.date); });
 
-      countLabel.textContent = results.length + (results.length === 1 ? ' record' : ' records');
+      clearEl(countLabel);
+      var num = document.createElement('strong');
+      num.textContent = String(results.length);
+      countLabel.appendChild(num);
+      countLabel.appendChild(document.createTextNode(results.length === 1 ? ' record' : ' records'));
 
       clearEl(listWrap);
       if (results.length === 0) {
@@ -78,17 +72,11 @@ const HealthScreen = (function () {
       }
     }
 
-    searchInput.addEventListener('input', function (e) {
-      state.query = e.target.value;
-      draw();
-    });
-
     draw();
 
-    wrap.appendChild(addBtn);
-    wrap.appendChild(searchInput);
-    wrap.appendChild(chipsWrap);
-    wrap.appendChild(countLabel);
+    wrap.appendChild(tools.bar);
+    wrap.appendChild(tools.chips);
+    wrap.appendChild(countRow);
     wrap.appendChild(listWrap);
     main.appendChild(wrap);
   }

@@ -46,7 +46,7 @@ const FilesUI = (function () {
     }
 
     function addButton(k) {
-      var btn = el('label', 'add-record-btn photo-upload-btn', k.addLabel);
+      var btn = el('label', 'btn-positive photo-upload-btn', k.addLabel);
       var input = document.createElement('input');
       input.type = 'file';
       input.accept = k.accept;

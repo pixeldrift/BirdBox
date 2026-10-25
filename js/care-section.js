@@ -115,7 +115,8 @@ const CareSection = (function () {
       }
       section.appendChild(line(c, extra));
     });
-    section.appendChild(btn('add-record-btn care-add', '+ Add food or care', function () { editor(o, null, o.refresh); }));
+    section.addItem = function () { editor(o, null, o.refresh); };
+    if (!o.noAdd) section.appendChild(btn('btn-positive care-add', '+ Add Food or Care', section.addItem));
     return section;
   }
 

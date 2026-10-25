@@ -224,7 +224,7 @@ const ShippingAddScreen = (function () {
           row.appendChild(x);
           attachList.appendChild(row);
         });
-        var btn = el('label', 'add-record-btn photo-upload-btn', k[1]);
+        var btn = el('label', 'btn-positive photo-upload-btn', k[1]);
         var fi = document.createElement('input');
         fi.type = 'file';
         fi.accept = k[2];

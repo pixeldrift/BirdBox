@@ -100,7 +100,7 @@ const NAV = [
     homeTile: true,
     blurb: 'Buy, sell, and browse listings from other breeders.',
     screens: [
-      { id: 'browse', label: 'Browse', icon: 'icons/tinted/classifieds/Classifieds.png',
+      { id: 'browse', label: 'Classifieds', icon: 'icons/tinted/classifieds/Classifieds.png',
         blurb: 'Browse birds for sale from other breeders.' },
       { id: 'mylistings', label: 'My Listings', icon: 'icons/tinted/classifieds/Notes.png',
         blurb: "Manage the listings you've posted." },

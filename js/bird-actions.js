@@ -108,17 +108,17 @@ const BirdActions = (function () {
 
   function row(bird, refresh) {
     var box = el('div', 'action-row');
-    box.appendChild(btn('add-record-btn', 'Ship this bird', function () { ship(bird); }));
-    box.appendChild(btn('add-record-btn', 'Sell this bird', function () { sell({ bird: bird, buyerId: likelyClient(bird), onDone: refresh }); }));
+    box.appendChild(btn('btn-positive', 'Ship this bird', function () { ship(bird); }));
+    box.appendChild(btn('btn-positive', 'Sell this bird', function () { sell({ bird: bird, buyerId: likelyClient(bird), onDone: refresh }); }));
     return box;
   }
 
   function contactRow(contact, refresh) {
     var first = String(contact.name || 'them').split(/\s+/)[0];
     var box = el('div', 'action-row');
-    box.appendChild(btn('add-record-btn', 'Ship to ' + first, function () { ShippingAddScreen.prefill({ clientId: contact.id, direction: 'Outgoing' }); location.hash = '#/business/shipping/new'; }));
-    box.appendChild(btn('add-record-btn', 'Sell a bird to ' + first, function () { sell({ buyerId: contact.id, onDone: refresh }); }));
-    box.appendChild(btn('add-record-btn', 'Receive a shipment', function () { ShippingAddScreen.prefill({ clientId: contact.id, direction: 'Incoming' }); location.hash = '#/business/shipping/new'; }));
+    box.appendChild(btn('btn-positive', 'Ship to ' + first, function () { ShippingAddScreen.prefill({ clientId: contact.id, direction: 'Outgoing' }); location.hash = '#/business/shipping/new'; }));
+    box.appendChild(btn('btn-positive', 'Sell a bird to ' + first, function () { sell({ buyerId: contact.id, onDone: refresh }); }));
+    box.appendChild(btn('btn-positive', 'Receive a shipment', function () { ShippingAddScreen.prefill({ clientId: contact.id, direction: 'Incoming' }); location.hash = '#/business/shipping/new'; }));
     return box;
   }
 

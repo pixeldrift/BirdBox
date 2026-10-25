@@ -4,7 +4,7 @@
 // member and tied to a place or bird. A feeding task shows the care plan and, if it covers several cages, a
 // checklist with each cage ticked separately. Routes: <id> · new · edit~<id>
 const TasksScreen = (function () {
-  var state = { view: 'today', who: '', kind: 'All', query: '' };
+  var state = { view: 'today', who: [], kind: [], query: '' }; // who: team member ids or 'none'; kind: task kinds (any of)
   var prefill = {};
 
   function el(tag, cls, text) {
@@ -110,40 +110,42 @@ const TasksScreen = (function () {
   // ---- the list ----
   function renderList(main, navigate, fixedKind) {
     var wrap = el('div', 'list-screen');
-    var actions = el('div', 'list-actions');
-    actions.appendChild(btn('add-record-btn', fixedKind ? '+ Add ' + fixedKind.toLowerCase() + ' task' : '+ Add task', function () { prefill = fixedKind ? { kind: fixedKind } : {}; navigate('new'); }));
+    var me = currentUserId();
+    var tools = ListTools.create({
+      screen: 'tasks', noSearch: true, noView: true,
+      onRedraw: function () { draw(); },
+      filters: (USERS_SAMPLE.length ? [{ key: 'who', label: 'Assigned to', options: USERS_SAMPLE.slice().sort(function (a, b) { return (b.id === me) - (a.id === me); }).map(function (u) { return [u.id, userFullName(u) + (u.id === me ? ' (Me)' : '')]; }).concat([['none', 'Not assigned']]) }] : [])
+        .concat(fixedKind ? [] : [{ key: 'kind', label: 'Kind', options: TASK_KINDS.map(function (k) { return [k, k]; }) }]),
+      get: function (k) { return state[k]; }, set: function (k, v) { state[k] = v; },
+    });
+    var bar = el('div', 'list-tools');
     var seg = el('div', 'loc-seg loc-modes');
-    var controls = el('div', 'loc-controls');
+    seg.style.flex = '1';
+    bar.appendChild(seg);
+    bar.appendChild(tools.filterBtn);
+    var countLabel = el('p', 'list-count');
+    var countRow = el('div', 'count-row');
+    countRow.appendChild(countLabel);
+    countRow.appendChild(btn('add-mini', fixedKind ? '+ Add ' + fixedKind + ' Task' : '+ Add Task', function () { prefill = fixedKind ? { kind: fixedKind } : {}; navigate('new'); }));
     var body = el('div');
-    [actions, seg, controls, body].forEach(function (e) { wrap.appendChild(e); });
+    [bar, tools.chips, countRow, body].forEach(function (e) { wrap.appendChild(e); });
     main.appendChild(wrap);
+
+    function setCount(n, text) { clearEl(countLabel); countLabel.appendChild(el('strong', '', String(n))); countLabel.appendChild(document.createTextNode(' ' + text)); }
 
     function relevant(t) {
       if (fixedKind && t.kind !== fixedKind) return false;
-      if (!fixedKind && state.kind !== 'All' && t.kind !== state.kind) return false;
-      if (state.who && t.assignedTo !== state.who) return false;
+      if (!fixedKind && state.kind.length && state.kind.indexOf(t.kind) === -1) return false;
+      if (state.who.length && state.who.indexOf(t.assignedTo || 'none') === -1) return false;
       return true;
     }
 
     function draw() {
-      clearEl(seg); clearEl(controls); clearEl(body);
+      clearEl(seg); clearEl(body);
+      tools.refresh();
       [['today', 'Today'], ['upcoming', 'Upcoming'], ['all', 'All tasks']].forEach(function (v) {
         seg.appendChild(btn('loc-seg-btn' + (state.view === v[0] ? ' active' : ''), v[1], function () { state.view = v[0]; draw(); }));
       });
-      if (USERS_SAMPLE.length) {
-        var sel = el('select', 'loc-select');
-        sel.setAttribute('aria-label', 'Assigned to');
-        var all = el('option', '', 'Everyone'); all.value = ''; sel.appendChild(all);
-        USERS_SAMPLE.forEach(function (u) { var o = el('option', '', userFullName(u)); o.value = u.id; sel.appendChild(o); });
-        sel.value = state.who;
-        sel.addEventListener('change', function () { state.who = sel.value; draw(); });
-        controls.appendChild(sel);
-      }
-      if (!fixedKind && state.view === 'all') {
-        var chips = el('div', 'filter-chips');
-        ['All'].concat(TASK_KINDS).forEach(function (k) { chips.appendChild(btn('filter-chip' + (state.kind === k ? ' active' : ''), k, function () { state.kind = k; draw(); })); });
-        body.appendChild(chips);
-      }
       if (state.view === 'today') drawToday();
       else if (state.view === 'upcoming') drawUpcoming();
       else drawAll();
@@ -164,7 +166,7 @@ const TasksScreen = (function () {
       var overdue = taskOccurrences(addDaysISO(today, -14), addDaysISO(today, -1), function (t) { return t.repeat === 'None' && relevant(t); })
         .filter(function (o) { return taskProgress(o.task, o.date).done < taskProgress(o.task, o.date).total; });
       var open = occs.filter(function (o) { var p = taskProgress(o.task, o.date); return p.done < p.total; }).length;
-      body.appendChild(el('p', 'task-today', dayName(today) + ' · ' + (occs.length ? open + ' to do' : 'nothing due')));
+      setCount(open, dayName(today).toLowerCase() === 'today' ? 'to do today' : 'to do');
       if (overdue.length) {
         var box0 = group('Overdue');
         overdue.forEach(function (o) { box0.appendChild(occurrence(o, draw, navigate)); });
@@ -175,26 +177,30 @@ const TasksScreen = (function () {
         var box = group(slot);
         inSlot.forEach(function (o) { box.appendChild(occurrence(o, draw, navigate)); });
       });
-      if (!occs.length && !overdue.length) body.appendChild(el('p', 'list-empty', TASKS_SAMPLE.length ? 'Nothing due today.' : 'No tasks yet — tap “+ Add task” to set up feeding, cleaning and other jobs.'));
+      if (!occs.length && !overdue.length) body.appendChild(el('p', 'list-empty', TASKS_SAMPLE.length ? 'Nothing due today.' : 'No tasks yet — tap “+ Add Task” to set up feeding, cleaning and other jobs.'));
     }
 
     function drawUpcoming() {
       var today = todayISO();
       var any = false;
+      var upcomingCount = 0;
       for (var i = 1; i <= 7; i++) {
         var d = addDaysISO(today, i);
         var occs = taskOccurrences(d, d, relevant);
         if (!occs.length) continue;
         any = true;
+        upcomingCount += occs.length;
         var box = group(dayName(d));
         occs.forEach(function (o) { box.appendChild(occurrence(o, draw, navigate)); });
       }
+      setCount(upcomingCount, upcomingCount === 1 ? 'coming up this week' : 'coming up this week');
       if (!any) body.appendChild(el('p', 'list-empty', 'Nothing scheduled in the next week.'));
     }
 
     function drawAll() {
       var list = el('div', 'list-rows');
       var tasks = TASKS_SAMPLE.filter(relevant);
+      setCount(tasks.length, tasks.length === 1 ? 'task' : 'tasks');
       tasks.forEach(function (t) {
         var b = el('button', 'list-row');
         b.type = 'button';

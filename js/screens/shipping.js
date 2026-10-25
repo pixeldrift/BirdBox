@@ -35,7 +35,7 @@ const ShippingScreen = (function () {
     actions.className = 'list-actions';
     var addBtn = document.createElement('button');
     addBtn.type = 'button';
-    addBtn.className = 'add-record-btn';
+    addBtn.className = 'btn-positive';
     addBtn.textContent = '+ Add Shipment';
     addBtn.addEventListener('click', function () { ShippingAddScreen.reset(); navigate('new'); });
     actions.appendChild(addBtn);

@@ -58,7 +58,7 @@ const SuppliesScreen = (function () {
     var count = el('p', 'list-count');
     var countRow = el('div', 'count-row');
     countRow.appendChild(count);
-    countRow.appendChild(btn('add-mini', '+ Add New Item', function () { navigate('new'); }));
+    countRow.appendChild(btn('add-mini', '+ Add Supply', function () { navigate('new'); }));
     var list = el('div', 'list-rows');
 
     function draw() {
@@ -82,7 +82,7 @@ const SuppliesScreen = (function () {
       clearEl(list);
       list.className = tools.view === 'grid' ? 'tile-grid' : 'list-rows';
       results.forEach(function (s) { list.appendChild(tools.view === 'grid' ? tile(s, navigate) : row(s, navigate)); });
-      if (!results.length) list.appendChild(el('p', 'list-empty', SUPPLIES_SAMPLE.length ? 'Nothing matches.' : 'No supplies yet — tap “+ Add New Item” to add feed, supplements and the rest of what you keep on hand.'));
+      if (!results.length) list.appendChild(el('p', 'list-empty', SUPPLIES_SAMPLE.length ? 'Nothing matches.' : 'No supplies yet — tap “+ Add Supply” to add feed, supplements and the rest of what you keep on hand.'));
     }
     draw();
     [tools.bar, tools.chips, countRow, list].forEach(function (e) { wrap.appendChild(e); });
