@@ -66,7 +66,12 @@ const TasksScreen = (function () {
     var text = el('button', 'task-text');
     text.type = 'button';
     text.appendChild(el('strong', '', t.title));
-    text.appendChild(el('small', '', [t.kind, t.timeOfDay !== 'Anytime' ? t.timeOfDay : '', taskTargetLabel(t), who(t)].filter(Boolean).join(' · ')));
+    var meta = el('small', '', [t.kind, t.timeOfDay !== 'Anytime' ? t.timeOfDay : '', taskTargetLabel(t)].filter(Boolean).join(' · '));
+    if (who(t)) {
+      if (meta.textContent) meta.appendChild(document.createTextNode(' · '));
+      meta.appendChild(el('b', 'task-who', who(t)));
+    }
+    text.appendChild(meta);
     head.appendChild(text);
     var chev = el('span', 'loc-chev', '›');
     head.appendChild(chev);
@@ -269,6 +274,7 @@ const TasksScreen = (function () {
     var until = el('input', 'form-input');
     until.type = 'date';
     until.value = base.endDate ? String(base.endDate).slice(0, 10) : '';
+    until.placeholder = 'None';
     var untilField = field('Repeat until', until, 'Optional — leave empty to keep going.');
     function syncRepeat() {
       weekField.style.display = repeat.value === 'Weekly' ? '' : 'none';

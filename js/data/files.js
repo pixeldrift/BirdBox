@@ -86,12 +86,11 @@ function reindexMedia() {
   WAYBILLS_SAMPLE.forEach(function (w) { w.files = []; });
   TRANSACTIONS_SAMPLE.forEach(function (t) { t.files = []; });
   CONTACTS_SAMPLE.forEach(function (c) { c.photoUrl = ''; });
-  // oldest first, so a record's list reads in the order things were added
   MEDIA.slice().sort(function (a, b) { return String(a.createdAt).localeCompare(String(b.createdAt)); }).forEach(function (m) {
     m.links.forEach(function (l) {
       if (l.targetType === 'bird') {
         var bird = getBird(l.targetId);
-        if (bird && m.type === 'photo') bird.photos.push({ id: m.id, url: m.url, isPrimary: !!l.isPrimary, filename: m.filename });
+        if (bird && m.type === 'photo') bird.photos.push({ id: m.id, url: m.url, isPrimary: !!l.isPrimary, filename: m.filename, at: l.at });
       } else if (l.targetType === 'health') {
         var rec = getHealthRecord(l.targetId);
         if (rec) rec.attachments.push({ id: m.id, name: m.title || m.filename, kind: mediaIsImage(m) ? 'image' : 'pdf', url: m.url, size: m.size });
@@ -107,6 +106,13 @@ function reindexMedia() {
       }
     });
   });
+  BIRDS_SAMPLE.forEach(function (b) { b.photos.sort(photoOrder); });
+}
+
+// A record's photos: the main one first, then in the order they were arranged (or added).
+function photoOrder(a, b) {
+  if (!!a.isPrimary !== !!b.isPrimary) return a.isPrimary ? -1 : 1;
+  return String(a.at || '').localeCompare(String(b.at || ''));
 }
 
 var filesLoaded = Promise.all([birdsLoaded, healthLoaded, waybillsLoaded, transactionsLoaded, contactsLoaded])
@@ -181,16 +187,16 @@ function setMainPhotoFor(targetType, targetId, mediaId) {
   return mediaRequest('PATCH', '?id=' + encodeURIComponent(mediaId), { primary: { targetType: targetType, targetId: targetId } }).then(refreshMedia);
 }
 
-// The photos linked to any record (oldest first), with the main one flagged — for places, the aviary and so on.
+// The photos linked to any record, main one first, with the main one flagged — for places, the aviary and so on.
 function mediaPhotos(targetType, targetId) {
   var out = [];
-  MEDIA.slice().sort(function (a, b) { return String(a.createdAt).localeCompare(String(b.createdAt)); }).forEach(function (m) {
+  MEDIA.forEach(function (m) {
     if (m.type !== 'photo') return;
     m.links.forEach(function (l) {
-      if (l.targetType === targetType && l.targetId === targetId) out.push({ id: m.id, url: m.url, isPrimary: !!l.isPrimary, filename: m.filename });
+      if (l.targetType === targetType && l.targetId === targetId) out.push({ id: m.id, url: m.url, isPrimary: !!l.isPrimary, filename: m.filename, at: l.at });
     });
   });
-  return out;
+  return out.sort(photoOrder);
 }
 
 // The picture to show for a record: its main photo, else its first.
@@ -198,6 +204,11 @@ function mediaMainPhotoUrl(targetType, targetId) {
   var photos = mediaPhotos(targetType, targetId);
   var main = photos.filter(function (p) { return p.isPrimary; })[0] || photos[0];
   return main ? main.url : '';
+}
+
+// Puts a record's photos in this order (array of media ids); the first becomes its main photo.
+function reorderPhotos(targetType, targetId, ids) {
+  return mediaRequest('PATCH', '?id=' + encodeURIComponent(ids[0]), { order: { targetType: targetType, targetId: targetId, ids: ids } }).then(refreshMedia);
 }
 
 function deleteMedia(mediaId) {

@@ -274,9 +274,12 @@ const Picker = (function () {
   function users(opts) {
     return create(Object.assign({ placeholder: 'Search your team…' }, opts, {
       items: function () {
-        return USERS_SAMPLE.map(function (u) {
-          return { id: u.id, title: userFullName(u), sub: u.role, hay: u.role + ' ' + u.email,
-            lead: function () { return pickLead(makeThumb({ text: ((u.firstName || '').charAt(0) + (u.lastName || '').charAt(0)).toUpperCase() }), userFullName(u), u.role); } };
+        var me = currentUserId();
+        var list = USERS_SAMPLE.slice().sort(function (a, b) { return (b.id === me) - (a.id === me); }); // you first
+        return list.map(function (u) {
+          var label = userFullName(u) + (u.id === me ? ' (Me)' : '');
+          return { id: u.id, title: label, sub: u.role, hay: u.role + ' ' + u.email,
+            lead: function () { return pickLead(makeThumb({ text: ((u.firstName || '').charAt(0) + (u.lastName || '').charAt(0)).toUpperCase() }), label, u.role); } };
         });
       },
     }));

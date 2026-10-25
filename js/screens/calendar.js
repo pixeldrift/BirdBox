@@ -202,7 +202,7 @@ const CalendarScreen = (function () {
     var end = el('input', 'form-input'); end.type = 'time'; end.value = base.endTime || '';
     var startField = field('Starts at', start);
     var endField = field('Ends at', end);
-    var endDate = el('input', 'form-input'); endDate.type = 'date'; endDate.value = base.endDate ? String(base.endDate).slice(0, 10) : '';
+    var endDate = el('input', 'form-input'); endDate.type = 'date'; endDate.placeholder = 'None'; endDate.value = base.endDate ? String(base.endDate).slice(0, 10) : '';
     field('Last day', endDate, 'Only for something that runs over several days.');
     function syncTimes() { startField.style.display = endField.style.display = allDay ? 'none' : ''; }
     syncTimes();

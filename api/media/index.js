@@ -17,7 +17,7 @@ function toMedia(m, links) {
   return {
     id: m.id, type: m.type, filename: m.filename, title: m.title, contentType: m.content_type,
     size: m.size, createdAt: m.created_at, url: '/api/media?id=' + encodeURIComponent(m.id),
-    links: (links || []).map((l) => ({ targetType: l.target_type, targetId: l.target_id, isPrimary: l.is_primary })),
+    links: (links || []).map((l) => ({ targetType: l.target_type, targetId: l.target_id, isPrimary: l.is_primary, at: l.created_at })),
   };
 }
 
@@ -61,7 +61,7 @@ module.exports = async function handler(req, res) {
       }
       try { // the whole library (details and links, never the bytes)
         const items = await sql`select id, type, filename, title, content_type, size, created_at from media order by created_at desc`;
-        const links = await sql`select media_id, target_type, target_id, is_primary from media_links`;
+        const links = await sql`select media_id, target_type, target_id, is_primary, created_at from media_links`;
         const by = {};
         links.forEach((l) => { (by[l.media_id] = by[l.media_id] || []).push(l); });
         res.status(200).json(items.map((m) => toMedia(m, by[m.id])));
@@ -97,7 +97,7 @@ module.exports = async function handler(req, res) {
         await sql`insert into media_links (media_id, target_type, target_id) values (${id}, ${l.targetType}, ${l.targetId}) on conflict do nothing`;
         if (type === 'photo' && HAS_MAIN_PHOTO.includes(l.targetType)) await ensureMainPhoto(l.targetType, l.targetId);
       }
-      const rows = await sql`select media_id, target_type, target_id, is_primary from media_links where media_id = ${id}`;
+      const rows = await sql`select media_id, target_type, target_id, is_primary, created_at from media_links where media_id = ${id}`;
       res.status(201).json(toMedia({ id, type, filename, title, content_type: contentType, size: data.length, created_at: new Date().toISOString() }, rows));
       return;
     }
@@ -125,6 +125,15 @@ module.exports = async function handler(req, res) {
         if (!l || !HAS_MAIN_PHOTO.includes(l.targetType)) { res.status(400).json({ error: 'That doesn’t have a main photo' }); return; }
         await sql`update media_links set is_primary = (media_id = ${id}) where target_type = ${l.targetType} and target_id = ${l.targetId}
                   and media_id in (select id from media where type = 'photo')`;
+      } else if (b.order) { // drag-to-reorder: the first photo becomes the main one
+        const t = b.order.targetType;
+        const tid = String(b.order.targetId || '');
+        const ids = Array.isArray(b.order.ids) ? b.order.ids.map(String).slice(0, 100) : [];
+        if (!HAS_MAIN_PHOTO.includes(t) || !tid || !ids.length) { res.status(400).json({ error: 'Nothing to reorder' }); return; }
+        for (let i = 0; i < ids.length; i++) { // the order is kept in each link's timestamp (oldest = first)
+          await sql`update media_links set created_at = '2000-01-01T00:00:00Z'::timestamptz + (${i} * interval '1 second'), is_primary = ${i === 0}
+                    where media_id = ${ids[i]} and target_type = ${t} and target_id = ${tid}`;
+        }
       } else {
         res.status(400).json({ error: 'Nothing to change' });
         return;

@@ -1,12 +1,13 @@
-// The Photos box on a record's page: a grid of its pictures. Tap a photo to see it full size. "Edit" turns on a ✓ (make it
-// the MAIN picture — the record's thumbnail everywhere) and a bin (take it off, with a separate choice to delete it for
-// good) on each photo; "+" adds more. The same box is used for birds, places, the aviary, supplies, contacts and
-// shipments, so photos behave the same everywhere.
+// The Photos box on a record's page: a grid of its pictures. Tap a photo to see it full size. "Edit" is where you add
+// photos (+), drag them into a new order, and take them off (the ⊗ on each). The FIRST photo is the record's picture
+// everywhere, so there is no separate "main photo" setting. Taking a photo off only unlinks it — it stays in the Media
+// library — with a separate choice to delete it for good. The same box is used for birds, places, the aviary, supplies,
+// contacts and shipments, so photos behave the same everywhere.
 //
 //   PhotosSection.render({ ownerType, ownerId, name, photos: [{ id, url, isPrimary }], refresh,
 //                          fixed: [url], fixedMain: url, onFixedMain: function (url) → promise, onMediaMain: function () → promise })
-// `fixed` are photos that came with the app rather than being uploaded (supplies); they can be chosen as the main picture
-// too (onFixedMain), and choosing an uploaded photo afterwards calls onMediaMain so only one is main.
+// `fixed` are photos that came with the app rather than being uploaded (supplies). They sit in the same order; when one
+// is dragged to the front onFixedMain(url) runs, and when an uploaded photo is, onMediaMain() runs so only one leads.
 const PhotosSection = (function () {
   function el(tag, cls, text) {
     var e = document.createElement(tag);
@@ -16,8 +17,7 @@ const PhotosSection = (function () {
   }
 
   var ICON = {
-    check: 'M5 12.5l4.5 4.5L19 7.5',
-    trash: 'M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6',
+    x: 'M7 7l10 10M17 7L7 17',
   };
   function icon(name) {
     var s = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -29,8 +29,8 @@ const PhotosSection = (function () {
     return s;
   }
 
-  // Tapping a photo shows it full size (with a way to make it the main one from there).
-  function viewer(url, title, onMain) {
+  // Tapping a photo shows it full size.
+  function viewer(url, title) {
     Modal.open({
       title: title || 'Photo',
       build: function (body, close) {
@@ -38,12 +38,6 @@ const PhotosSection = (function () {
         big.src = url;
         big.alt = '';
         body.appendChild(big);
-        if (onMain) {
-          var b = el('button', 'save-btn photo-main-btn', 'Make this the main photo');
-          b.type = 'button';
-          b.addEventListener('click', function () { close(); onMain(); });
-          body.appendChild(b);
-        }
       },
     });
   }
@@ -56,7 +50,7 @@ const PhotosSection = (function () {
     var m = typeof getMedia === 'function' ? getMedia(o.mediaId) : null;
     var others = m ? m.links.filter(function (l) { return !(l.targetType === o.ownerType && l.targetId === o.ownerId); }).length : 0;
     Modal.open({
-      title: 'Remove ' + noun + '?',
+      title: 'Remove ' + noun + ' from ' + (o.name || 'this record') + '?',
       build: function (body, close) {
         body.appendChild(el('p', 'confirm-text', 'Take this ' + noun + ' off ' + (o.name || 'this record') + '? It stays in the Media library' + (others ? ' and on the ' + others + ' other record' + (others === 1 ? '' : 's') + ' it’s linked to' : '') + '.'));
         var unlink = el('button', 'save-btn', 'Remove from ' + (o.name || 'this record'));
@@ -94,70 +88,127 @@ const PhotosSection = (function () {
 
   var editing = {}; // which photo boxes are in edit mode, kept across redraws
 
+  // Drag a tile to a new place in the grid (pointer events, so it works with a finger too).
+  function makeDraggable(grid, onOrder) {
+    var drag = null;
+    function tiles() { return Array.prototype.slice.call(grid.querySelectorAll('.photo-tile')); }
+    grid.addEventListener('pointerdown', function (e) {
+      var tile = e.target.closest('.photo-tile');
+      if (!tile || e.target.closest('.photo-act')) return;
+      drag = { tile: tile, x: e.clientX, y: e.clientY, active: false, id: e.pointerId };
+    });
+    grid.addEventListener('pointermove', function (e) {
+      if (!drag || e.pointerId !== drag.id) return;
+      var dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+      if (!drag.active) {
+        if (Math.abs(dx) + Math.abs(dy) < 8) return;
+        drag.active = true;
+        drag.tile.classList.add('dragging');
+        try { grid.setPointerCapture(e.pointerId); } catch (err) { /* fine without */ }
+      }
+      drag.tile.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
+      var over = tiles().filter(function (t) {
+        if (t === drag.tile) return false;
+        var r = t.getBoundingClientRect();
+        return e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+      })[0];
+      if (over) {
+        var list = tiles();
+        var from = list.indexOf(drag.tile), to = list.indexOf(over);
+        var anchorBefore = from < to ? over.nextSibling : over;
+        grid.insertBefore(drag.tile, anchorBefore);
+        drag.x = e.clientX; drag.y = e.clientY; // the tile now sits where it was dropped; restart the offset from here
+        drag.tile.style.transform = '';
+      }
+    });
+    function end(e) {
+      if (!drag || e.pointerId !== drag.id) return;
+      var was = drag;
+      drag = null;
+      was.tile.classList.remove('dragging');
+      was.tile.style.transform = '';
+      if (was.active) {
+        was.tile.dataset.justDragged = '1';
+        setTimeout(function () { delete was.tile.dataset.justDragged; }, 50);
+        onOrder(tiles());
+      }
+    }
+    grid.addEventListener('pointerup', end);
+    grid.addEventListener('pointercancel', end);
+  }
+
   function render(o) {
     var key = o.ownerType + ':' + o.ownerId;
     var section = el('div', 'detail-section');
     var head = el('div', 'photo-head');
     head.appendChild(el('h3', '', o.title || 'Photos'));
-    var total = (o.fixed || []).length + o.photos.length;
-    if (total) {
-      var toggle = el('button', 'pick-link photo-edit', editing[key] ? 'Done' : 'Edit');
-      toggle.type = 'button';
-      toggle.addEventListener('click', function () { editing[key] = !editing[key]; o.refresh(); });
-      head.appendChild(toggle);
-    }
+    var uploads = o.photos.slice();
+    var fixed = (o.fixed || []).slice();
+    var total = fixed.length + uploads.length;
+    var isEditing = !!editing[key];
+    var toggle = el('button', 'pick-link photo-edit', isEditing ? 'Done' : 'Edit');
+    toggle.type = 'button';
+    toggle.addEventListener('click', function () { editing[key] = !editing[key]; o.refresh(); });
+    head.appendChild(toggle);
     section.appendChild(head);
-    var isEditing = !!editing[key] && total > 0;
+
+    // One list, in order: whichever comes first is the picture used everywhere.
+    var hasPrimaryUpload = uploads.some(function (p) { return p.isPrimary; });
+    var mainFixed = o.fixedMain && fixed.indexOf(o.fixedMain) >= 0 ? o.fixedMain : (!hasPrimaryUpload ? fixed[0] : '');
+    var items = [];
+    if (mainFixed) items.push({ fixed: true, url: mainFixed });
+    {
+      // the rest of the app's own pictures sit after the uploads that lead, or right after the main one
+      var otherFixed = fixed.filter(function (u) { return u !== mainFixed; }).map(function (u) { return { fixed: true, url: u }; });
+      var ups = uploads.map(function (p) { return { id: p.id, url: p.url }; });
+      items = items.concat(mainFixed ? otherFixed.concat(ups) : ups.concat(otherFixed));
+    }
+
     var grid = el('div', 'photo-grid' + (isEditing ? ' editing' : ''));
-    var fixedMain = o.fixedMain || '';
-    var hasPrimaryUpload = o.photos.some(function (p) { return p.isPrimary; });
-
-    (o.fixed || []).forEach(function (url) {
-      var isMain = fixedMain ? url === fixedMain : !hasPrimaryUpload && url === o.fixed[0];
-      var makeMain = o.onFixedMain && !isMain ? function () { o.onFixedMain(url).then(o.refresh).catch(failed); } : null;
-      var tile = el('button', 'photo-tile' + (isMain ? ' primary' : ''));
-      tile.type = 'button';
+    items.forEach(function (item, i) {
+      var tile = el('div', 'photo-tile' + (i === 0 ? ' primary' : ''));
+      tile.dataset.key = item.fixed ? 'f:' + item.url : 'm:' + item.id;
       var img = el('img');
-      img.src = url;
+      img.src = item.url;
       img.alt = '';
-      img.loading = 'lazy';
+      img.draggable = false;
       tile.appendChild(img);
-      if (isMain) tile.appendChild(el('span', 'photo-primary-badge', 'Main'));
-      if (isEditing && makeMain) tile.appendChild(actBtn('photo-act-main', 'check', 'Make main photo', makeMain));
-      tile.addEventListener('click', function () { viewer(url, o.name, makeMain); });
-      grid.appendChild(tile);
-    });
-
-    o.photos.forEach(function (photo) {
-      var isMain = photo.isPrimary && !fixedMain && !((o.fixed || []).length && !hasPrimaryUpload);
-      var makeMain = isMain ? null : function () {
-        setMainPhotoFor(o.ownerType, o.ownerId, photo.id).then(function () { return o.onMediaMain ? o.onMediaMain() : null; }).then(o.refresh).catch(failed);
-      };
-      var tile = el('button', 'photo-tile' + (isMain ? ' primary' : ''));
-      tile.type = 'button';
-      var img = el('img');
-      img.src = photo.url;
-      img.alt = '';
-      tile.appendChild(img);
-      if (isMain) tile.appendChild(el('span', 'photo-primary-badge', 'Main'));
-      if (isEditing) {
-        if (makeMain) tile.appendChild(actBtn('photo-act-main', 'check', 'Make main photo', makeMain));
-        tile.appendChild(actBtn('photo-act-del', 'trash', 'Remove photo', function () {
-          confirmRemove({ mediaId: photo.id, ownerType: o.ownerType, ownerId: o.ownerId, name: o.name, noun: 'photo', onDone: o.refresh });
+      if (i === 0 && total > 1) tile.appendChild(el('span', 'photo-primary-badge', 'Main'));
+      if (isEditing && !item.fixed) {
+        tile.appendChild(actBtn('photo-act-del', 'x', 'Remove photo', function () {
+          confirmRemove({ mediaId: item.id, ownerType: o.ownerType, ownerId: o.ownerId, name: o.name, noun: 'photo', onDone: o.refresh });
         }));
       }
-      tile.addEventListener('click', function () { viewer(photo.url, o.name, makeMain); });
+      tile.addEventListener('click', function () {
+        if (tile.dataset.justDragged) return;
+        viewer(item.url, o.name);
+      });
       grid.appendChild(tile);
     });
-    var add = el('button', 'photo-add-tile', '+');
-    add.type = 'button';
-    add.setAttribute('aria-label', 'Add photos');
-    add.addEventListener('click', function () {
-      MediaPicker.open({ type: 'photo', title: 'Add photos', target: { ownerType: o.ownerType, ownerId: o.ownerId }, onDone: o.refresh });
-    });
-    grid.appendChild(add);
+    if (isEditing) {
+      var add = el('button', 'photo-add-tile', '+');
+      add.type = 'button';
+      add.setAttribute('aria-label', 'Add photos');
+      add.addEventListener('click', function () {
+        MediaPicker.open({ type: 'photo', title: 'Add photos', target: { ownerType: o.ownerType, ownerId: o.ownerId }, onDone: o.refresh });
+      });
+      grid.appendChild(add);
+      if (total > 1) makeDraggable(grid, function (tileEls) {
+        var keys = tileEls.map(function (t) { return t.dataset.key; });
+        var ids = keys.filter(function (k) { return k.charAt(0) === 'm'; }).map(function (k) { return k.slice(2); });
+        var firstFixed = keys[0].charAt(0) === 'f' ? keys[0].slice(2) : '';
+        var changed = keys.join('|') !== items.map(function (it) { return it.fixed ? 'f:' + it.url : 'm:' + it.id; }).join('|');
+        if (!changed) return;
+        var steps = Promise.resolve();
+        if (ids.length) steps = steps.then(function () { return reorderPhotos(o.ownerType, o.ownerId, ids); });
+        if (firstFixed && o.onFixedMain && firstFixed !== mainFixed) steps = steps.then(function () { return o.onFixedMain(firstFixed); });
+        else if (!firstFixed && o.onMediaMain) steps = steps.then(function () { return o.onMediaMain(); });
+        steps.then(o.refresh).catch(failed);
+      });
+    }
     section.appendChild(grid);
-    if (isEditing && total > 1) section.appendChild(el('p', 'form-note', 'Tap ✓ to make a photo the main picture, or the bin to take it off.'));
+    if (!total && !isEditing) section.appendChild(el('p', 'form-note', 'No photos yet — tap Edit to add some.'));
+    if (isEditing && total > 1) section.appendChild(el('p', 'form-note', 'Drag to reorder — the first photo is the main one.'));
     return section;
   }
 
