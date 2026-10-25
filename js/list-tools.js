@@ -103,10 +103,8 @@ const ListTools = (function () {
       });
     };
 
-    // Pick as many as you like; nothing picked means no filter. Nothing changes until Apply.
+    // Pick as many as you like; nothing picked means no filter. Changes apply instantly, so closing the popup any way keeps them.
     function openFilters() {
-      var staged = {};
-      (o.filters || []).forEach(function (f) { staged[f.key] = (o.get(f.key) || []).slice(); });
       Modal.open({
         title: 'Filter',
         build: function (body, close) {
@@ -116,10 +114,13 @@ const ListTools = (function () {
               if (f.label) body.appendChild(el('p', 'subsection-label', f.label));
               var list = el('div', 'app-select-list');
               f.options.forEach(function (opt) {
-                var sel = staged[f.key].indexOf(opt[0]) !== -1;
+                var sel = (o.get(f.key) || []).indexOf(opt[0]) !== -1;
                 var b = btn('app-select-option' + (sel ? ' selected' : ''), '', function () {
-                  var i = staged[f.key].indexOf(opt[0]);
-                  if (i === -1) staged[f.key].push(opt[0]); else staged[f.key].splice(i, 1);
+                  var cur = (o.get(f.key) || []).slice();
+                  var i = cur.indexOf(opt[0]);
+                  if (i === -1) cur.push(opt[0]); else cur.splice(i, 1);
+                  o.set(f.key, cur);
+                  o.onRedraw();
                   drawBody();
                 });
                 b.appendChild(el('span', '', opt[1]));
@@ -130,14 +131,11 @@ const ListTools = (function () {
             });
             var actions = el('div', 'filter-actions');
             actions.appendChild(btn('add-record-btn', 'Clear filters', function () {
-              (o.filters || []).forEach(function (f) { staged[f.key] = []; });
+              (o.filters || []).forEach(function (f) { o.set(f.key, []); });
+              o.onRedraw();
               drawBody();
             }));
-            actions.appendChild(btn('save-btn', 'Apply', function () {
-              (o.filters || []).forEach(function (f) { o.set(f.key, staged[f.key]); });
-              close();
-              o.onRedraw();
-            }));
+            actions.appendChild(btn('save-btn', 'Apply', close));
             body.appendChild(actions);
           }
           drawBody();
