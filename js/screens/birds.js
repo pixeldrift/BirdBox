@@ -26,14 +26,12 @@ const BirdsScreen = (function () {
       actions.appendChild(btn);
     });
 
-    var searchInput = document.createElement('input');
-    searchInput.type = 'search';
-    searchInput.placeholder = 'Search band #, name, species…';
-    searchInput.className = 'search-input';
-    searchInput.setAttribute('aria-label', 'Search birds');
-
-    var chipsWrap = document.createElement('div');
-    chipsWrap.className = 'filter-chips';
+    var tools = ListTools.create({
+      screen: 'birds', placeholder: 'Search birds…', ariaLabel: 'Search birds', query: state.query,
+      onQuery: function (v) { state.query = v; draw(); }, onRedraw: function () { draw(); },
+      filters: [{ key: 'status', label: 'Status', options: STATUSES.concat(['Archived']).map(function (s) { return [s, s]; }), isOn: function (v) { return v !== 'All'; }, clear: 'All' }],
+      get: function (k) { return state[k]; }, set: function (k, v) { state[k] = v; },
+    });
 
     var countLabel = document.createElement('p');
     countLabel.className = 'list-count';
@@ -42,18 +40,7 @@ const BirdsScreen = (function () {
     listWrap.className = 'list-rows';
 
     function draw() {
-      clearEl(chipsWrap);
-      STATUSES.concat(['Archived']).forEach(function (s) {
-        var chip = document.createElement('button');
-        chip.type = 'button';
-        chip.className = 'filter-chip' + (state.status === s ? ' active' : '');
-        chip.textContent = s;
-        chip.addEventListener('click', function () {
-          state.status = s;
-          draw();
-        });
-        chipsWrap.appendChild(chip);
-      });
+      tools.refresh();
 
       var q = state.query.trim().toLowerCase();
       var results = BIRDS_SAMPLE.filter(function (b) {
@@ -71,6 +58,7 @@ const BirdsScreen = (function () {
       countLabel.textContent = results.length + (results.length === 1 ? ' bird' : ' birds') + (goneHidden ? ' · ' + goneHidden + ' archived' : '');
 
       clearEl(listWrap);
+      listWrap.className = tools.view === 'grid' ? 'tile-grid' : 'list-rows';
       if (results.length === 0) {
         var empty = document.createElement('p');
         empty.className = 'list-empty';
@@ -78,24 +66,26 @@ const BirdsScreen = (function () {
         listWrap.appendChild(empty);
       } else {
         results.forEach(function (b) {
-          listWrap.appendChild(renderRow(b, navigate));
+          listWrap.appendChild(tools.view === 'grid' ? renderTile(b, navigate, tools) : renderRow(b, navigate));
         });
       }
     }
 
-    searchInput.addEventListener('input', function (e) {
-      state.query = e.target.value;
-      draw();
-    });
-
     draw();
 
     wrap.appendChild(actions);
-    wrap.appendChild(searchInput);
-    wrap.appendChild(chipsWrap);
+    wrap.appendChild(tools.bar);
+    wrap.appendChild(tools.chips);
     wrap.appendChild(countLabel);
     wrap.appendChild(listWrap);
     main.appendChild(wrap);
+  }
+
+  function renderTile(bird, navigate, tools) {
+    var thumb = document.createElement('span');
+    fillBirdAvatar(thumb, bird);
+    return tools.card({ thumb: thumb, title: birdShortLabel(bird), sub: [birdBandLabel(bird), bird.sex].filter(Boolean).join(' · '),
+      badge: bird.status, badgeClass: 'status-badge ' + statusClass(bird.status), onClick: function () { navigate(bird.id); } });
   }
 
   function renderRow(bird, navigate) {

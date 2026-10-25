@@ -3,6 +3,7 @@
 // its photos, source and stock. Routes: <id> · new · edit~<id>
 const SuppliesScreen = (function () {
   var state = { query: '', category: 'All', lowOnly: false };
+  var tools = null;
 
   function el(tag, cls, text) {
     var e = document.createElement(tag);
@@ -38,23 +39,30 @@ const SuppliesScreen = (function () {
     return b;
   }
 
+  function tile(s, navigate) {
+    var thumb = el('span', '');
+    fillThumb(thumb, supplySpec(s));
+    return tools.card({ thumb: thumb, title: s.name, sub: [s.category, s.brand].filter(Boolean).join(' · '),
+      badge: supplyIsLow(s) ? 'Low · ' + supplyAmount(s) : supplyAmount(s), badgeClass: 'type-badge ' + (supplyIsLow(s) ? 'supply-low' : 'type-breeder'),
+      onClick: function () { navigate(s.id); } });
+  }
+
   function renderList(main, navigate) {
     var wrap = el('div', 'list-screen');
     var actions = el('div', 'list-actions');
     actions.appendChild(btn('add-record-btn', '+ Add supply', function () { navigate('new'); }));
-    var search = el('input', 'search-input');
-    search.type = 'search';
-    search.placeholder = 'Search supplies…';
-    search.value = state.query;
-    var chips = el('div', 'filter-chips');
+    tools = ListTools.create({
+      screen: 'supplies', placeholder: 'Search supplies…', ariaLabel: 'Search supplies', query: state.query,
+      onQuery: function (v) { state.query = v; draw(); }, onRedraw: function () { draw(); },
+      filters: [{ key: 'category', label: 'Kind', options: [['All', 'All']].concat(SUPPLY_CATEGORIES.map(function (c) { return [c, c]; })), isOn: function (v) { return v !== 'All'; }, clear: 'All' }],
+      toggles: [{ key: 'lowOnly', label: 'Running low only' }],
+      get: function (k) { return state[k]; }, set: function (k, v) { state[k] = v; },
+    });
     var count = el('p', 'list-count');
     var list = el('div', 'list-rows');
 
     function draw() {
-      clearEl(chips);
-      ['All'].concat(SUPPLY_CATEGORIES).forEach(function (c) {
-        chips.appendChild(btn('filter-chip' + (state.category === c ? ' active' : ''), c, function () { state.category = c; draw(); }));
-      });
+      tools.refresh();
       var q = state.query.trim().toLowerCase();
       var lowCount = SUPPLIES_SAMPLE.filter(supplyIsLow).length;
       var results = SUPPLIES_SAMPLE.filter(function (s) {
@@ -69,12 +77,12 @@ const SuppliesScreen = (function () {
         count.appendChild(low);
       }
       clearEl(list);
-      results.forEach(function (s) { list.appendChild(row(s, navigate)); });
+      list.className = tools.view === 'grid' ? 'tile-grid' : 'list-rows';
+      results.forEach(function (s) { list.appendChild(tools.view === 'grid' ? tile(s, navigate) : row(s, navigate)); });
       if (!results.length) list.appendChild(el('p', 'list-empty', SUPPLIES_SAMPLE.length ? 'Nothing matches.' : 'No supplies yet — tap “+ Add supply” to add feed, supplements and the rest of what you keep on hand.'));
     }
-    search.addEventListener('input', function (e) { state.query = e.target.value; draw(); });
     draw();
-    [actions, search, chips, count, list].forEach(function (e) { wrap.appendChild(e); });
+    [actions, tools.bar, tools.chips, count, list].forEach(function (e) { wrap.appendChild(e); });
     main.appendChild(wrap);
   }
 
