@@ -46,7 +46,7 @@ const NAV = [
       { id: 'supplies', label: 'Supplies', icon: 'icons/tinted/aviary/Supplies.png',
         blurb: 'Inventory of feed, medication, and supplies on hand.' },
       { id: 'cleaning', label: 'Cleaning', icon: 'icons/tinted/aviary/Cleaning.png',
-        blurb: 'Cleaning schedules and checklists.' },
+        blurb: 'Cleaning plans — jobs, schedules, who does them and what they use.' },
       { id: 'tasks', label: 'Tasks', icon: 'icons/tinted/aviary/Tasks.png',
         blurb: 'Chores and recurring to-dos.' },
       { id: 'calendar', label: 'Calendar', icon: 'icons/tinted/aviary/Calendar.png',

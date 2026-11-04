@@ -63,7 +63,7 @@ function calendarItems(fromISO, toISO, layers) {
       var p = taskProgress(o.task, o.date);
       var slot = { Morning: '08:00', Midday: '12:00', Evening: '18:00', Night: '21:00', Anytime: '23:00' }[o.task.timeOfDay] || '23:00';
       out.push({ kind: 'task', date: o.date, title: o.task.title, sub: [o.task.kind, o.task.timeOfDay !== 'Anytime' ? o.task.timeOfDay : '', taskTargetLabel(o.task)].filter(Boolean).join(' · '),
-        time: slot, done: p.done === p.total, hash: '#/aviary/tasks/' + o.task.id, ref: o.task });
+        time: slot, done: p.done === p.total, hash: o.task.fromPlan ? careTargetHash(o.task.targetType, o.task.targetId) : '#/aviary/tasks/' + o.task.id, ref: o.task });
     });
   }
   if (on.shipments) {

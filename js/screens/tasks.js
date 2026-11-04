@@ -1,4 +1,5 @@
-// Aviary → Tasks (and Cleaning, the same list limited to cleaning jobs): to-do lists for you and your team.
+// Aviary → Tasks: the to-do list for you and your team — one-off jobs you add, plus the feeding rounds and cleaning jobs
+// that come from the plans (Feed/Water and Cleaning).
 // Today shows what's due now, grouped by time of day, with a tick for each; Upcoming looks a week ahead; All lists
 // every task. Tasks can repeat (every day, chosen weekdays, monthly, every N days) and be assigned to a team
 // member and tied to a place or bird. A feeding task shows the care plan and, if it covers several cages, a
@@ -96,7 +97,17 @@ const TasksScreen = (function () {
         var plan = effectiveCare(t.targetType, t.targetId);
         if (plan.items.length) detail.appendChild(planLines(plan)); else detail.appendChild(el('p', 'form-note', 'No care plan to show for this yet.'));
       }
-      detail.appendChild(btn('pick-link', 'Open task ›', function () { navigate(t.id); }));
+      if (t.fromPlan) {
+        var sups = careSupplies(t);
+        if (t.amount) detail.appendChild(el('p', 'form-note', t.amount));
+        sups.forEach(function (s) {
+          var row = el('div', 'task-supply' + (supplyIsLow(s) ? ' low' : ''));
+          row.appendChild(el('strong', '', s.name));
+          row.appendChild(el('small', '', supplyAmount(s) + ' in stock' + (supplyIsLow(s) ? ' · running low' : '')));
+          detail.appendChild(row);
+        });
+        detail.appendChild(btn('pick-link', 'Open the cleaning plan for ' + taskTargetLabel(t) + ' ›', function () { location.hash = careTargetHash(t.targetType, t.targetId); }));
+      } else detail.appendChild(btn('pick-link', 'Open task ›', function () { navigate(t.id); }));
     }
     text.addEventListener('click', function () {
       open = !open;
@@ -177,7 +188,7 @@ const TasksScreen = (function () {
         var box = group(slot);
         inSlot.forEach(function (o) { box.appendChild(occurrence(o, draw, navigate)); });
       });
-      if (!occs.length && !overdue.length) body.appendChild(el('p', 'list-empty', TASKS_SAMPLE.length ? 'Nothing due today.' : 'No tasks yet — tap “+ Add Task” to set up feeding, cleaning and other jobs.'));
+      if (!occs.length && !overdue.length) body.appendChild(el('p', 'list-empty', allTasks().length ? 'Nothing due today.' : 'No tasks yet — tap “+ Add Task” to set up feeding, cleaning and other jobs.'));
     }
 
     function drawUpcoming() {
@@ -199,7 +210,7 @@ const TasksScreen = (function () {
 
     function drawAll() {
       var list = el('div', 'list-rows');
-      var tasks = TASKS_SAMPLE.filter(relevant);
+      var tasks = allTasks().filter(relevant);
       setCount(tasks.length, tasks.length === 1 ? 'task' : 'tasks');
       tasks.forEach(function (t) {
         var b = el('button', 'list-row');
@@ -208,7 +219,7 @@ const TasksScreen = (function () {
         info.appendChild(el('span', 'list-row-title', t.title));
         info.appendChild(el('span', 'list-row-sub', [t.kind, taskScheduleText(t), taskTargetLabel(t), who(t)].filter(Boolean).join(' · ')));
         b.appendChild(info);
-        b.addEventListener('click', function () { navigate(t.id); });
+        b.addEventListener('click', function () { if (t.fromPlan) location.hash = careTargetHash(t.targetType, t.targetId); else navigate(t.id); });
         list.appendChild(b);
       });
       if (!tasks.length) list.appendChild(el('p', 'list-empty', 'No tasks to show.'));
@@ -408,6 +419,8 @@ const TasksScreen = (function () {
       renderList: function (main, navigate) { renderList(main, navigate, fixedKind); },
       renderDetail: function (main, id, navigate, setTitle) {
         clearEl(main);
+        var job = CARE_SAMPLE.filter(function (c) { return c.id === id; })[0];
+        if (job) { location.hash = careTargetHash(job.targetType, job.targetId); return; } // a job from a cleaning plan lives on its plan
         if (id === 'new') return renderForm(main, null, navigate, setTitle, fixedKind);
         if (id.indexOf('edit~') === 0) return renderForm(main, id.slice(5), navigate, setTitle, fixedKind);
         return renderTask(main, id, navigate, setTitle, fixedKind);
@@ -415,5 +428,5 @@ const TasksScreen = (function () {
     };
   }
 
-  return { tasks: screen(null), cleaning: screen('Cleaning'), setPrefill: function (p) { prefill = p || {}; } };
+  return { tasks: screen(null), setPrefill: function (p) { prefill = p || {}; } };
 })();

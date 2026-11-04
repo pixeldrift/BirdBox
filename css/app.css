@@ -2009,3 +2009,9 @@ button.care-food { cursor: pointer; }
 .modal-body .save-btn + .btn-positive, .modal-body .btn-positive + .btn-positive { margin-top: 10px; }
 .action-row .btn-positive { flex: 1 1 auto; margin: 0; padding: 10px 12px; font-size: 0.85rem; }
 .filter-actions .btn-positive { width: auto; margin: 0; }
+
+/* Cleaning plans */
+.care-needs { display: block; }
+.care-needs .low, .task-supply.low small { color: #A6543D; font-weight: 700; }
+.task-supply { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 6px 2px; }
+.task-supply small { color: var(--muted); }

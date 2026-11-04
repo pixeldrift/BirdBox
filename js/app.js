@@ -22,7 +22,7 @@
     'mybirds/health': typeof HealthScreen !== 'undefined' ? HealthScreen : null,
     'aviary/calendar': typeof CalendarScreen !== 'undefined' ? CalendarScreen : null,
     'aviary/tasks': typeof TasksScreen !== 'undefined' ? TasksScreen.tasks : null,
-    'aviary/cleaning': typeof TasksScreen !== 'undefined' ? TasksScreen.cleaning : null,
+    'aviary/cleaning': typeof FeedWaterScreen !== 'undefined' ? FeedWaterScreen.cleaning : null,
     'aviary/feedwater': typeof FeedWaterScreen !== 'undefined' ? FeedWaterScreen : null,
     'aviary/supplies': typeof SuppliesScreen !== 'undefined' ? SuppliesScreen : null,
     'aviary/caging': typeof CagingScreen !== 'undefined' ? CagingScreen : null,

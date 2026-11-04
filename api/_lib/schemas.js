@@ -68,6 +68,14 @@ const SCHEMAS = {
       amount: { col: 'amount', type: 'text', max: 80 },
       mealTime: { col: 'meal_time', type: 'enum', required: true, options: ['Morning', 'Midday', 'Evening', 'Night', 'Anytime'] },
       notes: { col: 'notes', type: 'text', max: 600 },
+      // Cleaning plans (sql/032_cleaning_plans.sql): a line is a recurring job. mealTime is its time of day.
+      plan: { col: 'plan', type: 'enum', required: true, options: ['feeding', 'cleaning'] },
+      repeat: { col: 'repeat', type: 'enum', options: ['Daily', 'Weekly', 'Monthly', 'Custom'] },
+      every: { col: 'every', type: 'number' },
+      weekdays: { col: 'weekdays', type: 'text', max: 20 },
+      startDate: { col: 'start_date', type: 'date' },
+      assignedTo: { col: 'assigned_to', type: 'text', ref: 'user' },
+      supplyIds: { col: 'supply_ids', type: 'text', max: 600 }, // the supplies a cleaning job uses, comma-separated
     },
   },
   // Jobs to do, one-off or repeating (see sql/024_tasks.sql), and each day they're ticked off.

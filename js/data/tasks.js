@@ -21,6 +21,11 @@ function getTask(id) {
   return TASKS_SAMPLE.filter(function (t) { return t.id === id; })[0] || null;
 }
 
+// Real tasks plus the cleaning jobs from cleaning plans (js/data/care.js), which come up on their schedule like any task.
+function allTasks() {
+  return TASKS_SAMPLE.concat(typeof cleaningJobTasks === 'function' ? cleaningJobTasks() : []);
+}
+
 // ---- dates (all local, 'YYYY-MM-DD') ----
 function isoOf(d) {
   return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
@@ -95,7 +100,7 @@ function setTaskDone(t, iso, sub, done) {
 function taskOccurrences(fromISO, toISO, filter) {
   var out = [];
   for (var d = fromISO; d <= toISO; d = addDaysISO(d, 1)) {
-    TASKS_SAMPLE.forEach(function (t) { if ((!filter || filter(t)) && taskOccursOn(t, d)) out.push({ task: t, date: d }); });
+    allTasks().forEach(function (t) { if ((!filter || filter(t)) && taskOccursOn(t, d)) out.push({ task: t, date: d }); });
   }
   return out;
 }

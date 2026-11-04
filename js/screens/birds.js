@@ -438,6 +438,7 @@ const BirdsScreen = (function () {
     wrap.appendChild(buildSpeciesCard(bird));
     wrap.appendChild(familySection);
     wrap.appendChild(CareSection.render({ targetType: 'bird', targetId: bird.id, name: bird.name || 'this bird', refresh: again }));
+    wrap.appendChild(CareSection.render({ targetType: 'bird', targetId: bird.id, name: bird.name || 'this bird', refresh: again, plan: 'cleaning' }));
     wrap.appendChild(registrySection);
     wrap.appendChild(healthSection);
     wrap.appendChild(transferSection);

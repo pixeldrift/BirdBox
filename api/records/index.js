@@ -49,7 +49,7 @@ function clean(schema, input, creating) {
     if (!present) {
       if (creating && f.required) return { error: label(key) + ' is required' };
       if (creating && f.type === 'boolean') { values[f.col] = true; continue; }
-      if (creating) values[f.col] = f.type === 'text' || f.type === 'enum' ? (f.ref ? null : '') : null;
+      if (creating) values[f.col] = f.type === 'text' || f.type === 'enum' || f.type === 'phone' ? (f.ref ? null : '') : null;
       continue;
     }
     let v = input[key];
@@ -116,6 +116,7 @@ async function cleanupAfterDelete(type, id) {
   if (type === 'users') steps.push(['update events set assigned_to = null where assigned_to = $1', [id]]);
   if (type === 'tasks') steps.push(['delete from task_done where task_id = $1', [id]]);
   if (type === 'users') {
+    steps.push(['update care_items set assigned_to = null where assigned_to = $1', [id]]);
     steps.push(['update tasks set assigned_to = null where assigned_to = $1', [id]]);
     steps.push(['update task_done set done_by = null where done_by = $1', [id]]);
   }

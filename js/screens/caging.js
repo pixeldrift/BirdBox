@@ -123,6 +123,7 @@ const CagingScreen = (function () {
       wrap.appendChild(describe(rec, rec ? function () { navigate('edit~cage~' + id); } : null));
       wrap.appendChild(photos('cage', id, 'cage ' + id, again));
       wrap.appendChild(CareSection.render({ targetType: 'cage', targetId: id, name: 'this cage', refresh: again }));
+      wrap.appendChild(CareSection.render({ targetType: 'cage', targetId: id, name: 'this cage', refresh: again, plan: 'cleaning' }));
       // Where this cage is — assign or change it from here (or from the room's / building's page).
       wrap.appendChild(Relations.one({
         title: 'Room', parentName: 'cage', value: rec && rec.roomId || '', find: getRoom,
@@ -176,6 +177,7 @@ const CagingScreen = (function () {
     wrap.appendChild(describe(r, function () { navigate('edit~room~' + id); }));
     wrap.appendChild(photos('room', id, r.name, again));
     wrap.appendChild(CareSection.render({ targetType: 'room', targetId: id, name: r.name, refresh: again }));
+    wrap.appendChild(CareSection.render({ targetType: 'room', targetId: id, name: r.name, refresh: again, plan: 'cleaning' }));
     wrap.appendChild(Relations.one({
       title: 'Building', parentName: 'room', value: r.buildingCode || '', find: getBuilding,
       render: function (b) { return placeRow(model, 'building', b.code, navigate); },
@@ -211,6 +213,7 @@ const CagingScreen = (function () {
     wrap.appendChild(describe(b, function () { navigate('edit~building~' + code); }));
     wrap.appendChild(photos('building', code, 'Building ' + b.nickname, again));
     wrap.appendChild(CareSection.render({ targetType: 'building', targetId: code, name: 'Building ' + b.nickname, refresh: again }));
+    wrap.appendChild(CareSection.render({ targetType: 'building', targetId: code, name: 'Building ' + b.nickname, refresh: again, plan: 'cleaning' }));
 
     wrap.appendChild(Relations.one({
       title: 'Location', parentName: 'building', value: b.locationId || '', find: getLocation,
@@ -255,6 +258,7 @@ const CagingScreen = (function () {
     wrap.appendChild(describe(l, function () { navigate('edit~location~' + id); }));
     wrap.appendChild(photos('location', id, l.name, again));
     wrap.appendChild(CareSection.render({ targetType: 'location', targetId: id, name: l.name, refresh: again }));
+    wrap.appendChild(CareSection.render({ targetType: 'location', targetId: id, name: l.name, refresh: again, plan: 'cleaning' }));
     wrap.appendChild(Relations.many({
       title: 'Buildings', related: buildings, render: function (b) { return placeRow(model, 'building', b.code, navigate); }, parentName: 'location',
       empty: 'No buildings on this location yet.', refresh: again,
@@ -286,6 +290,7 @@ const CagingScreen = (function () {
     if (facts.firstChild) wrap.appendChild(facts);
     wrap.appendChild(photos('aviary', 'main', AVIARY.name, again));
     wrap.appendChild(CareSection.render({ targetType: 'aviary', targetId: 'main', name: AVIARY.name, refresh: again }));
+    wrap.appendChild(CareSection.render({ targetType: 'aviary', targetId: 'main', name: AVIARY.name, refresh: again, plan: 'cleaning' }));
     var note = el('div', 'detail-section');
     note.appendChild(el('p', 'form-note', 'Your aviary’s name, contact details and logo live under Account → Settings.'));
     note.appendChild(addButton('Edit my aviary', function () { location.hash = '#/account/settings'; }));

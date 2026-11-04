@@ -360,3 +360,15 @@ Removed from the in-app Credits, but worth keeping for when we add more species 
 
 - **Dribbr** — https://dribbr.app — atlas of expert-confirmed color mutations (budgerigars, lovebirds and more) plus a pairing calculator.
 - **Gencalc** — https://www.gencalc.com — genetics calculator for working out what a pairing can produce.
+
+## Cleaning plans (built) and what's next
+
+Cleaning follows the same model as feeding: **plans** belong to a cage, room, building, location, bird or the whole aviary
+(nearest one wins) and **Tasks** is where the day's jobs show up. A cleaning line (`care_items.plan = 'cleaning'`,
+`sql/032_cleaning_plans.sql`) is a recurring job: what to do, how often, time of day, who does it, and the supplies it
+uses (`supply_ids`, comma-separated). Each line is turned into a task-shaped record by `cleaningJobTask()` in
+`js/data/care.js`, so Today / Upcoming / the Calendar treat it like any task and ticks are stored in `task_done` (task id
+= the care line id). Supplies that run low are flagged on the job, in Tasks, and on the Supplies page ("Used in care plans").
+
+Still to do: **using up stock** — ticking a job off (or a feeding) subtracts the amount from the supply; a "restock list"
+of low cleaning and feed supplies; per-cage checklist for a job set on a room or building.

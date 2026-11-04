@@ -1,9 +1,8 @@
-// Aviary → Feed/Water: what everyone is fed. "By place" lists every cage with the plan that applies to it (its own,
-// or the nearest one above); "By food" lists each supply that's in a plan, where it's used and how much is left.
-// Plans are edited on the cage, room, building, location, bird or aviary pages ("Care & feeding").
-// The aviary-wide plan is edited here. Routes: none.
+// Aviary → Feed/Water and Aviary → Cleaning: the two kinds of care plan. "By place" lists every cage with the plan that
+// applies to it (its own, or the nearest one above); "By food" / "By supply" lists each supply that's in a plan, where it's
+// used and how much is left. Plans are edited on the cage, room, building, location, bird or aviary pages
+// ("Care & feeding", "Cleaning"); the aviary-wide plan is edited here. Routes: none.
 const FeedWaterScreen = (function () {
-  var state = { view: 'place', query: '', show: [] }; // show: 'noplan' (By place) or 'low' (By food)
 
   function el(tag, cls, text) {
     var e = document.createElement(tag);
@@ -23,6 +22,9 @@ const FeedWaterScreen = (function () {
     return items.map(function (c) { return careLineText(c); }).join(' · ');
   }
 
+  function make(plan) {
+  var cleaning = plan === 'cleaning';
+  var state = { view: 'place', query: '', show: [] }; // show: 'noplan' (By place) or 'low' (By food / supply)
   function renderList(main, navigate) {
     var wrap = el('div', 'list-screen');
     var top = el('div');
@@ -35,13 +37,13 @@ const FeedWaterScreen = (function () {
       clearEl(top);
       clearEl(body);
       var seg = el('div', 'loc-seg loc-modes');
-      [['place', 'By place'], ['food', 'By food']].forEach(function (v) {
+      [['place', 'By place'], ['food', cleaning ? 'By supply' : 'By food']].forEach(function (v) {
         seg.appendChild(btn('loc-seg-btn' + (state.view === v[0] ? ' active' : ''), v[1], function () { state.view = v[0]; state.show = []; draw(); }));
       });
       top.appendChild(seg);
-      if (state.view === 'place') top.appendChild(CareSection.render({ targetType: 'aviary', targetId: 'main', name: AVIARY.name, refresh: draw })); // the aviary-wide plan, editable right here
+      if (state.view === 'place') top.appendChild(CareSection.render({ targetType: 'aviary', targetId: 'main', name: AVIARY.name, refresh: draw, plan: plan })); // the aviary-wide plan, editable right here
       var tools = ListTools.create({
-        screen: 'feedwater', noView: true, placeholder: state.view === 'place' ? 'Search cages…' : 'Search foods…', ariaLabel: 'Search', query: state.query,
+        screen: cleaning ? 'cleaning' : 'feedwater', noView: true, placeholder: state.view === 'place' ? 'Search cages…' : (cleaning ? 'Search supplies…' : 'Search foods…'), ariaLabel: 'Search', query: state.query,
         onQuery: function (v) { state.query = v; drawBody(); }, onRedraw: function () { drawBody(); },
         filters: [{ key: 'show', label: '', options: state.view === 'place' ? [['noplan', 'No plan yet']] : [['low', 'Running low']] }],
         get: function (k) { return state[k]; }, set: function (k, v) { state[k] = v; },
@@ -65,7 +67,7 @@ const FeedWaterScreen = (function () {
         body.appendChild(countRow);
         var list = el('div', 'list-rows');
         var rows = allCages().filter(function (c) { return !q || (c.code + ' ' + cagePlaceLabel(c.code)).toLowerCase().indexOf(q) !== -1; }).map(function (c) {
-          return { cage: c, plan: effectiveCare('cage', c.code) };
+          return { cage: c, plan: effectiveCare('cage', c.code, plan) };
         }).filter(function (r) { return state.show.indexOf('noplan') === -1 || !r.plan.items.length; });
         setCount(rows.length, 'cage', 'cages');
         rows.forEach(function (r) {
@@ -88,16 +90,20 @@ const FeedWaterScreen = (function () {
       }
       // by food
       var foods = {};
-      CARE_SAMPLE.forEach(function (c) {
-        var key = c.supplyId || 'label:' + c.label.toLowerCase();
-        (foods[key] = foods[key] || { key: key, supplyId: c.supplyId, label: c.label, uses: [] }).uses.push(c);
+      CARE_SAMPLE.filter(function (c) { return (c.plan || 'feeding') === plan; }).forEach(function (c) {
+        var ids = careSupplyIds(c);
+        if (!ids.length) ids = ['label:' + String(c.label || '').toLowerCase()];
+        ids.forEach(function (id) {
+          var isLabel = id.indexOf('label:') === 0;
+          (foods[id] = foods[id] || { key: id, supplyId: isLabel ? '' : id, label: c.label, uses: [] }).uses.push(c);
+        });
       });
       var items = Object.keys(foods).map(function (k) { return foods[k]; }).filter(function (f) {
         var s = f.supplyId ? getSupply(f.supplyId) : null;
         if (state.show.indexOf('low') !== -1 && !(s && supplyIsLow(s))) return false;
         return !q || ((s ? s.name : f.label) + ' ' + (s ? s.category : '')).toLowerCase().indexOf(q) !== -1;
       }).sort(function (a, b) { return b.uses.length - a.uses.length; });
-      setCount(items.length, 'food', 'foods');
+      setCount(items.length, cleaning ? 'supply' : 'food', cleaning ? 'supplies' : 'foods');
       body.appendChild(countRow);
       var list2 = el('div', 'list-rows');
       items.forEach(function (f) {
@@ -106,17 +112,17 @@ const FeedWaterScreen = (function () {
         b.type = 'button';
         var av = el('span', 'list-row-avatar');
         var url = s ? supplyThumbUrl(s) : '';
-        fillThumb(av, url ? { src: url } : { icon: 'icons/tinted/aviary/FeedWater.png' });
+        fillThumb(av, url ? { src: url } : { icon: cleaning ? 'icons/tinted/aviary/Cleaning.png' : 'icons/tinted/aviary/FeedWater.png' });
         b.appendChild(av);
         var info = el('span', 'list-row-info');
         info.appendChild(el('span', 'list-row-title', s ? s.name : f.label));
-        info.appendChild(el('span', 'list-row-sub', 'In ' + f.uses.length + (f.uses.length === 1 ? ' plan' : ' plans') + (s ? ' · ' + supplyAmount(s) + ' in stock' : '')));
+        info.appendChild(el('span', 'list-row-sub', (cleaning ? 'Used in ' + f.uses.length + (f.uses.length === 1 ? ' job' : ' jobs') : 'In ' + f.uses.length + (f.uses.length === 1 ? ' plan' : ' plans')) + (s ? ' · ' + supplyAmount(s) + ' in stock' : '')));
         b.appendChild(info);
         if (s && supplyIsLow(s)) b.appendChild(el('span', 'type-badge supply-low', 'Low'));
         if (s) b.addEventListener('click', function () { location.hash = '#/aviary/supplies/' + s.id; });
         list2.appendChild(b);
       });
-      if (!items.length) list2.appendChild(el('p', 'list-empty', 'No foods in any plan yet. Open a cage or bird and add one under “Care & feeding”.'));
+      if (!items.length) list2.appendChild(el('p', 'list-empty', cleaning ? 'No supplies in any cleaning job yet. Open a cage, room or bird and add a job under “Cleaning”.' : 'No foods in any plan yet. Open a cage or bird and add one under “Care & feeding”.'));
       body.appendChild(list2);
     }
 
@@ -124,4 +130,9 @@ const FeedWaterScreen = (function () {
   }
 
   return { renderList: renderList, renderDetail: renderList };
+  }
+
+  var feeding = make('feeding');
+  feeding.cleaning = make('cleaning');
+  return feeding;
 })();
