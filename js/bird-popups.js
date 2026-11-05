@@ -32,7 +32,7 @@ const BirdPopups = (function () {
 
     function drawTabs() {
       clearEl(tabs);
-      [['cage', 'In a cage'], ['person', 'With a person'], ['text', 'Somewhere else']].forEach(function (t) {
+      [['cage', T('In a cage')], ['person', 'With a person'], ['text', 'Somewhere else']].forEach(function (t) {
         var chip = el('button', 'filter-chip' + (mode === t[0] ? ' active' : ''), t[1]);
         chip.type = 'button';
         chip.addEventListener('click', function () { mode = t[0]; drawTabs(); drawPanel(); });
@@ -43,13 +43,13 @@ const BirdPopups = (function () {
     function drawPanel() {
       clearEl(panel);
       if (mode === 'cage') {
-        panel.appendChild(el('p', 'form-note', 'Browse your locations, buildings and cages — or search for a cage number.'));
+        panel.appendChild(el('p', 'form-note', T('Browse your locations, buildings and cages — or search for a cage number.')));
         panel.appendChild(Picker.cages({
           value: picked.cage, allowClear: true, onChange: function (code) { picked.cage = code; },
           // A cage that doesn't exist yet can be added right here, filed under the building its number starts with.
           addNew: {
             needsText: true,
-            label: function (typed) { return typed ? '+ Add cage “' + typed.toUpperCase() + '”' : '+ New cage — type its number above'; },
+            label: function (typed) { return typed ? T('+ Add cage “') + typed.toUpperCase() + '”' : T('+ New cage — type its number above'); },
             onClick: function (typed, done) {
               var code = typed.toUpperCase().replace(/[^A-Z0-9-]/g, '');
               if (!code) return;

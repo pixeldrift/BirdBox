@@ -305,7 +305,7 @@ const TasksScreen = (function () {
     field('Assigned to', assignee.el);
 
     // Related to: the whole aviary, a place, or a bird.
-    var relOptions = [['', 'Nothing in particular'], ['aviary', 'The whole aviary'], ['location', 'A location'], ['building', 'A building'], ['room', 'A room'], ['cage', 'A cage'], ['bird', 'A bird']];
+    var relOptions = [['', 'Nothing in particular'], ['aviary', 'The whole aviary'], ['location', 'A location'], ['building', 'A building'], ['room', 'A room'], ['cage', T('A cage')], ['bird', 'A bird']];
     var rel = selectOf(relOptions, base.targetType || '', 'Related to');
     field('For', rel);
     var relBox = el('div');
@@ -409,7 +409,7 @@ const TasksScreen = (function () {
     var done = TASK_DONE_SAMPLE.filter(function (d) { return d.taskId === t.id; }).sort(function (a, b) { return String(b.onDate).localeCompare(String(a.onDate)); });
     hist.appendChild(el('h3', '', 'Recently done (' + done.length + ')'));
     if (!done.length) hist.appendChild(el('p', 'form-note', 'Not done yet.'));
-    done.slice(0, 10).forEach(function (d) { var u = d.doneBy ? getUser(d.doneBy) : null; hist.appendChild(el('p', 'task-history', formatDate(d.onDate) + (d.subKey ? ' · Cage ' + d.subKey : '') + (u ? ' · ' + userFullName(u) : ''))); });
+    done.slice(0, 10).forEach(function (d) { var u = d.doneBy ? getUser(d.doneBy) : null; hist.appendChild(el('p', 'task-history', formatDate(d.onDate) + (d.subKey ? T(' · Cage ') + d.subKey : '') + (u ? ' · ' + userFullName(u) : ''))); });
     wrap.appendChild(hist);
     main.appendChild(wrap);
   }

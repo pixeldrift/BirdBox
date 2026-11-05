@@ -25,7 +25,7 @@ const RecordForm = (function () {
     var editing = !!opts.id;
     var rec = editing ? findRecord(opts.type, opts.id) : null;
     if (editing && !rec) { main.appendChild(el('p', '', 'That ' + def.singular + ' wasn’t found.')); return; }
-    opts.setTitle((editing ? 'Edit ' : 'Add ') + def.singular.replace(/^./, function (c) { return c.toUpperCase(); }));
+    opts.setTitle((editing ? 'Edit ' : 'Add ') + T(def.singular).replace(/^./, function (c) { return c.toUpperCase(); }));
 
     // Where to go after saving: the caller's choice, else that record's own page.
     function goTo(recId) {
@@ -88,9 +88,9 @@ const RecordForm = (function () {
       var label = el(f.ref || f.type === 'suggest' ? 'div' : 'label', 'form-field');
       fieldEls[f.key] = label;
       controls[f.key] = control;
-      label.appendChild(el('span', 'form-label', f.label + (f.required || f.requiredIfShown ? ' *' : '')));
+      label.appendChild(el('span', 'form-label', T(f.label) + (f.required || f.requiredIfShown ? ' *' : '')));
       label.appendChild(control);
-      if (f.hint) label.appendChild(el('p', 'form-note', f.hint));
+      if (f.hint) label.appendChild(el('p', 'form-note', T(f.hint)));
       form.appendChild(label);
     });
 
@@ -147,9 +147,9 @@ const RecordForm = (function () {
       del.addEventListener('click', function () {
         var inCage = opts.type === 'cages' ? birdsInCage(opts.id).length : 0;
         var note = opts.type === 'contacts' ? ' Their shipments and accounting entries stay, just no longer linked to them.' :
-          opts.type === 'buildings' ? ' Its cages stay, just no longer filed under it.' :
+          opts.type === 'buildings' ? T(' Its cages stay, just no longer filed under it.') :
           opts.type === 'locations' ? ' Its buildings stay, just no longer on a location.' :
-          opts.type === 'cages' ? (inCage ? ' The ' + inCage + ' bird' + (inCage === 1 ? '' : 's') + ' in it will be left with no cage.' : '') : '';
+          opts.type === 'cages' ? (inCage ? ' The ' + inCage + ' bird' + (inCage === 1 ? '' : 's') + T(' in it will be left with no cage.') : '') : '';
         Modal.confirm({
           title: 'Delete ' + def.singular + '?', message: 'Delete “' + def.nameOf(rec) + '”?' + note + ' This can’t be undone.', confirmLabel: 'Delete', danger: true,
           onConfirm: function () {

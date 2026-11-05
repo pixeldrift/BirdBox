@@ -110,7 +110,7 @@ const CagingScreen = (function () {
     var isLoose = id === UNASSIGNED;
     var birds = isLoose ? BIRDS_SAMPLE.filter(function (b) { return !b.cage && !birdIsArchived(b); }) : birdsInCage(id);
     var rec = isLoose ? null : getCage(id);
-    if (!isLoose && !rec && !birds.length) { main.appendChild(el('p', '', 'Cage not found.')); return; }
+    if (!isLoose && !rec && !birds.length) { main.appendChild(el('p', '', T('Cage not found.'))); return; }
     setTitle(isLoose ? 'Unassigned birds' : id);
     var again = function () { clearEl(main); renderCage(main, id, navigate, setTitle); };
     var model = LocationModel.build();
@@ -121,14 +121,14 @@ const CagingScreen = (function () {
 
     if (!isLoose) {
       wrap.appendChild(describe(rec, rec ? function () { navigate('edit~cage~' + id); } : null));
-      wrap.appendChild(photos('cage', id, 'cage ' + id, again));
-      wrap.appendChild(CareSection.render({ targetType: 'cage', targetId: id, name: 'this cage', refresh: again }));
-      wrap.appendChild(CareSection.render({ targetType: 'cage', targetId: id, name: 'this cage', refresh: again, plan: 'cleaning' }));
+      wrap.appendChild(photos('cage', id, T('cage ') + id, again));
+      wrap.appendChild(CareSection.render({ targetType: 'cage', targetId: id, name: T('this cage'), refresh: again }));
+      wrap.appendChild(CareSection.render({ targetType: 'cage', targetId: id, name: T('this cage'), refresh: again, plan: 'cleaning' }));
       // Where this cage is — assign or change it from here (or from the room's / building's page).
       wrap.appendChild(Relations.one({
         title: 'Room', parentName: 'cage', value: rec && rec.roomId || '', find: getRoom,
         render: function (r) { return placeRow(model, 'room', r.id, navigate); },
-        picker: function (cfg) { return Picker.rooms(Object.assign({ placeholder: 'Put this cage in a room — search…' }, cfg)); },
+        picker: function (cfg) { return Picker.rooms(Object.assign({ placeholder: T('Put this cage in a room — search…') }, cfg)); },
         set: function (rid) { return saveCage(id, { roomId: rid || '' }); }, refresh: again,
       }));
       wrap.appendChild(Relations.one({
@@ -142,7 +142,7 @@ const CagingScreen = (function () {
     // The birds in this cage — add one from here (it moves out of its old cage) or remove one.
     wrap.appendChild(Relations.many({
       title: 'Birds', related: birds, render: function (bd) { return birdChip(bd, function () { goToBird(bd.id); }); },
-      parentName: 'cage', empty: isLoose ? 'Every bird has a cage.' : 'No birds in this cage.', refresh: again,
+      parentName: 'cage', empty: isLoose ? T('Every bird has a cage.') : T('No birds in this cage.'), refresh: again,
       unlink: isLoose ? null : function (bd) { return editBird(bd.id, { cage: '' }); },
       candidates: isLoose ? null : function () {
         return Picker.listItems('birds', function (bd) { return bd.cage !== id; }).map(function (it) {
@@ -152,14 +152,14 @@ const CagingScreen = (function () {
         });
       },
       link: function (birdId) { return editBird(birdId, { cage: id }); },
-      addPlaceholder: 'Add a bird to this cage',
+      addPlaceholder: T('Add a bird to this cage'),
       itemName: function (bd) { return birdShortLabel(bd); },
     }));
 
     if (!isLoose && !rec) {
       var note = el('div', 'detail-section');
-      note.appendChild(el('p', 'form-note', 'This cage number is on some birds but hasn’t been set up yet. Set it up to give it a description and photos.'));
-      note.appendChild(addButton('Set up this cage', function () { navigate('new~cage~' + id); }));
+      note.appendChild(el('p', 'form-note', T('This cage number is on some birds but hasn’t been set up yet. Set it up to give it a description and photos.')));
+      note.appendChild(addButton(T('Set up this cage'), function () { navigate('new~cage~' + id); }));
       wrap.appendChild(note);
     }
     main.appendChild(wrap);
@@ -185,13 +185,13 @@ const CagingScreen = (function () {
       set: function (code) { return updateRecord('rooms', id, { buildingCode: code || '' }); }, refresh: again,
     }));
     wrap.appendChild(Relations.many({
-      title: 'Cages', related: node.children.map(function (c) { return c.record; }), render: function (c) { return placeRow(model, 'cage', c.code, navigate); }, parentName: 'room',
-      empty: 'No cages in this room yet.', refresh: again,
+      title: T('Cages'), related: node.children.map(function (c) { return c.record; }), render: function (c) { return placeRow(model, 'cage', c.code, navigate); }, parentName: 'room',
+      empty: T('No cages in this room yet.'), refresh: again,
       unlink: function (c) { return saveCage(c.code, { roomId: '' }); },
       candidates: function () { return Picker.listItems('cages', function (c) { return c.roomId !== id; }); },
       link: function (code) { return saveCage(code, { roomId: id }); },
-      addPlaceholder: '+ Add an existing cage — search…',
-      addNew: { label: '+ Add a new cage to this room', onClick: function () { LocationExplorer.setPrefill({ roomId: id, buildingCode: r.buildingCode || '' }); navigate('new~cage'); } },
+      addPlaceholder: T('+ Add an existing cage — search…'),
+      addNew: { label: T('+ Add a new cage to this room'), onClick: function () { LocationExplorer.setPrefill({ roomId: id, buildingCode: r.buildingCode || '' }); navigate('new~cage'); } },
     }));
     main.appendChild(wrap);
   }
@@ -224,7 +224,7 @@ const CagingScreen = (function () {
 
     wrap.appendChild(Relations.many({
       title: 'Rooms', related: rooms, render: function (r) { return placeRow(model, 'room', r.id, navigate); }, parentName: 'building',
-      empty: 'No rooms in this building. Rooms are optional — cages can sit right in the building.', refresh: again,
+      empty: T('No rooms in this building. Rooms are optional — cages can sit right in the building.'), refresh: again,
       unlink: function (r) { return updateRecord('rooms', r.id, { buildingCode: '' }); },
       candidates: function () { return Picker.listItems('rooms', function (r) { return r.buildingCode !== code; }); },
       link: function (rid) { return updateRecord('rooms', rid, { buildingCode: code }); },
@@ -233,13 +233,13 @@ const CagingScreen = (function () {
     }));
 
     wrap.appendChild(Relations.many({
-      title: 'Cages (not in a room)', related: cages, render: function (c) { return placeRow(model, 'cage', c.code, navigate); }, parentName: 'building',
-      empty: 'No cages directly in this building.', refresh: again,
+      title: T('Cages (not in a room)'), related: cages, render: function (c) { return placeRow(model, 'cage', c.code, navigate); }, parentName: 'building',
+      empty: T('No cages directly in this building.'), refresh: again,
       unlink: function (c) { return assignCageToBuilding(c.code, ''); },
       candidates: function () { return Picker.listItems('cages', function (c) { var bb = buildingForCage(c.code); return !(bb && bb.code === code); }); },
       link: function (cageCode) { return saveCage(cageCode, { buildingCode: code, roomId: '' }); },
-      addPlaceholder: '+ Add an existing cage — search…',
-      addNew: { label: '+ Add a new cage to this building', onClick: function () { LocationExplorer.setPrefill({ buildingCode: code }); navigate('new~cage'); } },
+      addPlaceholder: T('+ Add an existing cage — search…'),
+      addNew: { label: T('+ Add a new cage to this building'), onClick: function () { LocationExplorer.setPrefill({ buildingCode: code }); navigate('new~cage'); } },
     }));
     main.appendChild(wrap);
   }

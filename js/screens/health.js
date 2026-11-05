@@ -309,6 +309,19 @@ const HealthScreen = (function () {
     if (HealthScreen.pendingType) { typeSelect.value = HealthScreen.pendingType; HealthScreen.pendingType = null; }
     syncTest();
 
+    // A DNA (or surgical) sexing result can set the bird's sex straight away.
+    var sexField = document.createElement('label');
+    sexField.className = 'form-field';
+    sexField.innerHTML = '<span class="form-label">Sex result</span>';
+    var sexSelect = document.createElement('select');
+    sexSelect.className = 'form-input';
+    sexSelect.setAttribute('aria-label', 'Sex result');
+    [['', 'Not stated'], ['Male', 'Male'], ['Female', 'Female']].forEach(function (o) { var op = document.createElement('option'); op.value = o[0]; op.textContent = o[1]; sexSelect.appendChild(op); });
+    sexField.appendChild(sexSelect);
+    sexField.appendChild(Object.assign(document.createElement('p'), { className: 'form-note', textContent: 'If you pick one, the bird’s sex is updated to match.' }));
+    function syncSex() { sexField.style.display = typeSelect.value === 'DNA Certificate' || typeSelect.value === 'Surgical Sexing' ? '' : 'none'; }
+    typeSelect.addEventListener('change', syncSex);
+
     var dateField = document.createElement('label');
     dateField.className = 'form-field';
     dateField.innerHTML = '<span class="form-label">Date</span>';
@@ -357,6 +370,8 @@ const HealthScreen = (function () {
     form.appendChild(birdField);
     form.appendChild(typeField);
     form.appendChild(testFields);
+    form.appendChild(sexField);
+    syncSex();
     form.appendChild(dateField);
     form.appendChild(providerField);
     form.appendChild(notesField);
@@ -386,6 +401,9 @@ const HealthScreen = (function () {
       saveBtn.disabled = true;
       saveBtn.textContent = 'Saving…';
       addHealthRecord(record).then(function (saved) {
+        if (sexSelect.value && ['DNA Certificate', 'Surgical Sexing'].indexOf(record.type) !== -1) return editBird(record.birdId, { sex: sexSelect.value }).then(function () { return saved; }).catch(function () { return saved; });
+        return saved;
+      }).then(function (saved) {
         // The files are saved to the database once the record exists.
         var failed = 0;
         return chosenFiles.reduce(function (chain, f) {

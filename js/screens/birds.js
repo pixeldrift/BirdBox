@@ -10,7 +10,7 @@ const BirdsScreen = (function () {
 
   function renderList(main, navigate) {
     BirdsAddScreen.afterAdd = null;
-    var state = { query: '', status: [] }; // status: any of the statuses (or Archived); none = everything not archived
+    var state = { query: '', status: [], band: [], mutation: [] }; // status: any of the statuses (or Archived); none = everything not archived
 
     var wrap = document.createElement('div');
     wrap.className = 'list-screen';
@@ -18,7 +18,13 @@ const BirdsScreen = (function () {
     var tools = ListTools.create({
       screen: 'birds', placeholder: 'Search birds…', ariaLabel: 'Search birds', query: state.query,
       onQuery: function (v) { state.query = v; draw(); }, onRedraw: function () { draw(); },
-      filters: [{ key: 'status', label: '', options: STATUSES.filter(function (s) { return s !== 'All'; }).concat(['Archived']).map(function (s) { return [s, s]; }) }],
+      filters: function () {
+        var f = [{ key: 'status', label: 'Status', options: STATUSES.filter(function (s) { return s !== 'All'; }).concat(['Archived']).map(function (s) { return [s, s]; }) }];
+        f.push({ key: 'band', label: 'Band', options: [['none', 'Needs a band']] });
+        var muts = Object.keys(BIRDS_SAMPLE.reduce(function (acc, x) { if (x.mutation) acc[x.mutation] = true; return acc; }, {})).sort();
+        if (muts.length) f.push({ key: 'mutation', label: 'Colour / mutation', options: muts.map(function (m) { return [m, m]; }) });
+        return f;
+      },
       get: function (k) { return state[k]; }, set: function (k, v) { state[k] = v; },
     });
 
@@ -33,9 +39,9 @@ const BirdsScreen = (function () {
     addMini.textContent = '+ Add Bird';
     addMini.addEventListener('click', function () {
       Modal.open({
-        title: 'Add a bird',
+        title: 'Add birds',
         build: function (body, close) {
-          [['+ Add one bird', 'new'], ['Import many birds from a CSV file', 'import']].forEach(function (a) {
+          [['+ Add one bird', 'new'], [T('+ Add a clutch — a batch of chicks at once'), 'clutch'], ['Import many birds from a CSV file', 'import']].forEach(function (a) {
             var b = document.createElement('button');
             b.type = 'button';
             b.className = 'btn-positive loc-add-row';
@@ -62,6 +68,8 @@ const BirdsScreen = (function () {
           if (b.status !== s) return false;
           return s === 'Sold' || s === 'Deceased' || !birdIsArchived(b); // archived birds only show under Archived, Sold or Deceased
         })) return false;
+        if (state.band.length && b.band) return false;
+        if (state.mutation.length && state.mutation.indexOf(b.mutation) === -1) return false;
         if (!q) return true;
         var hay = [b.band, b.name, b.speciesName, b.scientificName, b.species, b.subspecies, b.mutation].filter(Boolean).join(' ').toLowerCase();
         return hay.indexOf(q) !== -1;
@@ -73,6 +81,16 @@ const BirdsScreen = (function () {
       num.textContent = String(results.length);
       countLabel.appendChild(num);
       countLabel.appendChild(document.createTextNode(results.length === 1 ? ' bird' : ' birds'));
+      var needBand = BIRDS_SAMPLE.filter(function (x) { return !x.band && !birdIsArchived(x); }).length;
+      if (needBand) {
+        countLabel.appendChild(document.createTextNode(' · '));
+        var nb = document.createElement('button');
+        nb.type = 'button';
+        nb.className = 'pick-link count-link';
+        nb.textContent = needBand + ' need a band';
+        nb.addEventListener('click', function () { navigate('banding'); });
+        countLabel.appendChild(nb);
+      }
       if (goneHidden) {
         countLabel.appendChild(document.createTextNode(' · '));
         var arch = document.createElement('button');
@@ -167,6 +185,8 @@ const BirdsScreen = (function () {
 
     if (id === 'new') return BirdsAddScreen.renderForm(main, navigate, setTitle);
     if (id === 'import') return BirdsAddScreen.renderImport(main, navigate, setTitle);
+    if (id === 'clutch') return BirdsAddScreen.renderClutch(main, navigate, setTitle);
+    if (id === 'banding') return BirdsAddScreen.renderBanding(main, navigate, setTitle);
     if (id === 'transfer') return TransferScreen.renderForm(main, navigate, setTitle);
     if (id.indexOf('edit~') === 0) {
       var editTarget = getBird(id.slice(5));
@@ -282,6 +302,22 @@ const BirdsScreen = (function () {
     treeLink.textContent = 'View family tree ›';
     treeLink.addEventListener('click', function () { location.hash = '#/mybirds/genealogy/' + bird.id; });
     familySection.appendChild(treeLink);
+
+    // A pair (or any adult with a known sex) can start a clutch straight from here.
+    if (bird.sex === 'Male' || bird.sex === 'Female') {
+      var mate = bird.pairedId ? getBird(bird.pairedId) : null;
+      var addKids = document.createElement('button');
+      addKids.type = 'button';
+      addKids.className = 'btn-positive';
+      addKids.textContent = T('+ Add a clutch') + (mate ? ' with ' + birdShortLabel(mate) : '');
+      addKids.addEventListener('click', function () {
+        var female = bird.sex === 'Female' ? bird : (mate && mate.sex === 'Female' ? mate : null);
+        var male = bird.sex === 'Male' ? bird : (mate && mate.sex === 'Male' ? mate : null);
+        BirdsAddScreen.clutchPrefill = { motherId: female ? female.id : '', fatherId: male ? male.id : '', cage: bird.cage || '' };
+        location.hash = '#/mybirds/birds/clutch';
+      });
+      familySection.appendChild(addKids);
+    }
 
     var kids = birdChildren(bird.id);
     if (kids.length) {

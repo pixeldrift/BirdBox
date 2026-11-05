@@ -247,18 +247,24 @@ const BirdsAddScreen = (function () {
       onChange: function (s) {
         picked = s;
         clearEl(dlSub);
+        clearEl(dlMut);
         if (!s) return;
-        distinct(BIRDS_SAMPLE.filter(function (b) { return b.speciesCode === s.code; })
-          .map(function (b) { return b.subspecies; })).forEach(function (v) {
+        suggestionsFor(s, 'subspecies').forEach(function (v) {
           var opt = document.createElement('option');
           opt.value = v;
           dlSub.appendChild(opt);
+        });
+        suggestionsFor(s, 'mutation').forEach(function (v) {
+          var opt = document.createElement('option');
+          opt.value = v;
+          dlMut.appendChild(opt);
         });
       },
     });
     var subspecies = input('text', { placeholder: 'Only if it applies — e.g. Congo, Timneh' });
     subspecies.setAttribute('list', 'dl-subspecies');
     var mutation = input('text', { placeholder: 'Optional' });
+    mutation.setAttribute('list', 'dl-mutation');
     var hatchCtl = hatchField(editing);
     var status = select(STATUSES.map(function (s) { return { value: s, label: s }; }));
     var locCtl = BirdPopups.locationField({ cage: editing ? editing.cage : '', contactId: editing ? editing.locationContactId : '', text: editing ? editing.locationText : '' });
@@ -273,6 +279,8 @@ const BirdsAddScreen = (function () {
     notes.rows = 3;
 
     var dlSub = datalist('dl-subspecies', []);
+    var dlMut = datalist('dl-mutation', []);
+    if (picked) { suggestionsFor(picked, 'subspecies').forEach(function (v) { var o = document.createElement('option'); o.value = v; dlSub.appendChild(o); }); suggestionsFor(picked, 'mutation').forEach(function (v) { var o = document.createElement('option'); o.value = v; dlMut.appendChild(o); }); }
 
     var errorBox = document.createElement('div');
     var saveBtn = document.createElement('button');
@@ -296,7 +304,7 @@ const BirdsAddScreen = (function () {
       field('Subspecies / form', subspecies), field('Mutation', mutation), field('Hatch date', hatchCtl.el, undefined, true),
       field('Status', status), field('Location', locCtl.el, undefined, true), field('Mother', mother.el, undefined, true), field('Father', father.el, undefined, true),
       field('Paired with', paired.el, undefined, true), field('Cost', cost), field('Asking price', price), field('Notes', notes),
-      dlSub, errorBox, saveBtn].forEach(function (el) { form.appendChild(el); });
+      dlSub, dlMut, errorBox, saveBtn].forEach(function (el) { form.appendChild(el); });
 
     form.addEventListener('submit', function (e) {
       e.preventDefault();
@@ -402,6 +410,227 @@ const BirdsAddScreen = (function () {
       wrap.appendChild(danger);
     }
 
+    main.appendChild(wrap);
+  }
+
+  // ---- chickens and other domestic birds: starter lists for the breed / colour fields ----
+  var DOMESTIC = {
+    breeds: ['Silkie', 'Satin', 'Cochin', 'Brahma', 'Orpington', 'Wyandotte', 'Plymouth Rock', 'Rhode Island Red', 'Leghorn', 'Sussex', 'Australorp', 'Marans', 'Ameraucana', 'Polish', 'Bantam (mixed)'],
+    colours: ['White', 'Black', 'Blue', 'Splash', 'Buff', 'Partridge', 'Gray', 'Lavender', 'Naked neck'],
+  };
+  function isChicken(species) {
+    return !!species && /^Gallus gallus/i.test(species.scientificName || '');
+  }
+  function suggestionsFor(species, key) { // what's already used on this species, plus starter lists for chickens
+    var used = distinct(BIRDS_SAMPLE.filter(function (b) { return species && b.speciesCode === species.code; }).map(function (b) { return b[key]; }));
+    var starters = isChicken(species) ? (key === 'subspecies' ? DOMESTIC.breeds : DOMESTIC.colours) : [];
+    return distinct(used.concat(starters));
+  }
+
+  // A hatch: add a whole batch of chicks (or poults, or squabs…) in one go — same parents, hatch date, breed and place.
+  // Bands are optional and can be given now (one per line, in order) or added later from the banding list.
+  function renderClutch(main, navigate, setTitle, prefill) {
+    clearEl(main);
+    setTitle(T('Add a clutch'));
+    prefill = prefill || BirdsAddScreen.clutchPrefill || {};
+    BirdsAddScreen.clutchPrefill = null;
+    var wrap = document.createElement('div');
+    wrap.className = 'detail-screen';
+    var form = document.createElement('form');
+    form.className = 'detail-section record-form';
+
+    var mother = Picker.birds({ value: prefill.motherId || '', allowClear: true, placeholder: 'Unknown — search to choose…', onChange: function () { inherit(); } });
+    var father = Picker.birds({ value: prefill.fatherId || '', allowClear: true, placeholder: 'Unknown — search to choose…', onChange: function () { inherit(); } });
+    var picked = null;
+    var dlBreed = datalist('dl-clutch-breed', []);
+    var dlColour = datalist('dl-clutch-colour', []);
+    function fillLists() {
+      [['subspecies', dlBreed], ['mutation', dlColour]].forEach(function (p) {
+        clearEl(p[1]);
+        suggestionsFor(picked, p[0]).forEach(function (v) { var o = document.createElement('option'); o.value = v; p[1].appendChild(o); });
+      });
+    }
+    var speciesPicker = SpeciesPicker.create({ value: null, onChange: function (s) { picked = s; fillLists(); } });
+    var breed = input('text', { placeholder: 'Only if it applies — e.g. Silkie' });
+    breed.setAttribute('list', 'dl-clutch-breed');
+    var colour = input('text', { placeholder: 'Optional — e.g. White, Naked neck' });
+    colour.setAttribute('list', 'dl-clutch-colour');
+    var today = new Date().toISOString().slice(0, 10);
+    var hatchCtl = hatchField({ hatchDate: today, hatchPrecision: 'day' });
+    var count = input('number', { min: '1', max: '100', value: '6' });
+    var locCtl = BirdPopups.locationField({ cage: prefill.cage || '', contactId: '', text: '' });
+    var bands = document.createElement('textarea');
+    bands.className = 'form-input';
+    bands.rows = 3;
+    bands.placeholder = 'Optional — one band number per line, in order';
+    var notes = document.createElement('textarea');
+    notes.className = 'form-input';
+    notes.rows = 2;
+    var errorBox = document.createElement('div');
+    var saveBtn = document.createElement('button');
+    saveBtn.type = 'submit';
+    saveBtn.className = 'save-btn';
+    saveBtn.textContent = T('Add the clutch');
+
+    // Picking a parent fills in the species, breed and colour from it, if those are still empty.
+    function inherit() {
+      var parent = getBird(mother.get()) || getBird(father.get());
+      if (!parent || picked) return;
+      if (parent.speciesCode) {
+        picked = { code: parent.speciesCode, name: parent.speciesName, scientificName: parent.scientificName };
+        speciesPicker.set(picked);
+        if (!breed.value) breed.value = parent.subspecies || '';
+        fillLists();
+      }
+    }
+    inherit(); // started from a bird's page: the parents are already chosen
+
+    [field('Mother', mother.el, undefined, true), field('Father', father.el, undefined, true),
+      field('Species', speciesPicker.el, 'Search by any name you know — Chicken, Sun Conure…', true),
+      field('Breed / form', breed), field('Colour / mutation', colour), field('Hatch date', hatchCtl.el, undefined, true),
+      field('How many hatched', count, 'They’re added as unsexed chicks with no band — add the sex when the DNA result is back and the bands when you have them.'),
+      field('Where they are', locCtl.el, undefined, true),
+      field('Band numbers', bands, 'Optional. Only fill in the ones you’ve already assigned — the rest can be done later from the banding list.'),
+      field('Notes', notes), dlBreed, dlColour, errorBox, saveBtn].forEach(function (e) { form.appendChild(e); });
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      clearEl(errorBox);
+      if (!picked) { errorBox.appendChild(message('error', 'Choose a species')); return; }
+      var n = Math.round(Number(count.value));
+      if (!(n >= 1 && n <= 100)) { errorBox.appendChild(message('error', 'How many hatched? Enter a number from 1 to 100.')); return; }
+      var bandLines = bands.value.split('\n').map(function (l) { return l.trim(); });
+      var hatch = hatchCtl.get();
+      var list = [];
+      for (var i = 0; i < n; i++) {
+        var r = check({
+          band: bandLines[i] || '', name: '', sex: 'Unsexed', speciesCode: picked.code, speciesName: picked.name,
+          subspecies: breed.value, mutation: colour.value, hatchDate: hatch.hatchDate, hatchPrecision: hatch.hatchPrecision, hatchApprox: hatch.hatchApprox,
+          status: 'Available', cage: locCtl.get().cage, locationContactId: locCtl.get().locationContactId, locationText: locCtl.get().locationText,
+          motherId: mother.get(), fatherId: father.get(), pairedId: '', notes: notes.value,
+        });
+        if (r.error) { errorBox.appendChild(message('error', (bandLines[i] ? 'Band ' + bandLines[i] + ': ' : 'Chick ' + (i + 1) + ': ') + r.error)); return; }
+        list.push(r.bird);
+      }
+      var dup = {};
+      for (var j = 0; j < list.length; j++) {
+        var k = list[j].band ? bandKey(list[j].band) : '';
+        if (k && dup[k]) { errorBox.appendChild(message('error', 'Band ' + list[j].band + ' is listed twice.')); return; }
+        if (k) dup[k] = true;
+      }
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Saving…';
+      addBirds(list).then(function (data) {
+        clearEl(main);
+        var done = document.createElement('div');
+        done.className = 'detail-screen';
+        var box = document.createElement('div');
+        box.className = 'detail-section';
+        box.appendChild(message('info', data.created.length + (data.created.length === 1 ? ' chick' : ' chicks') + ' added' + (data.rejected.length ? ' — ' + data.rejected.length + ' couldn’t be saved: ' + data.rejected[0].error : '') + '.'));
+        var needBands = data.created.filter(function (b) { return !b.band; }).length;
+        if (needBands) {
+          var addBands = document.createElement('button');
+          addBands.type = 'button';
+          addBands.className = 'btn-positive';
+          addBands.textContent = 'Add bands now (' + needBands + ')';
+          addBands.addEventListener('click', function () { navigate('banding'); });
+          box.appendChild(addBands);
+        }
+        var again = document.createElement('button');
+        again.type = 'button';
+        again.className = 'btn-positive';
+        again.textContent = T('+ Add another clutch');
+        again.addEventListener('click', function () { BirdsAddScreen.clutchPrefill = { motherId: mother.get(), fatherId: father.get(), cage: locCtl.get().cage }; renderClutch(main, navigate, setTitle); });
+        box.appendChild(again);
+        var back = document.createElement('button');
+        back.type = 'button';
+        back.className = 'add-record-btn';
+        back.textContent = 'Back to my birds';
+        back.addEventListener('click', function () { location.hash = '#/mybirds/birds'; });
+        box.appendChild(back);
+        done.appendChild(box);
+        main.appendChild(done);
+      }).catch(function (err) {
+        saveBtn.disabled = false;
+        saveBtn.textContent = T('Add the clutch');
+        errorBox.appendChild(message('error', err.message));
+      });
+    });
+
+    wrap.appendChild(form);
+    main.appendChild(wrap);
+  }
+
+  // The banding list: every bird that doesn't have a band yet, with a box for the number. Type it and press Enter (or tap
+  // away) and it's saved and you move on to the next one.
+  function renderBanding(main, navigate, setTitle) {
+    clearEl(main);
+    setTitle('Needs a band');
+    var wrap = document.createElement('div');
+    wrap.className = 'detail-screen';
+    var box = document.createElement('div');
+    box.className = 'detail-section';
+    var head = document.createElement('h3');
+    box.appendChild(head);
+    box.appendChild(Object.assign(document.createElement('p'), { className: 'form-note', textContent: 'Type a band number and press Enter — it’s saved and you move to the next bird. Leave one blank to skip it.' }));
+    var list = document.createElement('div');
+    box.appendChild(list);
+    var message0 = document.createElement('div');
+    box.appendChild(message0);
+
+    function pending() {
+      return BIRDS_SAMPLE.filter(function (b) { return !b.band && !birdIsArchived(b); })
+        .sort(function (a, b) { return String(b.hatchDate || '').localeCompare(String(a.hatchDate || '')) || (a.name || '').localeCompare(b.name || ''); });
+    }
+
+    function draw() {
+      var birds = pending();
+      head.textContent = birds.length ? birds.length + (birds.length === 1 ? ' bird needs a band' : ' birds need a band') : 'Every bird has a band';
+      clearEl(list);
+      birds.forEach(function (b) {
+        var row = document.createElement('div');
+        row.className = 'banding-row';
+        var info = document.createElement('div');
+        info.className = 'banding-info';
+        info.appendChild(Object.assign(document.createElement('strong'), { textContent: birdShortLabel(b) }));
+        var parents = [b.motherId, b.fatherId].map(getBird).filter(Boolean).map(function (p) { return birdShortLabel(p); }).join(' × ');
+        info.appendChild(Object.assign(document.createElement('small'), { textContent: [b.sex, birdHatchLabel(b) ? 'hatched ' + birdHatchLabel(b) : '', b.mutation, parents ? 'from ' + parents : ''].filter(Boolean).join(' · ') }));
+        row.appendChild(info);
+        var field0 = input('text', { placeholder: 'Band number' });
+        field0.setAttribute('aria-label', 'Band number for ' + birdShortLabel(b));
+        field0.enterKeyHint = 'next';
+        var saved = false;
+        function save() {
+          var v = field0.value.trim();
+          if (!v || saved) return Promise.resolve(false);
+          saved = true;
+          clearEl(message0);
+          field0.disabled = true;
+          return editBird(b.id, { band: v }).then(function () { row.classList.add('done'); var left = pending().length; head.textContent = left ? left + (left === 1 ? ' bird needs a band' : ' birds need a band') : 'Every bird has a band'; return true; }).catch(function (err) {
+            saved = false; field0.disabled = false; field0.focus();
+            message0.appendChild(message('error', birdShortLabel(b) + ': ' + err.message));
+            return false;
+          });
+        }
+        field0.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter') return;
+          e.preventDefault();
+          var next = row.nextElementSibling && row.nextElementSibling.querySelector('input');
+          save().then(function (ok) { if (ok && next) next.focus(); });
+        });
+        field0.addEventListener('blur', function () { save(); });
+        row.appendChild(field0);
+        list.appendChild(row);
+      });
+    }
+    draw();
+    var done = document.createElement('button');
+    done.type = 'button';
+    done.className = 'btn-positive';
+    done.textContent = 'Done';
+    done.addEventListener('click', function () { location.hash = '#/mybirds/birds'; });
+    box.appendChild(done);
+    wrap.appendChild(box);
     main.appendChild(wrap);
   }
 
@@ -633,5 +862,5 @@ const BirdsAddScreen = (function () {
     output.appendChild(section);
   }
 
-  return { afterAdd: null, renderForm: renderForm, renderImport: renderImport, analyze: analyze, check: check };
+  return { afterAdd: null, clutchPrefill: null, renderForm: renderForm, renderImport: renderImport, renderClutch: renderClutch, renderBanding: renderBanding, analyze: analyze, check: check, isChicken: isChicken, suggestionsFor: suggestionsFor };
 })();

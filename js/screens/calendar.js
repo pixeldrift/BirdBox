@@ -261,7 +261,7 @@ const CalendarScreen = (function () {
         body.appendChild(pick);
         function drawPick() {
           clearEl(seg); clearEl(pick);
-          LINK_KINDS.forEach(function (k) { seg.appendChild(btn('loc-seg-btn' + (kind === k[0] ? ' active' : ''), k[1], function () { kind = k[0]; drawPick(); })); });
+          LINK_KINDS.forEach(function (k) { seg.appendChild(btn('loc-seg-btn' + (kind === k[0] ? ' active' : ''), T(k[1]), function () { kind = k[0]; drawPick(); })); });
           var listKind = LINK_KINDS.filter(function (k) { return k[0] === kind; })[0][2];
           pick.appendChild(Picker.create({
             items: function () { return Picker.listItems(listKind, function (r) { return !eventLinks(e.id).some(function (l) { return l.targetType === kind && l.targetId === (r.id || r.code); }); }); },
@@ -310,7 +310,7 @@ const CalendarScreen = (function () {
       b.type = 'button';
       var info = el('span', 'list-row-info');
       info.appendChild(el('span', 'list-row-title', t.label));
-      info.appendChild(el('span', 'list-row-sub', { bird: 'Bird', contact: 'Contact', waybill: 'Shipment', cage: 'Cage', task: 'Task' }[t.type]));
+      info.appendChild(el('span', 'list-row-sub', { bird: 'Bird', contact: 'Contact', waybill: 'Shipment', cage: T('Cage'), task: 'Task' }[t.type]));
       b.appendChild(info);
       b.addEventListener('click', function () { location.hash = t.hash; });
       holder.appendChild(b);

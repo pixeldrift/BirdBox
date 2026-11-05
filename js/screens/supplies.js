@@ -151,7 +151,7 @@ const SuppliesScreen = (function () {
     var used = supplyUsage(s.id);
     var usage = el('div', 'detail-section');
     usage.appendChild(el('h3', '', 'Used in care plans (' + used.length + ')'));
-    if (!used.length) usage.appendChild(el('p', 'form-note', 'Not in any care plan yet. Add it to a cage, bird or place under “Care & feeding”.'));
+    if (!used.length) usage.appendChild(el('p', 'form-note', T('Not in any care plan yet. Add it to a cage, bird or place under “Care & feeding”.')));
     used.forEach(function (c) {
       var r = el('button', 'list-row');
       r.type = 'button';

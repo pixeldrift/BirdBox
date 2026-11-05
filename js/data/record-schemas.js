@@ -185,6 +185,7 @@ var RECORD_TYPES_UI = {
       { key: 'email', label: 'Email', type: 'text' },
       { key: 'website', label: 'Website', type: 'text' },
       { key: 'socials', label: 'Social links', type: 'text', hint: 'Optional — e.g. Instagram, Facebook.' },
+      { key: 'keeps', label: 'What I keep', type: 'enum', options: ['Parrots & exotic birds', 'Chickens & poultry'], hint: 'Changes the words the app uses — “coop” and “hatch” for chickens, “cage” and “clutch” for parrots.' },
     ],
     defaults: {},
   },

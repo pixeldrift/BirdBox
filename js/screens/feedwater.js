@@ -43,7 +43,7 @@ const FeedWaterScreen = (function () {
       top.appendChild(seg);
       if (state.view === 'place') top.appendChild(CareSection.render({ targetType: 'aviary', targetId: 'main', name: AVIARY.name, refresh: draw, plan: plan })); // the aviary-wide plan, editable right here
       var tools = ListTools.create({
-        screen: cleaning ? 'cleaning' : 'feedwater', noView: true, placeholder: state.view === 'place' ? 'Search cages…' : (cleaning ? 'Search supplies…' : 'Search foods…'), ariaLabel: 'Search', query: state.query,
+        screen: cleaning ? 'cleaning' : 'feedwater', noView: true, placeholder: state.view === 'place' ? T('Search cages…') : (cleaning ? 'Search supplies…' : 'Search foods…'), ariaLabel: 'Search', query: state.query,
         onQuery: function (v) { state.query = v; drawBody(); }, onRedraw: function () { drawBody(); },
         filters: [{ key: 'show', label: '', options: state.view === 'place' ? [['noplan', 'No plan yet']] : [['low', 'Running low']] }],
         get: function (k) { return state[k]; }, set: function (k, v) { state[k] = v; },
@@ -84,7 +84,7 @@ const FeedWaterScreen = (function () {
           b.addEventListener('click', function () { location.hash = '#/aviary/caging/' + r.cage.code; });
           list.appendChild(b);
         });
-        if (!rows.length) list.appendChild(el('p', 'list-empty', allCages().length ? 'Nothing matches.' : 'No cages yet.'));
+        if (!rows.length) list.appendChild(el('p', 'list-empty', allCages().length ? 'Nothing matches.' : T('No cages yet.')));
         body.appendChild(list);
         return;
       }
@@ -122,7 +122,7 @@ const FeedWaterScreen = (function () {
         if (s) b.addEventListener('click', function () { location.hash = '#/aviary/supplies/' + s.id; });
         list2.appendChild(b);
       });
-      if (!items.length) list2.appendChild(el('p', 'list-empty', cleaning ? 'No supplies in any cleaning job yet. Open a cage, room or bird and add a job under “Cleaning”.' : 'No foods in any plan yet. Open a cage or bird and add one under “Care & feeding”.'));
+      if (!items.length) list2.appendChild(el('p', 'list-empty', cleaning ? T('No supplies in any cleaning job yet. Open a cage, room or bird and add a job under “Cleaning”.') : T('No foods in any plan yet. Open a cage or bird and add one under “Care & feeding”.')));
       body.appendChild(list2);
     }
 

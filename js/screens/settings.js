@@ -71,7 +71,7 @@ const SettingsScreen = (function () {
     var section = sectionEl('My Aviary');
     var facts = document.createElement('div');
     facts.className = 'fact-grid';
-    [['Name', AVIARY.name], ['About', AVIARY.description], ['Address', AVIARY.address], ['Phone', AVIARY.phone], ['Email', AVIARY.email], ['Website', AVIARY.website], ['Social', AVIARY.socials]].forEach(function (f) { if (f[1]) facts.appendChild(factRow(f[0], f[1])); });
+    [['Name', AVIARY.name], ['About', AVIARY.description], ['Address', AVIARY.address], ['Phone', AVIARY.phone], ['Email', AVIARY.email], ['Website', AVIARY.website], ['Social', AVIARY.socials], ['What I keep', AVIARY.keeps]].forEach(function (f) { if (f[1]) facts.appendChild(factRow(f[0], f[1])); });
     section.appendChild(facts);
     section.appendChild(noteEl('Everything is optional apart from the name. These details can be used later in the public directory.'));
     section.appendChild(button('btn-positive', 'Edit my aviary', function () { location.hash = '#/account/settings/edit~main'; }));

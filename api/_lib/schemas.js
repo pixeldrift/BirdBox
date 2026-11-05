@@ -194,6 +194,7 @@ const SCHEMAS = {
       email: { col: 'email', type: 'text', max: 160 },
       website: { col: 'website', type: 'text', max: 200 },
       socials: { col: 'socials', type: 'text', max: 400 },
+      keeps: { col: 'keeps', type: 'enum', options: ['Parrots & exotic birds', 'Chickens & poultry'] }, // sets the words the app uses (js/terms.js)
     },
   },
   rooms: {

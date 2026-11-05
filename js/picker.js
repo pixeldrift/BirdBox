@@ -306,7 +306,7 @@ const Picker = (function () {
   // Cages, browsed Location › Building › Cage (or searched by number, building or location).
   function cages(opts) {
     var exclude = opts.exclude || [];
-    return create(Object.assign({ placeholder: 'Search cages, or tap to browse…', tree: true, rootLabel: 'All locations' }, opts, {
+    return create(Object.assign({ placeholder: T('Search cages, or tap to browse…'), tree: true, rootLabel: 'All locations' }, opts, {
       items: function () { return placeTree('cage').filter(function (i) { return exclude.indexOf(i.id) === -1; }); },
     }));
   }

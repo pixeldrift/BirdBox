@@ -92,7 +92,7 @@ const LocationExplorer = (function () {
     var sub;
     if (node.kind === 'bird') sub = [birdBandLabel(node.bird), node.bird.sex].filter(Boolean).join(' · ');
     else if (opts.path) sub = opts.path; // searching or browsing All: where it is
-    else sub = node.kind === 'loose' ? 'No cage set' : node.kind === 'cage' ? (node.record && node.record.description) || '' : LocationModel.countsLine(node);
+    else sub = node.kind === 'loose' ? T('No cage set') : node.kind === 'cage' ? (node.record && node.record.description) || '' : LocationModel.countsLine(node);
     info.appendChild(el('span', 'loc-sub', sub));
     b.appendChild(info);
 
@@ -173,7 +173,7 @@ const LocationExplorer = (function () {
       if (node.kind === 'location') prefill.locationId = node.key;
       if (node.kind === 'building') prefill.buildingCode = node.key;
       if (node.kind === 'room') { prefill.roomId = node.key; var rb = node.record && node.record.buildingCode; if (rb) prefill.buildingCode = rb; }
-      return { kind: kind, label: { location: 'Location', building: 'Building', room: 'Room', cage: 'Cage' }[kind], prefill: prefill };
+      return { kind: kind, label: { location: 'Location', building: 'Building', room: 'Room', cage: T('Cage') }[kind], prefill: prefill };
     });
   }
 
@@ -218,7 +218,7 @@ const LocationExplorer = (function () {
       Modal.open({
         title: 'Filter',
         build: function (body, close) {
-          var rows = [['unassigned', 'Unassigned only', 'Not placed under a location or building yet'], ['birds', 'Has birds', ''], ['empty', 'Empty — no birds', ''], ['notSetUp', 'Not set up yet', 'Cage numbers used on birds that have no cage record']];
+          var rows = [['unassigned', 'Unassigned only', 'Not placed under a location or building yet'], ['birds', 'Has birds', ''], ['empty', 'Empty — no birds', ''], ['notSetUp', 'Not set up yet', T('Cage numbers used on birds that have no cage record')]];
           rows.forEach(function (r) {
             var label = el('label', 'loc-filter-row');
             var cb = el('input');
@@ -256,7 +256,7 @@ const LocationExplorer = (function () {
       card.appendChild(thumb);
       var info = el('div', 'loc-head-info');
       info.appendChild(el('strong', 'loc-head-name', node.name));
-      var line = node.kind === 'loose' ? 'Birds with no cage set' : node.kind === 'cage' ? (node.record && node.record.description) || '' : LocationModel.countsLine(node);
+      var line = node.kind === 'loose' ? T('Birds with no cage set') : node.kind === 'cage' ? (node.record && node.record.description) || '' : LocationModel.countsLine(node);
       info.appendChild(el('span', 'loc-sub', line));
       var n = node.kind === 'cage' || node.kind === 'loose' ? node.directBirds : node.birds;
       info.appendChild(el('span', 'loc-badge', n ? plural(n, 'bird', 'birds') : 'Empty'));
@@ -387,7 +387,7 @@ const LocationExplorer = (function () {
             var q = state.query.trim().toLowerCase();
             return !q || [bd.name, bd.band, birdShortLabel(bd)].join(' ').toLowerCase().indexOf(q) !== -1;
           });
-          body.appendChild(el('p', 'loc-level', 'Birds in this ' + (focus.kind === 'cage' ? 'cage' : 'group')));
+          body.appendChild(el('p', 'loc-level', T('Birds in this ' + (focus.kind === 'cage' ? 'cage' : 'group'))));
           var box = el('div', 'loc-items' + (state.present === 'grid' ? ' grid' : ''));
           birds.forEach(function (bd) { box.appendChild(item({ kind: 'bird', bird: bd }, { parent: focus.name, onOpen: function () { location.hash = '#/mybirds/birds/' + bd.id; } })); });
           body.appendChild(box);
@@ -414,8 +414,8 @@ const LocationExplorer = (function () {
       }
 
       function emptyText(n) {
-        if (n.kind === 'aviary') return 'Nothing here yet — tap “+ Add new” to add a location, building, room or cage.';
-        if (n.kind === 'room') return 'No cages in this room yet.';
+        if (n.kind === 'aviary') return T('Nothing here yet — tap “+ Add new” to add a location, building, room or cage.');
+        if (n.kind === 'room') return T('No cages in this room yet.');
         return 'Nothing in ' + n.name + ' yet — tap “+ Add new”.';
       }
 
@@ -525,9 +525,9 @@ const LocationExplorer = (function () {
       function deleteNode(n) {
         var type = { location: 'locations', building: 'buildings', room: 'rooms', cage: 'cages' }[n.kind];
         var note = n.kind === 'location' ? ' Its buildings and rooms stay, just no longer on a location.'
-          : n.kind === 'building' ? ' Its rooms and cages stay, just no longer filed under it.'
-          : n.kind === 'room' ? ' Its cages stay, just no longer in a room.'
-          : (n.directBirds ? ' The ' + n.directBirds + ' bird' + (n.directBirds === 1 ? '' : 's') + ' in it will be left with no cage.' : '');
+          : n.kind === 'building' ? T(' Its rooms and cages stay, just no longer filed under it.')
+          : n.kind === 'room' ? T(' Its cages stay, just no longer in a room.')
+          : (n.directBirds ? ' The ' + n.directBirds + ' bird' + (n.directBirds === 1 ? '' : 's') + T(' in it will be left with no cage.') : '');
         Modal.confirm({
           title: 'Delete ' + n.typeLabel.toLowerCase() + '?', message: 'Delete “' + n.name + '”?' + note + ' This can’t be undone.', confirmLabel: 'Delete', danger: true,
           onConfirm: function () { deleteRecord(type, n.key).then(function () { state.moveNote = { text: 'Deleted ' + n.name + '.' }; draw(); }).catch(failMove); },
@@ -668,7 +668,7 @@ const LocationExplorer = (function () {
       function failMove(err) { state.moveNote = { text: (err && err.message) || 'That didn’t move — try again.' }; draw(); }
 
       function drawAll() {
-        var kinds = [['location', 'Locations'], ['building', 'Buildings'], ['room', 'Rooms'], ['cage', 'Cages']];
+        var kinds = [['location', 'Locations'], ['building', 'Buildings'], ['room', 'Rooms'], ['cage', T('Cages')]];
         var all = LocationModel.descendants(model.root, model.byId);
         var counts = {};
         kinds.forEach(function (k) { counts[k[0]] = all.filter(function (n) { return n.kind === k[0]; }).length; });

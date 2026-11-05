@@ -393,3 +393,21 @@ this widens it. To go through with her, one at a time:
 - **Likely follow-ons to ask her about:** flock / group records (many hens kept together, with counts, instead of one record
   per bird), egg collection and hatch tracking (set date, candling, hatch rate), incubators and broody hens, vaccination
   schedules, NPIP (National Poultry Improvement Plan) paperwork, and breed standards / varieties.
+
+### Chickens: first slice built (clutches, banding, terminology)
+
+- **Add a clutch / hatch** (`BirdsAddScreen.renderClutch`): one form creates a whole batch — same parents, species, breed,
+  colour, hatch date and place — as unsexed birds with no band. Reachable from Birds → "+ Add Bird" and from a bird's
+  Family section ("+ Add a clutch with <mate>").
+- **Needs a band** (`#/mybirds/birds/banding`): a fast list of every unbanded bird with a box for the number
+  (Enter saves and moves to the next); also a "needs a band" filter and a count link on the Birds list.
+- **DNA / surgical sexing result sets the sex** when a health record of that type is added.
+- **Terminology table** (`js/terms.js`, `T('…cage…')`): "What I keep" in Settings → My Aviary (`sql/035_aviary_keeps.sql`)
+  swaps cage → coop and clutch → hatch across the app. Add rows to the table for more words (brooder, flock, pen…) and
+  wrap any new user-facing string in `T()`. Not yet translated: the Caging tab name and a few static menu blurbs.
+- **Starter breed and colour lists** for chickens (Silkie, Satin, Naked neck…) appear as suggestions on the bird forms.
+
+To do next for poultry: **egg collection** (the separate egg-collection app is meant to be merged in — pull an egg from the
+nest box and give it its band right then, before it hatches or is big enough to wear one; this needs a "band assigned, not
+yet applied" state), **flock / group records**, naked-neck tracking in the family tree and a one-gene pairing check
+(once we know which traits she follows), and a real Hatches view (set date, candling, hatch rate) now that clutches exist.

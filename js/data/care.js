@@ -59,7 +59,7 @@ function careChain(targetType, targetId) {
 
 function careLabel(type, id) {
   if (type === 'bird') { var b = getBird(id); return b ? (b.name || b.band || 'bird') : 'bird'; }
-  if (type === 'cage') return 'Cage ' + id;
+  if (type === 'cage') return T('Cage ') + id;
   if (type === 'room') { var r = getRoom(id); return r ? r.name : 'room'; }
   if (type === 'building') { var bl = getBuilding(id); return bl ? 'Building ' + bl.nickname : 'building'; }
   if (type === 'location') { var l = getLocation(id); return l ? l.name : 'location'; }

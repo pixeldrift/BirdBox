@@ -12,7 +12,7 @@ const LocationModel = (function () {
   var PLURAL = { location: 'locations', building: 'buildings', room: 'rooms', cage: 'cages' };
 
   function make(kind, key, name, record) {
-    return { id: kind + ':' + key, kind: kind, key: key, name: name, typeLabel: KINDS[kind], parentId: null, children: [],
+    return { id: kind + ':' + key, kind: kind, key: key, name: name, typeLabel: T(KINDS[kind]), parentId: null, children: [],
       counts: { locations: 0, buildings: 0, rooms: 0, cages: 0 }, birds: 0, directBirds: 0, flags: [], unassigned: false, setUp: true, record: record || null };
   }
 
@@ -112,7 +112,7 @@ const LocationModel = (function () {
       var c = n.counts[PLURAL[k]];
       if (c) parts.push(c + ' ' + (c === 1 ? k : PLURAL[k]));
     });
-    return parts.join(' · ');
+    return T(parts.join(' · '));
   }
 
   return { build: build, descendants: descendants, ancestors: ancestors, countsLine: countsLine, KINDS: KINDS, CHILD_KIND: CHILD_KIND, PLURAL: PLURAL };

@@ -41,7 +41,7 @@ function loadList(type, target) {
 
 var ROOMS_SAMPLE = [];
 // "My Aviary": the one master record every location, building, room and cage sits under (sql/018_aviary_rooms.sql).
-var AVIARY = { id: 'main', name: 'My Aviary', description: '', address: '', phone: '', email: '', website: '', socials: '' };
+var AVIARY = { id: 'main', name: 'My Aviary', description: '', address: '', phone: '', email: '', website: '', socials: '', keeps: '' };
 var AVIARY_ROWS = [];
 var aviaryLoaded = loadList('aviary', AVIARY_ROWS).then(function () {
   if (AVIARY_ROWS[0]) Object.assign(AVIARY, AVIARY_ROWS[0]);

@@ -78,7 +78,7 @@ function taskSubitems(t) {
   return allCages().filter(function (c) {
     if (!t.targetType || t.targetType === 'aviary') return true;
     return careChain('cage', c.code).some(function (x) { return x.type === t.targetType && x.id === t.targetId; });
-  }).map(function (c) { return { key: c.code, label: 'Cage ' + c.code, plan: effectiveCare('cage', c.code) }; })
+  }).map(function (c) { return { key: c.code, label: T('Cage ') + c.code, plan: effectiveCare('cage', c.code) }; })
     .filter(function (s) { return s.plan.items.length; });
 }
 

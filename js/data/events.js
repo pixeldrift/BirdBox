@@ -37,7 +37,7 @@ function eventLinkTargets(eventId) {
     if (l.targetType === 'bird') { var b = getBird(l.targetId); info = b ? { label: birdShortLabel(b), hash: '#/mybirds/birds/' + l.targetId } : null; }
     else if (l.targetType === 'contact') { var c = getContact(l.targetId); info = c ? { label: c.name, hash: '#/business/contacts/' + l.targetId } : null; }
     else if (l.targetType === 'waybill') { var m = mediaTargetInfo({ targetType: 'waybill', targetId: l.targetId }); info = m ? { label: m.text, hash: m.hash } : null; }
-    else if (l.targetType === 'cage') info = { label: 'Cage ' + l.targetId, hash: careTargetHash('cage', l.targetId) };
+    else if (l.targetType === 'cage') info = { label: T('Cage ') + l.targetId, hash: careTargetHash('cage', l.targetId) };
     else if (l.targetType === 'task') { var t = getTask(l.targetId); info = t ? { label: t.title, hash: '#/aviary/tasks/' + l.targetId } : null; }
     return info ? { link: l, type: l.targetType, id: l.targetId, label: info.label, hash: info.hash } : null;
   }).filter(Boolean);
