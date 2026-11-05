@@ -372,3 +372,24 @@ uses (`supply_ids`, comma-separated). Each line is turned into a task-shaped rec
 
 Still to do: **using up stock** — ticking a job off (or a feeding) subtracts the amount from the supply; a "restock list"
 of low cleaning and feed supplies; per-cage checklist for a job set on a room or building.
+
+## Domestic birds, especially chickens — to build
+
+A friend who raises chickens has asked for features that suit domestic poultry. BirdBox started with parrots and exotics, so
+this widens it. To go through with her, one at a time:
+
+- **Chicken profiles in the family tree and genetics predictor.** Add chickens (breeds, varieties and colour/pattern genes)
+  to the species list and to the mutation predictor's gene profiles, so offspring can be predicted the same way as for
+  parrots. Domestic breeds and forms (Pekin Duck, Faverolles, Embden Goose…) have no eBird species code yet — see "Not
+  everything has a code" under the species-ID section above; this is where that gets solved.
+- **Health tests as real records, not just certificates.** In Health, log each test as a record in its own right: which
+  disease it was for (e.g. Pullorum-Typhoid, Avian Influenza, Mycoplasma, Salmonella), the date, the result, and the lab
+  or vet — and allow many of these per bird (and per flock). The certificate or lab report can still be attached, but the
+  test itself is data that can be searched and filtered ("every bird tested for Pullorum this year", "who is overdue").
+  - Show the **most recent result** as a badge on the bird and in lists (e.g. *Pullorum: Negative · Mar 2026*), with the
+    date of the last time it was done, and a clear flag when a test is overdue or positive.
+  - A bird's page shows its full test history per disease, newest first.
+  - Searchable and filterable by disease, result and date range, using the same filter button and period bar as the other lists.
+- **Likely follow-ons to ask her about:** flock / group records (many hens kept together, with counts, instead of one record
+  per bird), egg collection and hatch tracking (set date, candling, hatch rate), incubators and broody hens, vaccination
+  schedules, NPIP (National Poultry Improvement Plan) paperwork, and breed standards / varieties.
