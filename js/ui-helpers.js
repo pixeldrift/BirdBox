@@ -309,9 +309,11 @@ function testBadges(birdId) {
     var r = t.latest;
     var b = document.createElement('button');
     b.type = 'button';
-    b.className = 'test-badge ' + testResultClass(r.result);
-    b.textContent = t.disease + ': ' + (r.result || 'Pending') + ' · ' + new Date(String(r.date).slice(0, 10) + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', year: 'numeric' });
-    b.title = 'Last tested ' + timeAgoText(r.date);
+    var st = testStatus(r);
+    b.className = 'test-badge ' + testResultClass(r.result) + (st.state === 'overdue' ? ' due-overdue' : st.state === 'soon' ? ' due-soon' : '');
+    b.textContent = t.disease + ': ' + (r.result || 'Pending') + ' · ' + new Date(String(r.date).slice(0, 10) + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', year: 'numeric' }) +
+      (st.state === 'overdue' || st.state === 'soon' ? ' · ' + st.label : '');
+    b.title = 'Last tested ' + timeAgoText(r.date) + (st.due ? ' · next due ' + formatDate(st.due) : '');
     b.addEventListener('click', function () { location.hash = '#/mybirds/health/' + r.id; });
     box.appendChild(b);
   });
@@ -332,6 +334,11 @@ function testHistorySection(bird) {
     head.appendChild(Object.assign(document.createElement('span'), { className: 'type-badge ' + testResultClass(g.latest.result), textContent: g.latest.result || 'Pending' }));
     section.appendChild(head);
     section.appendChild(Object.assign(document.createElement('p'), { className: 'form-note', textContent: 'Last tested ' + formatDate(g.latest.date) + ' (' + timeAgoText(g.latest.date) + ')' + (g.latest.provider ? ' · ' + g.latest.provider : '') }));
+    var st = testStatus(g.latest);
+    if (st.due) {
+      section.appendChild(Object.assign(document.createElement('p'), { className: 'form-note test-due ' + (st.state === 'overdue' ? 'due-overdue-text' : st.state === 'soon' ? 'due-soon-text' : ''),
+        textContent: 'Next test ' + formatDate(st.due) + (st.state === 'overdue' || st.state === 'soon' ? ' — ' + st.label : '') }));
+    }
     g.history.forEach(function (r, i) {
       var row = document.createElement('button');
       row.type = 'button';

@@ -20,7 +20,7 @@ const HealthScreen = (function () {
   }
 
   function renderList(main, navigate) {
-    var state = { query: '', types: [], diseases: [], results: [] };
+    var state = { query: '', types: [], diseases: [], results: [], due: [] };
 
     var wrap = document.createElement('div');
     wrap.className = 'list-screen';
@@ -33,6 +33,7 @@ const HealthScreen = (function () {
         if (testedDiseases().length) {
           f.push({ key: 'diseases', label: 'Disease tested for', options: testedDiseases().map(function (d) { return [d, d]; }) });
           f.push({ key: 'results', label: 'Test result', options: TEST_RESULTS.map(function (r) { return [r, r]; }) });
+          f.push({ key: 'due', label: 'Retest', options: [['overdue', 'Overdue'], ['soon', 'Due soon']] });
         }
         return f;
       },
@@ -62,6 +63,7 @@ const HealthScreen = (function () {
         if (state.types.length && state.types.indexOf(r.type) === -1) return false;
         if (state.diseases.length && state.diseases.indexOf(r.disease) === -1) return false;
         if (state.results.length && state.results.indexOf(r.result) === -1) return false;
+        if (state.due.length && !(isLatestTest(r) && state.due.indexOf(testStatus(r).state) !== -1)) return false;
         if (!q) return true;
         var bird = getBird(r.birdId);
         var hay = [bird ? birdShortLabel(bird) : '', bird ? bird.band : '', r.provider, r.notes, r.disease, r.result, r.type]
@@ -117,6 +119,13 @@ const HealthScreen = (function () {
     var attCount = record.attachments.length;
     sub.textContent = (isTest(record) && record.disease ? record.disease + ' · ' : '') + formatDate(record.date) + (record.provider ? ' · ' + record.provider : '') +
       (attCount ? ' · ' + attCount + ' file' + (attCount === 1 ? '' : 's') : '');
+    var st = isLatestTest(record) ? testStatus(record) : null;
+    if (st && (st.state === 'overdue' || st.state === 'soon')) {
+      var due = document.createElement('span');
+      due.className = st.state === 'overdue' ? 'due-overdue-text' : 'due-soon-text';
+      due.textContent = ' · ' + st.label;
+      sub.appendChild(due);
+    }
 
     info.appendChild(title);
     info.appendChild(sub);

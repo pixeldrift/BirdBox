@@ -124,6 +124,13 @@ var RECORD_TYPES_UI = {
     ],
     defaults: { type: 'DNA Certificate' },
   },
+  testrules: {
+    singular: 'test reminder', pk: 'id', hash: '#/account/settings',
+    list: function () { return TEST_RULES; },
+    nameOf: function (r) { return r.disease; },
+    fields: [],
+    defaults: {},
+  },
   navigation: {
     singular: 'menu item', pk: 'id', hash: '#/account/customize',
     list: function () { return NAV_ROWS; },

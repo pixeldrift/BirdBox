@@ -2032,3 +2032,12 @@ button.care-food { cursor: pointer; }
 .test-history-row.latest { color: var(--text); }
 .suggest-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 .suggest-chip { background: #FBF6EF; color: var(--text); border-color: #E0D2BE; font-weight: 600; }
+
+/* Test reminders and due status */
+.test-badge.due-overdue { box-shadow: inset 0 0 0 2px #A6543D; }
+.test-badge.due-soon { box-shadow: inset 0 0 0 2px #C9A04A; }
+.due-overdue-text { color: #A6543D; font-weight: 700; }
+.due-soon-text { color: #96712B; font-weight: 700; }
+.reminder-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 6px 0; border-bottom: 1px solid #F0E6D8; }
+.reminder-label { flex: 1; min-width: 0; font-weight: 600; }
+.reminder-select { flex: 0 0 170px; width: 170px; }

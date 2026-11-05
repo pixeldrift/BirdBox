@@ -156,6 +156,14 @@ const SCHEMAS = {
       notes: { col: 'notes', type: 'text', max: 4000 },
     },
   },
+  // How often to re-test for each disease (see sql/034_test_rules.sql); 0 months = no reminder.
+  testrules: {
+    table: 'test_rules', pk: 'id', idPrefix: 'tr-', order: 'disease',
+    fields: {
+      disease: { col: 'disease', type: 'text', required: true, max: 120 },
+      intervalMonths: { col: 'interval_months', type: 'number', required: true },
+    },
+  },
   // The app's menus: home tiles and the tabs inside them (see sql/017_navigation.sql).
   navigation: {
     table: 'navigation', pk: 'id', idPrefix: 'nav-', order: 'sort, id', customId: true,

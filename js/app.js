@@ -36,6 +36,7 @@
     'account/myteam': typeof TeamScreen !== 'undefined' ? TeamScreen : null,
     'account/myprofile': typeof MyProfileScreen !== 'undefined' ? MyProfileScreen : null,
     'account/settings': typeof SettingsScreen !== 'undefined' ? SettingsScreen : null,
+    'account/notifications': typeof NotificationsScreen !== 'undefined' ? NotificationsScreen : null,
     'account/about': typeof AboutScreen !== 'undefined' ? AboutScreen : null,
     'business/reports': typeof ReportsScreen !== 'undefined' ? ReportsScreen : null,
   };
