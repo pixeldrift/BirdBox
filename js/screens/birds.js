@@ -203,6 +203,7 @@ const BirdsScreen = (function () {
     header.appendChild(avatar);
     header.appendChild(titleWrap);
     header.appendChild(makeEditButton(function () { navigate('edit~' + bird.id); }));
+    var testBadgeRow = testBadges(bird.id);
 
     var again = function () { renderDetail(main, id, navigate, setTitle); };
 
@@ -318,7 +319,7 @@ const BirdsScreen = (function () {
     healthTitle.textContent = 'Health Records';
     healthSection.appendChild(healthTitle);
 
-    var healthRecords = healthRecordsForBird(bird.id);
+    var healthRecords = healthRecordsForBird(bird.id).filter(function (r) { return !isTest(r); }); // tests have their own section above
     if (healthRecords.length) {
       var healthRow = document.createElement('div');
       healthRow.className = 'chip-row';
@@ -334,7 +335,7 @@ const BirdsScreen = (function () {
     } else {
       var noHealth = document.createElement('p');
       noHealth.className = 'notes-text';
-      noHealth.textContent = 'No health records yet.';
+      noHealth.textContent = 'No other health records yet.';
       healthSection.appendChild(noHealth);
     }
 
@@ -430,6 +431,7 @@ const BirdsScreen = (function () {
     moneySection.appendChild(moneyGrid);
 
     wrap.appendChild(header);
+    if (testBadgeRow.firstChild) wrap.appendChild(testBadgeRow);
     wrap.appendChild(BirdActions.row(bird, again));
     wrap.appendChild(buildPhotosSection(bird, function () { renderDetail(main, id, navigate, setTitle); }));
     wrap.appendChild(vitalsGrid);
@@ -440,6 +442,7 @@ const BirdsScreen = (function () {
     wrap.appendChild(CareSection.render({ targetType: 'bird', targetId: bird.id, name: bird.name || 'this bird', refresh: again }));
     wrap.appendChild(CareSection.render({ targetType: 'bird', targetId: bird.id, name: bird.name || 'this bird', refresh: again, plan: 'cleaning' }));
     wrap.appendChild(registrySection);
+    wrap.appendChild(testHistorySection(bird));
     wrap.appendChild(healthSection);
     wrap.appendChild(transferSection);
     wrap.appendChild(moneySection);

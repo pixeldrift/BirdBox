@@ -287,3 +287,66 @@ function makeEditButton(onClick) {
   b.addEventListener('click', onClick);
   return b;
 }
+
+// ---- disease tests (health records of type 'Disease Test') ----
+
+// "3 months ago", "just now"… for a past ISO date.
+function timeAgoText(iso) {
+  var d = new Date(String(iso).slice(0, 10) + 'T00:00:00');
+  var days = Math.round((Date.now() - d.getTime()) / 86400000);
+  if (days < 1) return 'today';
+  if (days < 31) return days + (days === 1 ? ' day ago' : ' days ago');
+  var months = Math.round(days / 30.4);
+  if (months < 24) return months + (months === 1 ? ' month ago' : ' months ago');
+  return Math.round(days / 365.25) + ' years ago';
+}
+
+// The latest result per disease as small badges: "Pullorum-Typhoid: Negative · Mar 2026". Tap one to open that test.
+function testBadges(birdId) {
+  var box = document.createElement('div');
+  box.className = 'test-badges';
+  latestTests(birdId).forEach(function (t) {
+    var r = t.latest;
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'test-badge ' + testResultClass(r.result);
+    b.textContent = t.disease + ': ' + (r.result || 'Pending') + ' · ' + new Date(String(r.date).slice(0, 10) + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', year: 'numeric' });
+    b.title = 'Last tested ' + timeAgoText(r.date);
+    b.addEventListener('click', function () { location.hash = '#/mybirds/health/' + r.id; });
+    box.appendChild(b);
+  });
+  return box;
+}
+
+// A bird's tests grouped by disease: the latest result up top, earlier ones listed under it, newest first.
+function testHistorySection(bird) {
+  var section = document.createElement('div');
+  section.className = 'detail-section';
+  section.appendChild(Object.assign(document.createElement('h3'), { textContent: 'Disease Tests' }));
+  var groups = latestTests(bird.id);
+  if (!groups.length) section.appendChild(Object.assign(document.createElement('p'), { className: 'form-note', textContent: 'No tests logged yet. Record each test — the disease, the date and the result — and the latest shows up here and at the top of this page.' }));
+  groups.forEach(function (g) {
+    var head = document.createElement('div');
+    head.className = 'test-group-head';
+    head.appendChild(Object.assign(document.createElement('strong'), { textContent: g.disease }));
+    head.appendChild(Object.assign(document.createElement('span'), { className: 'type-badge ' + testResultClass(g.latest.result), textContent: g.latest.result || 'Pending' }));
+    section.appendChild(head);
+    section.appendChild(Object.assign(document.createElement('p'), { className: 'form-note', textContent: 'Last tested ' + formatDate(g.latest.date) + ' (' + timeAgoText(g.latest.date) + ')' + (g.latest.provider ? ' · ' + g.latest.provider : '') }));
+    g.history.forEach(function (r, i) {
+      var row = document.createElement('button');
+      row.type = 'button';
+      row.className = 'test-history-row' + (i === 0 ? ' latest' : '');
+      row.appendChild(Object.assign(document.createElement('span'), { textContent: formatDate(r.date) + (r.provider ? ' · ' + r.provider : '') }));
+      row.appendChild(Object.assign(document.createElement('span'), { className: 'test-result-text ' + testResultClass(r.result) + '-text', textContent: r.result || 'Pending' }));
+      row.addEventListener('click', function () { location.hash = '#/mybirds/health/' + r.id; });
+      section.appendChild(row);
+    });
+  });
+  var add = document.createElement('button');
+  add.type = 'button';
+  add.className = 'btn-positive';
+  add.textContent = '+ Add Test';
+  add.addEventListener('click', function () { HealthScreen.pendingBirdId = bird.id; HealthScreen.pendingType = 'Disease Test'; location.hash = '#/mybirds/health/new'; });
+  section.appendChild(add);
+  return section;
+}

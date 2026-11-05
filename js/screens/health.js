@@ -10,12 +10,17 @@ const HealthScreen = (function () {
     return 'health-type-' + type.toLowerCase().replace(/\s+/g, '-');
   }
 
+  // 'Pullorum-Typhoid test' for a disease test, else the record type.
+  function recordTitle(r) {
+    return isTest(r) ? (r.disease || 'Disease') + ' test' : r.type;
+  }
+
   function goToBird(birdId) {
     location.hash = '#/mybirds/birds/' + birdId;
   }
 
   function renderList(main, navigate) {
-    var state = { query: '', types: [] };
+    var state = { query: '', types: [], diseases: [], results: [] };
 
     var wrap = document.createElement('div');
     wrap.className = 'list-screen';
@@ -23,7 +28,14 @@ const HealthScreen = (function () {
     var tools = ListTools.create({
       screen: 'health', noView: true, placeholder: 'Search health records…', ariaLabel: 'Search health records', query: state.query,
       onQuery: function (v) { state.query = v; draw(); }, onRedraw: function () { draw(); },
-      filters: [{ key: 'types', label: '', options: RECORD_TYPES.map(function (t) { return [t, t]; }) }],
+      filters: function () {
+        var f = [{ key: 'types', label: 'Type', options: RECORD_TYPES.map(function (t) { return [t, t]; }) }];
+        if (testedDiseases().length) {
+          f.push({ key: 'diseases', label: 'Disease tested for', options: testedDiseases().map(function (d) { return [d, d]; }) });
+          f.push({ key: 'results', label: 'Test result', options: TEST_RESULTS.map(function (r) { return [r, r]; }) });
+        }
+        return f;
+      },
       get: function (k) { return state[k]; }, set: function (k, v) { state[k] = v; },
     });
 
@@ -48,9 +60,11 @@ const HealthScreen = (function () {
       var q = state.query.trim().toLowerCase();
       var results = HEALTH_RECORDS_SAMPLE.filter(function (r) {
         if (state.types.length && state.types.indexOf(r.type) === -1) return false;
+        if (state.diseases.length && state.diseases.indexOf(r.disease) === -1) return false;
+        if (state.results.length && state.results.indexOf(r.result) === -1) return false;
         if (!q) return true;
         var bird = getBird(r.birdId);
-        var hay = [bird ? birdShortLabel(bird) : '', bird ? bird.band : '', r.provider, r.notes]
+        var hay = [bird ? birdShortLabel(bird) : '', bird ? bird.band : '', r.provider, r.notes, r.disease, r.result, r.type]
           .filter(Boolean).join(' ').toLowerCase();
         return hay.indexOf(q) !== -1;
       }).slice().sort(function (a, b) { return b.date.localeCompare(a.date); });
@@ -101,15 +115,20 @@ const HealthScreen = (function () {
     var sub = document.createElement('span');
     sub.className = 'list-row-sub';
     var attCount = record.attachments.length;
-    sub.textContent = formatDate(record.date) + (record.provider ? ' · ' + record.provider : '') +
+    sub.textContent = (isTest(record) && record.disease ? record.disease + ' · ' : '') + formatDate(record.date) + (record.provider ? ' · ' + record.provider : '') +
       (attCount ? ' · ' + attCount + ' file' + (attCount === 1 ? '' : 's') : '');
 
     info.appendChild(title);
     info.appendChild(sub);
 
     var type = document.createElement('span');
-    type.className = 'type-badge ' + typeClass(record.type);
-    type.textContent = record.type;
+    if (isTest(record) && record.result) {
+      type.className = 'type-badge ' + testResultClass(record.result);
+      type.textContent = record.result;
+    } else {
+      type.className = 'type-badge ' + typeClass(record.type);
+      type.textContent = record.type;
+    }
 
     row.appendChild(avatar);
     row.appendChild(info);
@@ -136,7 +155,7 @@ const HealthScreen = (function () {
     }
     var bird = getBird(record.birdId);
 
-    setTitle(record.type);
+    setTitle(recordTitle(record));
 
     var wrap = document.createElement('div');
     wrap.className = 'detail-screen';
@@ -154,7 +173,7 @@ const HealthScreen = (function () {
     var titleWrap = document.createElement('div');
     titleWrap.className = 'detail-title';
     var h2 = document.createElement('h2');
-    h2.textContent = record.type;
+    h2.textContent = recordTitle(record);
     var typeBadge = document.createElement('span');
     typeBadge.className = 'type-badge ' + typeClass(record.type);
     typeBadge.textContent = bird ? birdShortLabel(bird) : 'Unknown bird';
@@ -167,8 +186,12 @@ const HealthScreen = (function () {
 
     var factsGrid = document.createElement('div');
     factsGrid.className = 'fact-grid';
+    if (isTest(record)) {
+      factsGrid.appendChild(factRow('Tested for', record.disease || '—'));
+      factsGrid.appendChild(factRow('Result', record.result || '—', record.result ? testResultClass(record.result) + '-text' : ''));
+    }
     factsGrid.appendChild(factRow('Date', formatDate(record.date)));
-    factsGrid.appendChild(factRow('Provider', record.provider || '—'));
+    factsGrid.appendChild(factRow('Lab or provider', record.provider || '—'));
 
     wrap.appendChild(header);
     wrap.appendChild(factsGrid);
@@ -231,6 +254,7 @@ const HealthScreen = (function () {
     typeField.className = 'form-field';
     typeField.innerHTML = '<span class="form-label">Record Type</span>';
     var typeSelect = document.createElement('select');
+    typeSelect.setAttribute('aria-label', 'Record Type');
     typeSelect.className = 'form-input';
     RECORD_TYPES.forEach(function (t) {
       var opt = document.createElement('option');
@@ -239,6 +263,42 @@ const HealthScreen = (function () {
       typeSelect.appendChild(opt);
     });
     typeField.appendChild(typeSelect);
+
+    // A disease test: what it was for and how it came out (shown only for that record type).
+    var testFields = document.createElement('div');
+    var diseaseField = document.createElement('div');
+    diseaseField.className = 'form-field';
+    diseaseField.innerHTML = '<span class="form-label">Disease tested for *</span>';
+    var diseaseInput = document.createElement('input');
+    diseaseInput.type = 'text';
+    diseaseInput.className = 'form-input';
+    diseaseInput.placeholder = 'Type, or tap one below';
+    diseaseField.appendChild(diseaseInput);
+    var chipsRow = document.createElement('div');
+    chipsRow.className = 'suggest-chips';
+    testedDiseases().concat(DISEASE_SUGGESTIONS.filter(function (d) { return testedDiseases().indexOf(d) === -1; })).forEach(function (d) {
+      var chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'loc-chip suggest-chip';
+      chip.textContent = d;
+      chip.addEventListener('click', function () { diseaseInput.value = d; });
+      chipsRow.appendChild(chip);
+    });
+    diseaseField.appendChild(chipsRow);
+    var resultField = document.createElement('label');
+    resultField.className = 'form-field';
+    resultField.innerHTML = '<span class="form-label">Result *</span>';
+    var resultSelect = document.createElement('select');
+    resultSelect.className = 'form-input';
+    resultSelect.setAttribute('aria-label', 'Result');
+    TEST_RESULTS.forEach(function (r) { var o = document.createElement('option'); o.value = r; o.textContent = r; resultSelect.appendChild(o); });
+    resultField.appendChild(resultSelect);
+    testFields.appendChild(diseaseField);
+    testFields.appendChild(resultField);
+    function syncTest() { testFields.style.display = typeSelect.value === 'Disease Test' ? '' : 'none'; }
+    typeSelect.addEventListener('change', syncTest);
+    if (HealthScreen.pendingType) { typeSelect.value = HealthScreen.pendingType; HealthScreen.pendingType = null; }
+    syncTest();
 
     var dateField = document.createElement('label');
     dateField.className = 'form-field';
@@ -251,7 +311,7 @@ const HealthScreen = (function () {
 
     var providerField = document.createElement('label');
     providerField.className = 'form-field';
-    providerField.innerHTML = '<span class="form-label">Provider</span>';
+    providerField.innerHTML = '<span class="form-label">Lab or provider</span>';
     var providerInput = document.createElement('input');
     providerInput.type = 'text';
     providerInput.className = 'form-input';
@@ -287,6 +347,7 @@ const HealthScreen = (function () {
 
     form.appendChild(birdField);
     form.appendChild(typeField);
+    form.appendChild(testFields);
     form.appendChild(dateField);
     form.appendChild(providerField);
     form.appendChild(notesField);
@@ -300,10 +361,14 @@ const HealthScreen = (function () {
         Modal.alert('Choose a bird first');
         return;
       }
+      var isTestRecord = typeSelect.value === 'Disease Test';
+      if (isTestRecord && !diseaseInput.value.trim()) { Modal.alert('Say which disease was tested for'); return; }
       var chosenFiles = Array.prototype.slice.call(fileInput.files);
       var record = {
         birdId: birdPicker.get(),
         type: typeSelect.value,
+        disease: isTestRecord ? diseaseInput.value.trim() : '',
+        result: isTestRecord ? resultSelect.value : '',
         date: dateInput.value || new Date().toISOString().slice(0, 10),
         provider: providerInput.value.trim(),
         notes: notesInput.value.trim(),

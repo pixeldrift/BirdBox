@@ -2015,3 +2015,20 @@ button.care-food { cursor: pointer; }
 .care-needs .low, .task-supply.low small { color: #A6543D; font-weight: 700; }
 .task-supply { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 6px 2px; }
 .task-supply small { color: var(--muted); }
+
+/* Disease tests */
+.result-negative { background: #E7EDE2; color: #4C6B45; }
+.result-positive { background: #F5E1DD; color: #A6543D; }
+.result-inconclusive { background: #F6ECD6; color: #96712B; }
+.result-pending { background: #EDE8E2; color: #7A6552; }
+.result-negative-text { color: #4C6B45; font-weight: 700; }
+.result-positive-text { color: #A6543D; font-weight: 700; }
+.result-inconclusive-text { color: #96712B; font-weight: 700; }
+.result-pending-text { color: #7A6552; font-weight: 700; }
+.test-badges { display: flex; flex-wrap: wrap; gap: 6px; margin: -4px 0 12px; }
+.test-badge { padding: 4px 10px; border-radius: 999px; border: 0; font: inherit; font-size: 0.75rem; font-weight: 700; cursor: pointer; }
+.test-group-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 8px; }
+.test-history-row { display: flex; justify-content: space-between; gap: 10px; width: 100%; padding: 8px 4px; border: 0; border-bottom: 1px solid #F0E6D8; background: none; font: inherit; font-size: 0.9rem; text-align: left; cursor: pointer; color: var(--muted); }
+.test-history-row.latest { color: var(--text); }
+.suggest-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.suggest-chip { background: #FBF6EF; color: var(--text); border-color: #E0D2BE; font-weight: 600; }

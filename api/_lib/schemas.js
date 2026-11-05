@@ -148,8 +148,10 @@ const SCHEMAS = {
     table: 'health_records', pk: 'id', idPrefix: 'hr-', order: 'date desc',
     fields: {
       birdId: { col: 'bird_id', type: 'text', required: true, ref: 'bird' },
-      type: { col: 'type', type: 'enum', required: true, options: ['DNA Certificate', 'Immunization', 'Surgical Sexing', 'Vet Visit', 'Other'] },
+      type: { col: 'type', type: 'enum', required: true, options: ['DNA Certificate', 'Disease Test', 'Immunization', 'Surgical Sexing', 'Vet Visit', 'Other'] },
       date: { col: 'date', type: 'date', required: true },
+      disease: { col: 'disease', type: 'text', max: 120 }, // a Disease Test: what was tested for (sql/033_health_tests.sql)
+      result: { col: 'result', type: 'enum', options: ['Negative', 'Positive', 'Inconclusive', 'Pending'] },
       provider: { col: 'provider', type: 'text', max: 160 },
       notes: { col: 'notes', type: 'text', max: 4000 },
     },

@@ -34,6 +34,8 @@ const RecordForm = (function () {
 
     var base = Object.assign({}, def.defaults, opts.prefill || {}, rec || {});
     var getters = {};
+    var fieldEls = {};
+    var controls = {};
     var wrap = el('div', 'detail-screen');
     var form = el('form', 'detail-section record-form');
 
@@ -52,6 +54,23 @@ const RecordForm = (function () {
         f.options.forEach(function (o) { var opt = el('option', '', o); opt.value = o; control.appendChild(opt); });
         control.value = current;
         get = function () { return control.value; };
+      } else if (f.type === 'suggest') {
+        // free text with tappable suggestions underneath (e.g. the disease a test was for)
+        control = el('input', 'form-input');
+        control.placeholder = f.hint || 'Type, or tap one below';
+        control.value = current;
+        var chipsRow = el('div', 'suggest-chips');
+        (f.suggestions() || []).forEach(function (s) {
+          var chip = el('button', 'loc-chip suggest-chip', s);
+          chip.type = 'button';
+          chip.addEventListener('click', function () { control.value = s; });
+          chipsRow.appendChild(chip);
+        });
+        var inner = control;
+        control = el('div');
+        control.appendChild(inner);
+        control.appendChild(chipsRow);
+        get = function () { return inner.value.trim(); };
       } else if (f.type === 'textarea') {
         control = el('textarea', 'form-input');
         control.rows = 3;
@@ -66,11 +85,22 @@ const RecordForm = (function () {
         get = function () { return control.value; };
       }
       getters[f.key] = get;
-      var label = el(f.ref ? 'div' : 'label', 'form-field');
-      label.appendChild(el('span', 'form-label', f.label + (f.required ? ' *' : '')));
+      var label = el(f.ref || f.type === 'suggest' ? 'div' : 'label', 'form-field');
+      fieldEls[f.key] = label;
+      controls[f.key] = control;
+      label.appendChild(el('span', 'form-label', f.label + (f.required || f.requiredIfShown ? ' *' : '')));
       label.appendChild(control);
       if (f.hint) label.appendChild(el('p', 'form-note', f.hint));
       form.appendChild(label);
+    });
+
+    // Fields that only apply for one value of another field (a test's disease and result show for 'Disease Test').
+    function shown(f) { return !f.showWhen || getters[f.showWhen.key]() === f.showWhen.value; }
+    def.fields.forEach(function (f) {
+      if (!f.showWhen || !fieldEls[f.key] || !controls[f.showWhen.key]) return;
+      var sync = function () { fieldEls[f.key].style.display = shown(f) ? '' : 'none'; };
+      controls[f.showWhen.key].addEventListener('change', sync);
+      sync();
     });
 
     var errorBox = el('div');
@@ -91,6 +121,9 @@ const RecordForm = (function () {
       clearEl(errorBox);
       var data = {};
       Object.keys(getters).forEach(function (k) { data[k] = getters[k](); });
+      var missing = def.fields.filter(function (f) { return f.showWhen && shown(f) && f.requiredIfShown && !data[f.key]; })[0];
+      if (missing) { errorBox.appendChild(el('p', 'form-message error', missing.label + ' is required')); return; }
+      def.fields.forEach(function (f) { if (f.showWhen && !shown(f)) data[f.key] = ''; });
       save.disabled = true;
       var label = save.textContent;
       save.textContent = 'Saving…';

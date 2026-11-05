@@ -3,6 +3,7 @@
 //
 //   var tools = ListTools.create({ screen: 'birds', placeholder, ariaLabel, query, onQuery, onRedraw,
 //                                  filters: [{ key, label, options: [[value, label], …] }, …]   ← pick any number of each
+//                                           (or a function returning that list, when the options change)
 //                                  get(key) → array of picked values, set(key, array) })
 //   noSearch / noView leave out the search box / list-grid toggle; tools.filterBtn is the button on its own
 //   tools.bar   the search + toggle + filter row     tools.chips   the active-filter chips
@@ -74,12 +75,13 @@ const ListTools = (function () {
     api.bar = bar;
     api.filterBtn = filterBtn;
 
+    function filterList() { return typeof o.filters === 'function' ? o.filters() : (o.filters || []); }
     var chips = el('div', 'loc-chips');
     api.chips = chips;
 
     function active() {
       var out = [];
-      (o.filters || []).forEach(function (f) {
+      filterList().forEach(function (f) {
         (o.get(f.key) || []).forEach(function (v) {
           out.push({ key: f.key, value: v, label: f.options.filter(function (x) { return x[0] === v; }).map(function (x) { return x[1]; })[0] || String(v) });
         });
@@ -112,7 +114,7 @@ const ListTools = (function () {
         build: function (body, close) {
           function drawBody() {
             clearEl(body);
-            (o.filters || []).forEach(function (f) {
+            filterList().forEach(function (f) {
               if (f.label) body.appendChild(el('p', 'subsection-label', f.label));
               var list = el('div', 'app-select-list');
               f.options.forEach(function (opt) {
@@ -133,7 +135,7 @@ const ListTools = (function () {
             });
             var actions = el('div', 'filter-actions');
             actions.appendChild(btn('add-record-btn', 'Clear filters', function () {
-              (o.filters || []).forEach(function (f) { o.set(f.key, []); });
+              filterList().forEach(function (f) { o.set(f.key, []); });
               o.onRedraw();
               drawBody();
             }));

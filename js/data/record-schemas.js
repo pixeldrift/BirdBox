@@ -112,12 +112,14 @@ var RECORD_TYPES_UI = {
   health: {
     singular: 'health record', pk: 'id', hash: '#/mybirds/health/',
     list: function () { return HEALTH_RECORDS_SAMPLE; },
-    nameOf: function (r) { return r.type; },
+    nameOf: function (r) { return r.type === 'Disease Test' ? (r.disease || 'Disease') + ' test' : r.type; },
     fields: [
       { key: 'birdId', label: 'Bird', type: 'text', required: true, ref: 'bird' },
       { key: 'type', label: 'Type', type: 'enum', required: true, options: RECORD_TYPES },
+      { key: 'disease', label: 'Disease tested for', type: 'suggest', suggestions: function () { return testedDiseases().concat(DISEASE_SUGGESTIONS.filter(function (d) { return testedDiseases().indexOf(d) === -1; })); }, showWhen: { key: 'type', value: 'Disease Test' }, requiredIfShown: true },
+      { key: 'result', label: 'Result', type: 'enum', options: TEST_RESULTS, required: false, showWhen: { key: 'type', value: 'Disease Test' }, requiredIfShown: true },
       { key: 'date', label: 'Date', type: 'date', required: true },
-      { key: 'provider', label: 'Provider', type: 'text' },
+      { key: 'provider', label: 'Provider', type: 'text', hint: 'Vet, lab, or clinic name' },
       { key: 'notes', label: 'Notes', type: 'textarea' },
     ],
     defaults: { type: 'DNA Certificate' },

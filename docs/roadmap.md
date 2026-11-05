@@ -382,7 +382,7 @@ this widens it. To go through with her, one at a time:
   to the species list and to the mutation predictor's gene profiles, so offspring can be predicted the same way as for
   parrots. Domestic breeds and forms (Pekin Duck, Faverolles, Embden Goose…) have no eBird species code yet — see "Not
   everything has a code" under the species-ID section above; this is where that gets solved.
-- **Health tests as real records, not just certificates.** In Health, log each test as a record in its own right: which
+- **Health tests as real records, not just certificates — BUILT (`sql/033_health_tests.sql`).** What's below is the spec; still to do from it: an "overdue" flag (needs a re-test interval per disease), flock-level tests, and showing the badge in bird lists. In Health, log each test as a record in its own right: which
   disease it was for (e.g. Pullorum-Typhoid, Avian Influenza, Mycoplasma, Salmonella), the date, the result, and the lab
   or vet — and allow many of these per bird (and per flock). The certificate or lab report can still be attached, but the
   test itself is data that can be searched and filtered ("every bird tested for Pullorum this year", "who is overdue").
