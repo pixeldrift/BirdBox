@@ -51,6 +51,14 @@ const CREDITS = [
         relationship: 'courtesy',
       },
       {
+        name: 'American Poultry Association',
+        by: 'American Poultry Association',
+        url: 'https://www.amerpoultryassn.com/accepted_breeds_varieties.php',
+        description: 'The body that publishes the American Standard of Perfection. Its accepted breeds and varieties list names every recognized chicken, duck, goose, turkey and guinea breed and variety, with its class.',
+        used: 'The chicken breed list in BirdBox’s Breed / form suggestions, and its classes.',
+        relationship: 'courtesy',
+      },
+      {
         name: 'Avibase',
         by: 'Bird Studies Canada',
         url: 'https://avibase.bsc-eoc.org',
