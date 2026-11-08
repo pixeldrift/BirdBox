@@ -411,3 +411,9 @@ To do next for poultry: **egg collection** (the separate egg-collection app is m
 nest box and give it its band right then, before it hatches or is big enough to wear one; this needs a "band assigned, not
 yet applied" state), **flock / group records**, naked-neck tracking in the family tree and a one-gene pairing check
 (once we know which traits she follows), and a real Hatches view (set date, candling, hatch rate) now that clutches exist.
+
+**Chicken breed list (built):** `js/data/domestic-breeds.js` — the ~70 breeds recognized by the American Poultry Association (by
+class, large fowl / bantam) plus popular non-APA types (Easter Egger, Olive Egger, Red/Black Star, Cornish Cross), most-popular first,
+shown in an app-styled suggestion list on the Breed / form box (`js/suggest-input.js`). To do: **varieties per breed** (e.g. Silkie:
+Black, Blue, Buff, Gray, Partridge, White — the APA lists these per breed), the **American Bantam Association** list where it differs,
+and the same lists for ducks, geese, turkeys, guinea fowl, quail and pigeons (add a key to `DOMESTIC_BREEDS`).

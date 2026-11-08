@@ -246,25 +246,11 @@ const BirdsAddScreen = (function () {
       value: picked,
       onChange: function (s) {
         picked = s;
-        clearEl(dlSub);
-        clearEl(dlMut);
-        if (!s) return;
-        suggestionsFor(s, 'subspecies').forEach(function (v) {
-          var opt = document.createElement('option');
-          opt.value = v;
-          dlSub.appendChild(opt);
-        });
-        suggestionsFor(s, 'mutation').forEach(function (v) {
-          var opt = document.createElement('option');
-          opt.value = v;
-          dlMut.appendChild(opt);
-        });
+
       },
     });
     var subspecies = input('text', { placeholder: 'Only if it applies — e.g. Congo, Timneh' });
-    subspecies.setAttribute('list', 'dl-subspecies');
     var mutation = input('text', { placeholder: 'Optional' });
-    mutation.setAttribute('list', 'dl-mutation');
     var hatchCtl = hatchField(editing);
     var status = select(STATUSES.map(function (s) { return { value: s, label: s }; }));
     var locCtl = BirdPopups.locationField({ cage: editing ? editing.cage : '', contactId: editing ? editing.locationContactId : '', text: editing ? editing.locationText : '' });
@@ -278,9 +264,6 @@ const BirdsAddScreen = (function () {
     notes.className = 'form-input';
     notes.rows = 3;
 
-    var dlSub = datalist('dl-subspecies', []);
-    var dlMut = datalist('dl-mutation', []);
-    if (picked) { suggestionsFor(picked, 'subspecies').forEach(function (v) { var o = document.createElement('option'); o.value = v; dlSub.appendChild(o); }); suggestionsFor(picked, 'mutation').forEach(function (v) { var o = document.createElement('option'); o.value = v; dlMut.appendChild(o); }); }
 
     var errorBox = document.createElement('div');
     var saveBtn = document.createElement('button');
@@ -304,7 +287,9 @@ const BirdsAddScreen = (function () {
       field('Subspecies / form', subspecies), field('Mutation', mutation), field('Hatch date', hatchCtl.el, undefined, true),
       field('Status', status), field('Location', locCtl.el, undefined, true), field('Mother', mother.el, undefined, true), field('Father', father.el, undefined, true),
       field('Paired with', paired.el, undefined, true), field('Cost', cost), field('Asking price', price), field('Notes', notes),
-      dlSub, dlMut, errorBox, saveBtn].forEach(function (el) { form.appendChild(el); });
+      errorBox, saveBtn].forEach(function (el) { form.appendChild(el); });
+    SuggestInput.attach(subspecies, function () { return suggestItems(picked, 'subspecies'); });
+    SuggestInput.attach(mutation, function () { return suggestItems(picked, 'mutation'); });
 
     form.addEventListener('submit', function (e) {
       e.preventDefault();
@@ -415,16 +400,22 @@ const BirdsAddScreen = (function () {
 
   // ---- chickens and other domestic birds: starter lists for the breed / colour fields ----
   var DOMESTIC = {
-    breeds: ['Silkie', 'Satin', 'Cochin', 'Brahma', 'Orpington', 'Wyandotte', 'Plymouth Rock', 'Rhode Island Red', 'Leghorn', 'Sussex', 'Australorp', 'Marans', 'Ameraucana', 'Polish', 'Bantam (mixed)'],
     colours: ['White', 'Black', 'Blue', 'Splash', 'Buff', 'Partridge', 'Gray', 'Lavender', 'Naked neck'],
   };
   function isChicken(species) {
     return !!species && /^Gallus gallus/i.test(species.scientificName || '');
   }
-  function suggestionsFor(species, key) { // what's already used on this species, plus starter lists for chickens
+  // What to suggest for the breed / colour boxes: values already used on this species (yours first), then, for chickens,
+  // the standard breeds (js/data/domestic-breeds.js) and a starter list of colours.
+  function suggestItems(species, key) {
     var used = distinct(BIRDS_SAMPLE.filter(function (b) { return species && b.speciesCode === species.code; }).map(function (b) { return b[key]; }));
-    var starters = isChicken(species) ? (key === 'subspecies' ? DOMESTIC.breeds : DOMESTIC.colours) : [];
-    return distinct(used.concat(starters));
+    var out = used.map(function (v) { return { value: v, hint: 'In your flock' }; });
+    var extra = key === 'subspecies' ? domesticBreedsFor(species).map(function (x) { return { value: x.name, hint: x.hint }; })
+      : (isChicken(species) ? DOMESTIC.colours.map(function (v) { return { value: v }; }) : []);
+    var seen = {};
+    out.forEach(function (o) { seen[o.value.toLowerCase()] = true; });
+    extra.forEach(function (o) { if (!seen[o.value.toLowerCase()]) { seen[o.value.toLowerCase()] = true; out.push(o); } });
+    return out;
   }
 
   // A hatch: add a whole batch of chicks (or poults, or squabs…) in one go — same parents, hatch date, breed and place.
@@ -442,19 +433,10 @@ const BirdsAddScreen = (function () {
     var mother = Picker.birds({ value: prefill.motherId || '', allowClear: true, placeholder: 'Unknown — search to choose…', onChange: function () { inherit(); } });
     var father = Picker.birds({ value: prefill.fatherId || '', allowClear: true, placeholder: 'Unknown — search to choose…', onChange: function () { inherit(); } });
     var picked = null;
-    var dlBreed = datalist('dl-clutch-breed', []);
-    var dlColour = datalist('dl-clutch-colour', []);
-    function fillLists() {
-      [['subspecies', dlBreed], ['mutation', dlColour]].forEach(function (p) {
-        clearEl(p[1]);
-        suggestionsFor(picked, p[0]).forEach(function (v) { var o = document.createElement('option'); o.value = v; p[1].appendChild(o); });
-      });
-    }
+    function fillLists() { /* the suggestion boxes read `picked` each time they open */ }
     var speciesPicker = SpeciesPicker.create({ value: null, onChange: function (s) { picked = s; fillLists(); } });
     var breed = input('text', { placeholder: 'Only if it applies — e.g. Silkie' });
-    breed.setAttribute('list', 'dl-clutch-breed');
     var colour = input('text', { placeholder: 'Optional — e.g. White, Naked neck' });
-    colour.setAttribute('list', 'dl-clutch-colour');
     var today = new Date().toISOString().slice(0, 10);
     var hatchCtl = hatchField({ hatchDate: today, hatchPrecision: 'day' });
     var count = input('number', { min: '1', max: '100', value: '6' });
@@ -491,7 +473,9 @@ const BirdsAddScreen = (function () {
       field('How many hatched', count, 'They’re added as unsexed chicks with no band — add the sex when the DNA result is back and the bands when you have them.'),
       field('Where they are', locCtl.el, undefined, true),
       field('Band numbers', bands, 'Optional. Only fill in the ones you’ve already assigned — the rest can be done later from the banding list.'),
-      field('Notes', notes), dlBreed, dlColour, errorBox, saveBtn].forEach(function (e) { form.appendChild(e); });
+      field('Notes', notes), errorBox, saveBtn].forEach(function (e) { form.appendChild(e); });
+    SuggestInput.attach(breed, function () { return suggestItems(picked, 'subspecies'); });
+    SuggestInput.attach(colour, function () { return suggestItems(picked, 'mutation'); });
 
     form.addEventListener('submit', function (e) {
       e.preventDefault();
@@ -862,5 +846,5 @@ const BirdsAddScreen = (function () {
     output.appendChild(section);
   }
 
-  return { afterAdd: null, clutchPrefill: null, renderForm: renderForm, renderImport: renderImport, renderClutch: renderClutch, renderBanding: renderBanding, analyze: analyze, check: check, isChicken: isChicken, suggestionsFor: suggestionsFor };
+  return { afterAdd: null, clutchPrefill: null, renderForm: renderForm, renderImport: renderImport, renderClutch: renderClutch, renderBanding: renderBanding, analyze: analyze, check: check, isChicken: isChicken, suggestItems: suggestItems };
 })();

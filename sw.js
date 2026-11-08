@@ -1,4 +1,4 @@
-const CACHE = 'birdbox-shell-v107';
+const CACHE = 'birdbox-shell-v108';
 const ASSETS = [
   './',
   './index.html',
@@ -7,10 +7,12 @@ const ASSETS = [
   './js/terms.js',
   './js/nav-data.js',
   './js/ui-helpers.js',
+  './js/suggest-input.js',
   './js/csv.js',
   './js/data/icon-species-birdorable.js',
   './js/data/icon-taxonomy.js',
   './js/data/species.js',
+  './js/data/domestic-breeds.js',
   './js/data/credits.js',
   './js/data/about.js',
   './js/data/birds-sample.js',
