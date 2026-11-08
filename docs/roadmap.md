@@ -417,3 +417,12 @@ class, large fowl / bantam) plus popular non-APA types (Easter Egger, Olive Egge
 shown in an app-styled suggestion list on the Breed / form box (`js/suggest-input.js`). To do: **varieties per breed** (e.g. Silkie:
 Black, Blue, Buff, Gray, Partridge, White — the APA lists these per breed), the **American Bantam Association** list where it differs,
 and the same lists for ducks, geese, turkeys, guinea fowl, quail and pigeons (add a key to `DOMESTIC_BREEDS`).
+
+### Awards and results (built — `sql/036_show_results.sql`)
+
+Shows, races and trials per bird (`js/data/awards.js`): event, date, location, class / category, placement, number of entries,
+judge, notes. A bird's page lists its results and the awards of its parents and grandparents as **pedigree credentials**; top
+placements show as ★ badges; the Birds filter has "Has awards" and "Has a first place or title". Species-agnostic (chickens,
+pigeons, exotics, dogs and cats alike). To do: photos of ribbons / score cards (needs award as a media link target), APA class
+suggestions for the category box, award badges in the family tree, a championship-points tally, show dates on the Calendar with
+"prepare birds" tasks, and show results in sale listings.

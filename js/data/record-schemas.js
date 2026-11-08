@@ -131,6 +131,24 @@ var RECORD_TYPES_UI = {
     fields: [],
     defaults: {},
   },
+  awards: {
+    singular: 'award', pk: 'id', hash: '#/mybirds/birds/',
+    list: function () { return AWARDS_SAMPLE; },
+    nameOf: function (r) { return awardLabel(r); },
+    fields: [
+      { key: 'birdId', label: 'Bird', type: 'text', required: true, ref: 'bird' },
+      { key: 'kind', label: 'Kind', type: 'enum', required: true, options: AWARD_KINDS },
+      { key: 'event', label: 'Show or event', type: 'text', required: true, hint: 'e.g. Ohio National Poultry Show' },
+      { key: 'date', label: 'Date', type: 'date' },
+      { key: 'location', label: 'Location', type: 'text' },
+      { key: 'category', label: 'Class / category', type: 'suggest', suggestions: function () { return distinctAwardValues('category'); }, hint: 'e.g. Bantam · Feather Legged · Silkie · Black · Cock' },
+      { key: 'placement', label: 'Placement', type: 'suggest', suggestions: function () { return PLACEMENTS; }, hint: 'Tap one, or type your own — e.g. 1st, Best of Breed, Champion' },
+      { key: 'entries', label: 'Number of entries', type: 'number', hint: 'Optional — how many birds were in the class (“1st of 24”).' },
+      { key: 'judge', label: 'Judge', type: 'text' },
+      { key: 'notes', label: 'Notes', type: 'textarea' },
+    ],
+    defaults: { kind: 'Show' },
+  },
   navigation: {
     singular: 'menu item', pk: 'id', hash: '#/account/customize',
     list: function () { return NAV_ROWS; },
@@ -202,3 +220,10 @@ var RECORD_TYPES_UI = {
     defaults: {},
   },
 };
+
+// Distinct values already entered for an award field (so you can tap one you've used before).
+function distinctAwardValues(key) {
+  var seen = {};
+  AWARDS_SAMPLE.forEach(function (a) { if (a[key]) seen[a[key]] = true; });
+  return Object.keys(seen).sort();
+}

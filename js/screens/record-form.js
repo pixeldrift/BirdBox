@@ -35,13 +35,14 @@ const RecordForm = (function () {
     var base = Object.assign({}, def.defaults, opts.prefill || {}, rec || {});
     var getters = {};
     var fieldEls = {};
+    var hiddenValues = {};
     var controls = {};
     var wrap = el('div', 'detail-screen');
     var form = el('form', 'detail-section record-form');
 
     def.fields.forEach(function (f) {
       if (f.createOnly && editing) return;
-      if (opts.hide && opts.hide.indexOf(f.key) !== -1) return; // e.g. someone editing their own profile doesn't change their own role
+      if (opts.hide && opts.hide.indexOf(f.key) !== -1) { if (!editing) hiddenValues[f.key] = base[f.key]; return; } // e.g. someone editing their own profile doesn't change their own role; a new record keeps its prefilled value
       var control, get;
       var current = base[f.key] === null || base[f.key] === undefined ? '' : base[f.key];
       if (f.ref) {
@@ -56,17 +57,16 @@ const RecordForm = (function () {
         get = function () { return control.value; };
       } else if (f.type === 'suggest') {
         // free text with tappable suggestions underneath (e.g. the disease a test was for)
-        control = el('input', 'form-input');
-        control.placeholder = f.hint || 'Type, or tap one below';
-        control.value = current;
+        var inner = el('input', 'form-input');
+        inner.placeholder = f.placeholder || 'Type, or tap one below';
+        inner.value = current;
         var chipsRow = el('div', 'suggest-chips');
         (f.suggestions() || []).forEach(function (s) {
           var chip = el('button', 'loc-chip suggest-chip', s);
           chip.type = 'button';
-          chip.addEventListener('click', function () { control.value = s; });
+          chip.addEventListener('click', function () { inner.value = s; });
           chipsRow.appendChild(chip);
         });
-        var inner = control;
         control = el('div');
         control.appendChild(inner);
         control.appendChild(chipsRow);
@@ -119,7 +119,7 @@ const RecordForm = (function () {
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       clearEl(errorBox);
-      var data = {};
+      var data = Object.assign({}, hiddenValues);
       Object.keys(getters).forEach(function (k) { data[k] = getters[k](); });
       var missing = def.fields.filter(function (f) { return f.showWhen && shown(f) && f.requiredIfShown && !data[f.key]; })[0];
       if (missing) { errorBox.appendChild(el('p', 'form-message error', missing.label + ' is required')); return; }

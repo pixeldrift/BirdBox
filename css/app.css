@@ -2057,3 +2057,14 @@ button.care-food { cursor: pointer; }
 .suggest-option:last-child { border-bottom: 0; }
 .suggest-option:hover { background: #F7EFE2; }
 .suggest-hint { font-size: 0.72rem; color: var(--muted); text-align: right; }
+
+/* Awards and results */
+.award-badge { background: #F6ECD6; color: #7A5A1C; }
+.award-more { align-self: center; font-size: 0.75rem; color: var(--muted); }
+.award-row { align-items: center; }
+.award-left { display: flex; flex-direction: column; min-width: 0; text-align: left; }
+.award-left strong { color: var(--text); font-weight: 700; }
+.award-left small { color: var(--muted); }
+.award-place { flex: 0 0 auto; font-weight: 700; color: var(--muted); text-align: right; }
+.award-place.top { color: #7A5A1C; }
+.award-star { color: #C08A00; }

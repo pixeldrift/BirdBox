@@ -164,6 +164,22 @@ const SCHEMAS = {
       intervalMonths: { col: 'interval_months', type: 'number', required: true },
     },
   },
+  // Awards and results: shows, races and trials a bird has been entered in (see sql/036_show_results.sql).
+  awards: {
+    table: 'show_results', pk: 'id', idPrefix: 'sr-', order: 'date desc nulls last',
+    fields: {
+      birdId: { col: 'bird_id', type: 'text', required: true, ref: 'bird' },
+      kind: { col: 'kind', type: 'enum', required: true, options: ['Show', 'Race', 'Trial'] },
+      event: { col: 'event', type: 'text', required: true, max: 200 },
+      date: { col: 'date', type: 'date' },
+      location: { col: 'location', type: 'text', max: 200 },
+      category: { col: 'category', type: 'text', max: 200 },
+      placement: { col: 'placement', type: 'text', max: 120 },
+      entries: { col: 'entries', type: 'number' },
+      judge: { col: 'judge', type: 'text', max: 160 },
+      notes: { col: 'notes', type: 'text', max: 2000 },
+    },
+  },
   // The app's menus: home tiles and the tabs inside them (see sql/017_navigation.sql).
   navigation: {
     table: 'navigation', pk: 'id', idPrefix: 'nav-', order: 'sort, id', customId: true,

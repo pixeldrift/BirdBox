@@ -10,7 +10,7 @@ const BirdsScreen = (function () {
 
   function renderList(main, navigate) {
     BirdsAddScreen.afterAdd = null;
-    var state = { query: '', status: [], band: [], mutation: [] }; // status: any of the statuses (or Archived); none = everything not archived
+    var state = { query: '', status: [], band: [], mutation: [], awards: [] }; // status: any of the statuses (or Archived); none = everything not archived
 
     var wrap = document.createElement('div');
     wrap.className = 'list-screen';
@@ -21,6 +21,7 @@ const BirdsScreen = (function () {
       filters: function () {
         var f = [{ key: 'status', label: 'Status', options: STATUSES.filter(function (s) { return s !== 'All'; }).concat(['Archived']).map(function (s) { return [s, s]; }) }];
         f.push({ key: 'band', label: 'Band', options: [['none', 'Needs a band']] });
+        if (AWARDS_SAMPLE.length) f.push({ key: 'awards', label: 'Awards', options: [['has', 'Has awards or results'], ['top', 'Has a first place or title']] });
         var muts = Object.keys(BIRDS_SAMPLE.reduce(function (acc, x) { if (x.mutation) acc[x.mutation] = true; return acc; }, {})).sort();
         if (muts.length) f.push({ key: 'mutation', label: 'Colour / mutation', options: muts.map(function (m) { return [m, m]; }) });
         return f;
@@ -70,6 +71,7 @@ const BirdsScreen = (function () {
         })) return false;
         if (state.band.length && b.band) return false;
         if (state.mutation.length && state.mutation.indexOf(b.mutation) === -1) return false;
+        if (state.awards.length && !state.awards.some(function (k) { var mine = awardsForBird(b.id); return k === 'has' ? mine.length > 0 : mine.some(isTopPlacement); })) return false;
         if (!q) return true;
         var hay = [b.band, b.name, b.speciesName, b.scientificName, b.species, b.subspecies, b.mutation].filter(Boolean).join(' ').toLowerCase();
         return hay.indexOf(q) !== -1;
@@ -155,6 +157,7 @@ const BirdsScreen = (function () {
 
     var sub = document.createElement('span');
     sub.className = 'list-row-sub';
+    if (awardsForBird(bird.id).some(isTopPlacement)) sub.appendChild(Object.assign(document.createElement('span'), { className: 'award-star', textContent: '★ ', title: 'Has awards' }));
     var sexWord = document.createElement('span');
     sexWord.className = sexTextClass(bird.sex);
     sexWord.textContent = bird.sex;
@@ -187,6 +190,15 @@ const BirdsScreen = (function () {
     if (id === 'import') return BirdsAddScreen.renderImport(main, navigate, setTitle);
     if (id === 'clutch') return BirdsAddScreen.renderClutch(main, navigate, setTitle);
     if (id === 'banding') return BirdsAddScreen.renderBanding(main, navigate, setTitle);
+    if (id.indexOf('award~') === 0) { // award~new~<birdId> · award~edit~<awardId>
+      var ap = id.split('~');
+      var forBird = ap[1] === 'new' ? ap[2] : (getAward(ap[2]) || {}).birdId;
+      var backTo = function () { location.hash = '#/mybirds/birds/' + (forBird || ''); };
+      return RecordForm.render(main, {
+        type: 'awards', id: ap[1] === 'edit' ? ap[2] : null, prefill: { birdId: ap[1] === 'new' ? ap[2] : '' }, hide: ['birdId'],
+        navigate: navigate, setTitle: setTitle, after: backTo, onCancel: backTo, afterDelete: backTo,
+      });
+    }
     if (id === 'transfer') return TransferScreen.renderForm(main, navigate, setTitle);
     if (id.indexOf('edit~') === 0) {
       var editTarget = getBird(id.slice(5));
@@ -224,6 +236,7 @@ const BirdsScreen = (function () {
     header.appendChild(titleWrap);
     header.appendChild(makeEditButton(function () { navigate('edit~' + bird.id); }));
     var testBadgeRow = testBadges(bird.id);
+    var awardBadgeRow = awardBadges(bird);
 
     var again = function () { renderDetail(main, id, navigate, setTitle); };
 
@@ -467,6 +480,7 @@ const BirdsScreen = (function () {
     moneySection.appendChild(moneyGrid);
 
     wrap.appendChild(header);
+    if (awardBadgeRow.firstChild) wrap.appendChild(awardBadgeRow);
     if (testBadgeRow.firstChild) wrap.appendChild(testBadgeRow);
     wrap.appendChild(BirdActions.row(bird, again));
     wrap.appendChild(buildPhotosSection(bird, function () { renderDetail(main, id, navigate, setTitle); }));
@@ -478,6 +492,7 @@ const BirdsScreen = (function () {
     wrap.appendChild(CareSection.render({ targetType: 'bird', targetId: bird.id, name: bird.name || 'this bird', refresh: again }));
     wrap.appendChild(CareSection.render({ targetType: 'bird', targetId: bird.id, name: bird.name || 'this bird', refresh: again, plan: 'cleaning' }));
     wrap.appendChild(registrySection);
+    wrap.appendChild(awardsSection(bird));
     wrap.appendChild(testHistorySection(bird));
     wrap.appendChild(healthSection);
     wrap.appendChild(transferSection);

@@ -357,3 +357,74 @@ function testHistorySection(bird) {
   section.appendChild(add);
   return section;
 }
+
+// ---- awards and results ----
+
+// A small "★ Best of Breed · Ohio National 2026" badge for each of a bird's top placements (the newest few).
+function awardBadges(bird, limit) {
+  var box = document.createElement('div');
+  box.className = 'test-badges award-badges';
+  var all = awardsForBird(bird.id);
+  var top = all.filter(isTopPlacement);
+  top.slice(0, limit || 2).forEach(function (a) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'test-badge award-badge';
+    b.textContent = '★ ' + awardLabel(a);
+    b.addEventListener('click', function () { location.hash = '#/mybirds/birds/award~edit~' + a.id; });
+    box.appendChild(b);
+  });
+  if (all.length > Math.min(top.length, limit || 2)) {
+    var more = document.createElement('span');
+    more.className = 'award-more';
+    more.textContent = all.length + (all.length === 1 ? ' result' : ' results') + ' in all';
+    box.appendChild(more);
+  }
+  return box;
+}
+
+function awardRow(a, showBird) {
+  var row = document.createElement('button');
+  row.type = 'button';
+  row.className = 'test-history-row award-row' + (isTopPlacement(a) ? ' latest' : '');
+  var left = document.createElement('span');
+  left.className = 'award-left';
+  left.appendChild(Object.assign(document.createElement('strong'), { textContent: a.event }));
+  left.appendChild(Object.assign(document.createElement('small'), { textContent: [a.kind !== 'Show' ? a.kind : '', a.date ? formatDate(a.date) : '', a.category, a.entries ? 'of ' + a.entries : '', a.location].filter(Boolean).join(' · ') }));
+  row.appendChild(left);
+  row.appendChild(Object.assign(document.createElement('span'), { className: 'award-place' + (isTopPlacement(a) ? ' top' : ''), textContent: a.placement || 'Entered' }));
+  row.addEventListener('click', function () { location.hash = '#/mybirds/birds/award~edit~' + a.id; });
+  return row;
+}
+
+// A bird's results, newest first, plus the awards of its parents and grandparents as pedigree credentials.
+function awardsSection(bird) {
+  var section = document.createElement('div');
+  section.className = 'detail-section';
+  var own = awardsForBird(bird.id);
+  section.appendChild(Object.assign(document.createElement('h3'), { textContent: 'Awards & Results' + (own.length ? ' (' + own.length + ')' : '') }));
+  if (!own.length) section.appendChild(Object.assign(document.createElement('p'), { className: 'form-note', textContent: 'No shows or races recorded for this bird yet.' }));
+  own.forEach(function (a) { section.appendChild(awardRow(a)); });
+  var add = document.createElement('button');
+  add.type = 'button';
+  add.className = 'btn-positive';
+  add.textContent = '+ Add Result';
+  add.addEventListener('click', function () { location.hash = '#/mybirds/birds/award~new~' + bird.id; });
+  section.appendChild(add);
+
+  var ped = pedigreeAwards(bird);
+  if (ped.length) {
+    section.appendChild(Object.assign(document.createElement('p'), { className: 'subsection-label', textContent: 'In the pedigree' }));
+    ped.forEach(function (p) {
+      var head = document.createElement('button');
+      head.type = 'button';
+      head.className = 'pick-link';
+      head.textContent = p.relation + ': ' + birdShortLabel(p.bird) + (p.bird.band ? ' (' + p.bird.band + ')' : '') + ' ›';
+      head.addEventListener('click', function () { location.hash = '#/mybirds/birds/' + p.bird.id; });
+      section.appendChild(head);
+      p.awards.slice(0, 4).forEach(function (a) { section.appendChild(awardRow(a)); });
+      if (p.awards.length > 4) section.appendChild(Object.assign(document.createElement('p'), { className: 'form-note', textContent: '+ ' + (p.awards.length - 4) + ' more on their page' }));
+    });
+  }
+  return section;
+}

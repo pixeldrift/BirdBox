@@ -106,6 +106,7 @@ async function cleanupAfterDelete(id) {
     ['delete from bird_transfers where bird_id = $1', [id]],
     ["delete from media_links where target_type = 'health' and target_id in (select id from health_records where bird_id = $1)", [id]],
     ['delete from health_records where bird_id = $1', [id]],
+    ['delete from show_results where bird_id = $1', [id]],
     ["delete from media_links where target_type = 'bird' and target_id = $1", [id]],
     ["delete from care_items where target_type = 'bird' and target_id = $1", [id]],
   ];
