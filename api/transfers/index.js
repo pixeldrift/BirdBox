@@ -1,6 +1,5 @@
-const { neon } = require('@neondatabase/serverless');
+const { sql, withAccount } = require('../_lib/db');
 
-const sql = neon(process.env.DATABASE_URL);
 
 const DIRECTIONS = ['Out', 'In'];
 const METHODS = ['Local pick up', 'Local meet', 'Delivery', 'Shipped'];
@@ -68,7 +67,7 @@ async function setOwnership(req, res) {
   }
 }
 
-module.exports = async function handler(req, res) {
+module.exports = withAccount(async function handler(req, res) {
   if (req.method === 'POST' && req.query && req.query.action === 'ownership') {
     await setOwnership(req, res);
     return;
@@ -115,4 +114,4 @@ module.exports = async function handler(req, res) {
   }
 
   res.status(405).json({ error: 'Method not allowed' });
-};
+});

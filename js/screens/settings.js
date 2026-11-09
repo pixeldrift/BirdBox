@@ -66,6 +66,43 @@ const SettingsScreen = (function () {
     return b;
   }
 
+  // Your account: who's signed in, and the sample data (a copy of the demo aviary you can look around in, and clear out
+  // again without touching anything you've added).
+  function accountCard(main) {
+    var section = sectionEl('Your account');
+    var body = document.createElement('div');
+    section.appendChild(body);
+    function post(action) {
+      return fetch('/api/account', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: action }) })
+        .then(function (res) { return res.json().then(function (d) { if (!res.ok) throw new Error(d.error || 'That didn’t work'); return d; }); });
+    }
+    function reloadApp() { location.reload(); }
+    function draw(p) {
+      clearEl(body);
+      if (!p) { body.appendChild(noteEl('Account details aren’t available right now.')); return; }
+      var facts = document.createElement('div');
+      facts.className = 'fact-grid';
+      if (Auth.enabled) {
+        if (p.me && p.me.name) facts.appendChild(factRow('Signed in as', p.me.name + (p.me.role ? ' · ' + p.me.role : '')));
+        if (Auth.email()) facts.appendChild(factRow('Email', Auth.email()));
+      }
+      facts.appendChild(factRow('Aviary', p.account.name));
+      section.insertBefore(facts, body);
+      body.appendChild(noteEl(p.demo.loaded
+        ? 'The sample aviary is loaded — a made-up flock, places, supplies and records to explore. Remove it when you’re ready to start with your own; anything you’ve added yourself stays.'
+        : 'Want something to look around in? Load a made-up sample aviary — you can remove it again any time.'));
+      var btn = button(p.demo.loaded ? 'add-record-btn danger-btn' : 'btn-positive', p.demo.loaded ? 'Remove sample data' : 'Load sample data', function () {
+        function go() { btn.disabled = true; post(p.demo.loaded ? 'remove-demo' : 'load-demo').then(reloadApp).catch(function (err) { btn.disabled = false; Modal.alert(err.message, 'Couldn’t do that'); }); }
+        if (p.demo.loaded) Modal.confirm({ title: 'Remove the sample data?', message: 'This deletes only the made-up sample records. Anything you added yourself stays.', confirmLabel: 'Remove', danger: true, onConfirm: go });
+        else go();
+      });
+      body.appendChild(btn);
+      if (Auth.enabled) body.appendChild(button('add-record-btn', 'Sign out', function () { Auth.signOut(); }));
+    }
+    Auth.refresh().then(draw).catch(function () { draw(null); });
+    return section;
+  }
+
   // My Aviary: the name, optional public details, and logo and photos, all in one place.
   function aviaryCard(main) {
     var section = sectionEl('My Aviary');
@@ -131,6 +168,7 @@ const SettingsScreen = (function () {
 
     var wrap = document.createElement('div');
     wrap.className = 'list-screen';
+    wrap.appendChild(accountCard(main));
     wrap.appendChild(aviaryCard(main));
     wrap.appendChild(ProfileUI.card(function () { renderList(main); }, '#/account/settings/edit~me'));
     wrap.appendChild(testRemindersCard(main));

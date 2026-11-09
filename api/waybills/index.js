@@ -1,6 +1,5 @@
-const { neon } = require('@neondatabase/serverless');
+const { sql, withAccount } = require('../_lib/db');
 
-const sql = neon(process.env.DATABASE_URL);
 
 const DIRECTIONS = ['Outgoing', 'Incoming'];
 const STATUSES = ['Pending', 'Complete'];
@@ -80,7 +79,7 @@ function cleanNewWaybill(input) {
   };
 }
 
-module.exports = async function handler(req, res) {
+module.exports = withAccount(async function handler(req, res) {
   if (req.method === 'GET') {
     try {
       const rows = await sql`select * from waybills order by date desc nulls last, id`;
@@ -184,4 +183,4 @@ module.exports = async function handler(req, res) {
   }
 
   res.status(405).json({ error: 'Method not allowed' });
-};
+});

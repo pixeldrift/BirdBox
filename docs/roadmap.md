@@ -426,3 +426,9 @@ placements show as ★ badges; the Birds filter has "Has awards" and "Has a firs
 pigeons, exotics, dogs and cats alike). Photos can be linked to any result (`sql/037_award_photos.sql`); shows, results, vaccinations, tests and retest due dates all appear on the Calendar (layers: Shows & awards, Health, Retests due; new event kinds Show and Vet appointment). To do: APA class
 suggestions for the category box, award badges in the family tree, a championship-points tally, show dates on the Calendar with
 "prepare birds" tasks, and show results in sale listings.
+
+### Accounts (groundwork built — see docs/accounts.md)
+Data is separated per account in the database (row-level security), logins plug in through one hook (`js/auth-config.js`, Neon Auth /
+Stack Auth), new accounts start with a sample aviary that can be removed or reloaded. To do: wire the sign-in screen and set the
+environment variables; **invite team members** (email → their own login, same account) and **permissions by role**; billing/plan
+limits if ever needed; account deletion and data export.

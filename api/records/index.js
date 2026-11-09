@@ -1,8 +1,7 @@
-const { neon } = require('@neondatabase/serverless');
+const { sql, withAccount } = require('../_lib/db');
 const { SCHEMAS } = require('../_lib/schemas');
 const { normalizePhone } = require('../_lib/phone');
 
-const sql = neon(process.env.DATABASE_URL);
 
 // One endpoint for contacts, transactions, health records and buildings (the type comes from
 // ?type=). It exists so these share code — and so adding more record types doesn't use up the
@@ -140,11 +139,11 @@ async function syncTeamContact(userId) {
     const name = (u.first_name + ' ' + u.last_name).trim();
     await sql`insert into contacts (id, name, type, email, phone, user_id)
               values (${'c-' + userId}, ${name}, 'Team', ${u.email}, ${u.phone}, ${userId})
-              on conflict (id) do update set name = ${name}, email = ${u.email}, phone = ${u.phone}, user_id = ${userId}`;
+              on conflict (account_id, id) do update set name = ${name}, email = ${u.email}, phone = ${u.phone}, user_id = ${userId}`;
   } catch (err) { /* contacts.user_id not added yet (sql/019_users.sql) */ }
 }
 
-module.exports = async function handler(req, res) {
+module.exports = withAccount(async function handler(req, res) {
   const query = req.query || {};
   const type = String(query.type || '');
   const schema = SCHEMAS[type];
@@ -222,4 +221,4 @@ module.exports = async function handler(req, res) {
     const behind = err && (err.code === '42703' || err.code === '42P01');
     res.status(500).json({ error: behind ? 'The database needs its latest update for this — run the newest SQL file (see the sql folder).' : 'Could not handle that record' });
   }
-};
+});

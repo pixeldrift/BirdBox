@@ -1,7 +1,6 @@
-const { neon } = require('@neondatabase/serverless');
+const { sql, withAccount } = require('../_lib/db');
 const { WITH_SPECIES, toBird, text, money, bandKey, newBirdId } = require('../_lib/birds');
 
-const sql = neon(process.env.DATABASE_URL);
 
 const SEXES = ['Male', 'Female', 'Unsexed'];
 const STATUSES = ['Available', 'Reserved', 'Sold', 'Deceased'];
@@ -41,7 +40,7 @@ function cleanNewBird(input) {
   };
 }
 
-module.exports = async function handler(req, res) {
+module.exports = withAccount(async function handler(req, res) {
   if (req.method === 'GET') {
     try {
       let rows;
@@ -115,4 +114,4 @@ module.exports = async function handler(req, res) {
   }
 
   res.status(405).json({ error: 'Method not allowed' });
-};
+});

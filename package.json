@@ -3,7 +3,9 @@
   "private": true,
   "version": "1.0.0",
   "dependencies": {
-    "@neondatabase/serverless": "^0.10.4"
+    "@neondatabase/serverless": "^0.10.4",
+    "jose": "^5.10.0",
+    "ws": "^8.22.2"
   },
   "scripts": {
     "seed:species": "node scripts/seed-species.js",

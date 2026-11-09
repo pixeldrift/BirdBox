@@ -1,6 +1,6 @@
-const { neon } = require('@neondatabase/serverless');
+const { sql, withAccount, account } = require('../_lib/db');
+const signing = require('../_lib/signing');
 
-const sql = neon(process.env.DATABASE_URL);
 
 // Records a file can be linked to (table names come from here, never from the request).
 const TARGETS = { bird: 'birds', health: 'health_records', waybill: 'waybills', transaction: 'transactions', contact: 'contacts', aviary: 'aviary', location: 'locations', building: 'buildings', room: 'rooms', cage: 'cages', supply: 'supplies', award: 'show_results' };
@@ -16,7 +16,7 @@ function allowedType(type, contentType) {
 function toMedia(m, links) {
   return {
     id: m.id, type: m.type, filename: m.filename, title: m.title, contentType: m.content_type,
-    size: m.size, createdAt: m.created_at, url: '/api/media?id=' + encodeURIComponent(m.id),
+    size: m.size, createdAt: m.created_at, url: '/api/media?id=' + encodeURIComponent(m.id) + signing.signature(account(), m.id),
     links: (links || []).map((l) => ({ targetType: l.target_type, targetId: l.target_id, isPrimary: l.is_primary, at: l.created_at })),
   };
 }
@@ -43,7 +43,7 @@ async function ensureMainPhoto(targetType, targetId) {
 }
 const HAS_MAIN_PHOTO = ['bird', 'aviary', 'location', 'building', 'room', 'cage', 'supply', 'contact', 'waybill', 'award'];
 
-module.exports = async function handler(req, res) {
+module.exports = withAccount(async function handler(req, res) {
   const query = req.query || {};
   try {
     if (req.method === 'GET') {
@@ -156,4 +156,4 @@ module.exports = async function handler(req, res) {
   } catch (err) {
     res.status(500).json({ error: 'Could not handle that file' });
   }
-};
+}, { signed: signing.accountFromRequest });

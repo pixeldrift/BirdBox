@@ -1,8 +1,7 @@
-const { neon } = require('@neondatabase/serverless');
+const { sql, withAccount } = require('../_lib/db');
 const { normalize, toSpecies } = require('../_lib/species');
 const { expand } = require('../_lib/dictionary');
 
-const sql = neon(process.env.DATABASE_URL);
 
 const NAMES = `
   select code, common_name as name from species
@@ -15,7 +14,7 @@ const NAMES = `
 //   ambiguous  several species share it (e.g. "Eclectus Parrot"); candidates listed
 //   close      no exact match, but a near spelling exists; suggested, never auto-accepted
 //   none       nothing close
-module.exports = async function handler(req, res) {
+module.exports = withAccount(async function handler(req, res) {
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed' });
     return;
@@ -73,4 +72,4 @@ module.exports = async function handler(req, res) {
   } catch (err) {
     res.status(500).json({ error: 'Failed to look up species' });
   }
-};
+}, { public: true });
