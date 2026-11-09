@@ -3,9 +3,9 @@
 // see its agenda. Events link to the records they're about (birds, shipments, contacts, cages); a shipment expands
 // to show its client and birds. Routes: <eventId> · new · edit~<eventId>
 const CalendarScreen = (function () {
-  var state = { view: 'month', day: todayISO(), layers: { events: true, tasks: true, shipments: true, health: true }, prefillDate: '' };
+  var state = { view: 'month', day: todayISO(), layers: { events: true, tasks: true, shipments: true, health: true, awards: true, due: true }, prefillDate: '' };
   var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-  var LAYER_LABELS = { events: 'Events', tasks: 'Tasks', shipments: 'Shipments', health: 'Health' };
+  var LAYER_LABELS = { events: 'Events', tasks: 'Tasks', shipments: 'Shipments', health: 'Health', awards: 'Shows & awards', due: 'Retests due' };
 
   function el(tag, cls, text) {
     var e = document.createElement(tag);

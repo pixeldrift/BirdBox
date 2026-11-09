@@ -111,7 +111,7 @@ const SCHEMAS = {
     table: 'events', pk: 'id', idPrefix: 'ev-', order: 'start_date, start_time',
     fields: {
       title: { col: 'title', type: 'text', required: true, max: 160 },
-      kind: { col: 'kind', type: 'enum', required: true, options: ['Appointment', 'Meetup', 'Tour', 'Call', 'Other'] },
+      kind: { col: 'kind', type: 'enum', required: true, options: ['Appointment', 'Vet appointment', 'Show', 'Meetup', 'Tour', 'Call', 'Other'] },
       notes: { col: 'notes', type: 'text', max: 2000 },
       place: { col: 'place', type: 'text', max: 200 },
       startDate: { col: 'start_date', type: 'date', required: true },

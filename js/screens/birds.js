@@ -180,6 +180,55 @@ const BirdsScreen = (function () {
     return row;
   }
 
+  // One award or result: what it was, the photos (ribbon, score card, the bird on the table…), and notes.
+  function renderAward(main, awardId, navigate, setTitle) {
+    clearEl(main);
+    var a = getAward(awardId);
+    if (!a) { main.appendChild(Object.assign(document.createElement('p'), { textContent: 'That result wasn’t found.' })); return; }
+    var bird = getBird(a.birdId);
+    setTitle(a.event);
+    var again = function () { renderAward(main, awardId, navigate, setTitle); };
+    var wrap = document.createElement('div');
+    wrap.className = 'detail-screen';
+
+    var header = document.createElement('div');
+    header.className = 'detail-header';
+    var av = document.createElement('div');
+    av.className = 'detail-avatar';
+    var main0 = mediaMainPhotoUrl('award', a.id);
+    fillThumb(av, main0 ? { src: main0 } : { text: '★' });
+    var tw = document.createElement('div');
+    tw.className = 'detail-title';
+    tw.appendChild(Object.assign(document.createElement('h2'), { textContent: a.event }));
+    tw.appendChild(Object.assign(document.createElement('span'), { className: 'type-badge ' + (isTopPlacement(a) ? 'result-inconclusive' : 'type-breeder'), textContent: a.placement || 'Entered' }));
+    header.appendChild(av);
+    header.appendChild(tw);
+    header.appendChild(makeEditButton(function () { navigate('award~edit~' + a.id); }));
+    wrap.appendChild(header);
+
+    var facts = document.createElement('div');
+    facts.className = 'fact-grid';
+    [['Kind', a.kind], ['Date', a.date ? formatDate(a.date) : ''], ['Location', a.location], ['Class / category', a.category], ['Entries', a.entries ? String(a.entries) : ''], ['Judge', a.judge]].forEach(function (f) { if (f[1]) facts.appendChild(factRow(f[0], f[1])); });
+    wrap.appendChild(facts);
+
+    if (bird) {
+      var who = document.createElement('div');
+      who.className = 'detail-section';
+      who.appendChild(Object.assign(document.createElement('h3'), { textContent: 'Bird' }));
+      who.appendChild(birdChip(bird, function () { navigate(bird.id); }));
+      wrap.appendChild(who);
+    }
+    wrap.appendChild(PhotosSection.render({ ownerType: 'award', ownerId: a.id, name: 'this result', photos: mediaPhotos('award', a.id), refresh: again }));
+    if (a.notes) {
+      var notes = document.createElement('div');
+      notes.className = 'detail-section';
+      notes.appendChild(Object.assign(document.createElement('h3'), { textContent: 'Notes' }));
+      notes.appendChild(Object.assign(document.createElement('p'), { className: 'notes-text', textContent: a.notes }));
+      wrap.appendChild(notes);
+    }
+    main.appendChild(wrap);
+  }
+
   function renderDetail(main, id, navigate, setTitle) {
     // Cleared here (not just by the router) because this also gets called directly as a
     // "refresh myself" callback (Registry toggle, photo upload/primary switch) — without
@@ -190,13 +239,16 @@ const BirdsScreen = (function () {
     if (id === 'import') return BirdsAddScreen.renderImport(main, navigate, setTitle);
     if (id === 'clutch') return BirdsAddScreen.renderClutch(main, navigate, setTitle);
     if (id === 'banding') return BirdsAddScreen.renderBanding(main, navigate, setTitle);
+    if (id.indexOf('award~') === 0 && id.split('~').length === 2) return renderAward(main, id.slice(6), navigate, setTitle); // award~<awardId>
     if (id.indexOf('award~') === 0) { // award~new~<birdId> · award~edit~<awardId>
       var ap = id.split('~');
       var forBird = ap[1] === 'new' ? ap[2] : (getAward(ap[2]) || {}).birdId;
-      var backTo = function () { location.hash = '#/mybirds/birds/' + (forBird || ''); };
+      var backToBird = function () { location.hash = '#/mybirds/birds/' + (forBird || ''); };
       return RecordForm.render(main, {
         type: 'awards', id: ap[1] === 'edit' ? ap[2] : null, prefill: { birdId: ap[1] === 'new' ? ap[2] : '' }, hide: ['birdId'],
-        navigate: navigate, setTitle: setTitle, after: backTo, onCancel: backTo, afterDelete: backTo,
+        navigate: navigate, setTitle: setTitle,
+        after: function (savedId) { location.hash = '#/mybirds/birds/award~' + savedId; },
+        onCancel: ap[1] === 'edit' ? function () { location.hash = '#/mybirds/birds/award~' + ap[2]; } : backToBird, afterDelete: backToBird,
       });
     }
     if (id === 'transfer') return TransferScreen.renderForm(main, navigate, setTitle);

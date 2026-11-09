@@ -2068,3 +2068,6 @@ button.care-food { cursor: pointer; }
 .award-place { flex: 0 0 auto; font-weight: 700; color: var(--muted); text-align: right; }
 .award-place.top { color: #7A5A1C; }
 .award-star { color: #C08A00; }
+
+.cal-dot-award { background: #C08A00; } .cal-dot-due { background: #8A6FB0; }
+.cal-award .cal-bar { background: #C08A00; } .cal-due .cal-bar { background: #8A6FB0; }

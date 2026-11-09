@@ -423,6 +423,6 @@ and the same lists for ducks, geese, turkeys, guinea fowl, quail and pigeons (ad
 Shows, races and trials per bird (`js/data/awards.js`): event, date, location, class / category, placement, number of entries,
 judge, notes. A bird's page lists its results and the awards of its parents and grandparents as **pedigree credentials**; top
 placements show as ★ badges; the Birds filter has "Has awards" and "Has a first place or title". Species-agnostic (chickens,
-pigeons, exotics, dogs and cats alike). To do: photos of ribbons / score cards (needs award as a media link target), APA class
+pigeons, exotics, dogs and cats alike). Photos can be linked to any result (`sql/037_award_photos.sql`); shows, results, vaccinations, tests and retest due dates all appear on the Calendar (layers: Shows & awards, Health, Retests due; new event kinds Show and Vet appointment). To do: APA class
 suggestions for the category box, award badges in the family tree, a championship-points tally, show dates on the Calendar with
 "prepare birds" tasks, and show results in sale listings.

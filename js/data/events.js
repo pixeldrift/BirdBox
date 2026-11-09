@@ -4,7 +4,7 @@
 var EVENTS_SAMPLE = [];
 var EVENT_LINKS_SAMPLE = [];
 
-var EVENT_KINDS = ['Appointment', 'Meetup', 'Tour', 'Call', 'Other'];
+var EVENT_KINDS = ['Appointment', 'Vet appointment', 'Show', 'Meetup', 'Tour', 'Call', 'Other'];
 
 var eventsLoaded = Promise.all([loadTaskList('events', EVENTS_SAMPLE), loadTaskList('eventlinks', EVENT_LINKS_SAMPLE)]);
 
@@ -44,9 +44,9 @@ function eventLinkTargets(eventId) {
 }
 
 // Everything on the calendar between two days (inclusive): [{ kind, date, title, sub, time, done, hash, ref }].
-// layers: { events, tasks, shipments, health } (omitted = all on).
+// layers: { events, tasks, shipments, health, awards, due } (omitted = all on).
 function calendarItems(fromISO, toISO, layers) {
-  var on = layers || { events: true, tasks: true, shipments: true, health: true };
+  var on = layers || { events: true, tasks: true, shipments: true, health: true, awards: true, due: true };
   var out = [];
   if (on.events) {
     EVENTS_SAMPLE.forEach(function (e) {
@@ -81,7 +81,30 @@ function calendarItems(fromISO, toISO, layers) {
       var d = r.date ? String(r.date).slice(0, 10) : '';
       if (!d || d < fromISO || d > toISO) return;
       var b = getBird(r.birdId);
-      out.push({ kind: 'health', date: d, title: r.type + (b ? ' · ' + (b.name || b.band || 'bird') : ''), sub: r.provider || '', time: '11:00', hash: '#/mybirds/health/' + r.id, ref: r });
+      var who = b ? ' · ' + (b.name || b.band || 'bird') : '';
+      var title = r.type === 'Disease Test' ? (r.disease || 'Disease') + ' test' + who : r.type === 'Immunization' ? 'Vaccination' + who : r.type === 'Vet Visit' ? 'Vet visit' + who : r.type + who;
+      var sub = r.type === 'Disease Test' ? [r.result, r.provider].filter(Boolean).join(' · ') : [r.type === 'Immunization' ? r.notes : '', r.provider].filter(Boolean).join(' · ');
+      out.push({ kind: 'health', date: d, title: title, sub: sub, time: '11:00', hash: '#/mybirds/health/' + r.id, ref: r });
+    });
+  }
+  if (on.awards) { // shows and races a bird has results for
+    AWARDS_SAMPLE.forEach(function (a) {
+      var d = a.date ? String(a.date).slice(0, 10) : '';
+      if (!d || d < fromISO || d > toISO) return;
+      var b = getBird(a.birdId);
+      out.push({ kind: 'award', date: d, title: (isTopPlacement(a) ? '★ ' : '') + (a.placement || 'Entered') + ' · ' + a.event + (b ? ' · ' + (b.name || b.band || 'bird') : ''),
+        sub: [a.kind !== 'Show' ? a.kind : '', a.category, a.entries ? 'of ' + a.entries : ''].filter(Boolean).join(' · '), time: '12:00', hash: '#/mybirds/birds/award~' + a.id, ref: a });
+    });
+  }
+  if (on.due) { // when each disease test comes round again
+    BIRDS_SAMPLE.forEach(function (bird) {
+      if (birdIsArchived(bird)) return;
+      latestTests(bird.id).forEach(function (g) {
+        var st = testStatus(g.latest);
+        if (!st.due || st.due < fromISO || st.due > toISO) return;
+        out.push({ kind: 'due', date: st.due, title: 'Retest due: ' + g.disease + ' · ' + (bird.name || bird.band || 'bird'), sub: 'Last tested ' + formatDate(g.latest.date) + (g.latest.result ? ' · ' + g.latest.result : ''),
+          time: '09:00', hash: '#/mybirds/birds/' + bird.id, ref: g.latest });
+      });
     });
   }
   out.sort(function (a, b) { return a.date.localeCompare(b.date) || a.time.localeCompare(b.time); });

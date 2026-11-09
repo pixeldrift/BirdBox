@@ -217,11 +217,12 @@ function deleteBird(id) {
       });
       var gone = HEALTH_RECORDS_SAMPLE.filter(function (r) { return r.birdId === id; }).map(function (r) { return r.id; });
       for (var j = HEALTH_RECORDS_SAMPLE.length - 1; j >= 0; j--) if (HEALTH_RECORDS_SAMPLE[j].birdId === id) HEALTH_RECORDS_SAMPLE.splice(j, 1);
+      var goneAwards = typeof AWARDS_SAMPLE !== 'undefined' ? AWARDS_SAMPLE.filter(function (x) { return x.birdId === id; }).map(function (x) { return x.id; }) : [];
       if (typeof AWARDS_SAMPLE !== 'undefined') for (var a = AWARDS_SAMPLE.length - 1; a >= 0; a--) if (AWARDS_SAMPLE[a].birdId === id) AWARDS_SAMPLE.splice(a, 1);
       for (var k = TRANSFERS_SAMPLE.length - 1; k >= 0; k--) if (TRANSFERS_SAMPLE[k].birdId === id) TRANSFERS_SAMPLE.splice(k, 1);
       MEDIA.forEach(function (m) {
         m.links = m.links.filter(function (l) {
-          return !((l.targetType === 'bird' && l.targetId === id) || (l.targetType === 'health' && gone.indexOf(l.targetId) !== -1));
+          return !((l.targetType === 'bird' && l.targetId === id) || (l.targetType === 'health' && gone.indexOf(l.targetId) !== -1) || (l.targetType === 'award' && goneAwards.indexOf(l.targetId) !== -1));
         });
       });
       reindexBirds();

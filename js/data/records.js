@@ -76,7 +76,7 @@ function deleteRecord(type, id) {
     if (type === 'buildings') { CAGES_SAMPLE.forEach(function (c) { if (c.buildingCode === id) c.buildingCode = null; }); ROOMS_SAMPLE.forEach(function (r) { if (r.buildingCode === id) r.buildingCode = null; }); }
     if (type === 'locations') { BUILDINGS_SAMPLE.forEach(function (b) { if (b.locationId === id) b.locationId = null; }); ROOMS_SAMPLE.forEach(function (r) { if (r.locationId === id) r.locationId = null; }); }
     MEDIA.forEach(function (m) {
-      var target = { contacts: 'contact', transactions: 'transaction', health: 'health', locations: 'location', buildings: 'building', rooms: 'room', cages: 'cage', supplies: 'supply' }[type];
+      var target = { contacts: 'contact', transactions: 'transaction', health: 'health', locations: 'location', buildings: 'building', rooms: 'room', cages: 'cage', supplies: 'supply', awards: 'award' }[type];
       if (target) m.links = m.links.filter(function (l) { return !(l.targetType === target && l.targetId === id); });
     });
     afterRecordsChange(type);

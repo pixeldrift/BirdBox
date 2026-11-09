@@ -371,7 +371,7 @@ function awardBadges(bird, limit) {
     b.type = 'button';
     b.className = 'test-badge award-badge';
     b.textContent = '★ ' + awardLabel(a);
-    b.addEventListener('click', function () { location.hash = '#/mybirds/birds/award~edit~' + a.id; });
+    b.addEventListener('click', function () { location.hash = '#/mybirds/birds/award~' + a.id; });
     box.appendChild(b);
   });
   if (all.length > Math.min(top.length, limit || 2)) {
@@ -390,10 +390,10 @@ function awardRow(a, showBird) {
   var left = document.createElement('span');
   left.className = 'award-left';
   left.appendChild(Object.assign(document.createElement('strong'), { textContent: a.event }));
-  left.appendChild(Object.assign(document.createElement('small'), { textContent: [a.kind !== 'Show' ? a.kind : '', a.date ? formatDate(a.date) : '', a.category, a.entries ? 'of ' + a.entries : '', a.location].filter(Boolean).join(' · ') }));
+  left.appendChild(Object.assign(document.createElement('small'), { textContent: [a.kind !== 'Show' ? a.kind : '', a.date ? formatDate(a.date) : '', a.category, a.entries ? 'of ' + a.entries : '', a.location, mediaPhotos('award', a.id).length ? '📷 ' + mediaPhotos('award', a.id).length : ''].filter(Boolean).join(' · ') }));
   row.appendChild(left);
   row.appendChild(Object.assign(document.createElement('span'), { className: 'award-place' + (isTopPlacement(a) ? ' top' : ''), textContent: a.placement || 'Entered' }));
-  row.addEventListener('click', function () { location.hash = '#/mybirds/birds/award~edit~' + a.id; });
+  row.addEventListener('click', function () { location.hash = '#/mybirds/birds/award~' + a.id; });
   return row;
 }
 
