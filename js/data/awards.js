@@ -20,6 +20,20 @@ function awardsForBird(birdId) {
     .sort(function (a, b) { return String(b.date || '').localeCompare(String(a.date || '')); });
 }
 
+// Did it actually win something? (A placing, a best-of or a title — not just being entered.)
+function isAwardWon(a) {
+  return !!(a.placement && !/^(participat|entered|dnp|nq)/i.test(a.placement));
+}
+
+// The same show shows up under slightly different typing; compare names without case or stray spaces.
+function normShow(name) { return String(name || '').trim().toLowerCase().replace(/\s+/g, ' '); }
+
+// The awards from one show on one day (every bird that was entered).
+function awardsAtShow(name, dateISO) {
+  var key = normShow(name), d = String(dateISO).slice(0, 10);
+  return AWARDS_SAMPLE.filter(function (a) { return normShow(a.event) === key && String(a.date || '').slice(0, 10) === d; });
+}
+
 // A result that's worth a badge: first place, a best-of, a champion.
 function isTopPlacement(a) {
   return /^(1st|first)\b|best|champion/i.test(a.placement || '');

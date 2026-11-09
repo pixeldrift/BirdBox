@@ -43,6 +43,24 @@ function eventLinkTargets(eventId) {
   }).filter(Boolean);
 }
 
+// Every day an event covers: ['2026-11-07', '2026-11-08'].
+function eventDayList(e) {
+  var out = [], start = String(e.startDate).slice(0, 10), end = e.endDate ? String(e.endDate).slice(0, 10) : start;
+  for (var d = start; d <= end && out.length < 60; d = addDaysISO(d, 1)) out.push(d);
+  return out;
+}
+
+// A link to a grouped calendar page (one show, one vet visit, one retest day): #/aviary/calendar/g~<type>~<date>~<key>.
+function calendarGroupHash(type, date, key) {
+  return '#/aviary/calendar/g~' + type + '~' + date + '~' + encodeURIComponent(key).replace(/~/g, '%7E');
+}
+
+// The Show-kind event (if any) that a show's results belong to: same name, and the show day falls within it.
+function showEventFor(name, dateISO) {
+  var key = normShow(name);
+  return EVENTS_SAMPLE.filter(function (e) { return e.kind === 'Show' && normShow(e.title) === key && eventOnDay(e, dateISO); })[0] || null;
+}
+
 // Everything on the calendar between two days (inclusive): [{ kind, date, title, sub, time, done, hash, ref }].
 // layers: { events, tasks, shipments, health, awards, due } (omitted = all on).
 function calendarItems(fromISO, toISO, layers) {
@@ -53,7 +71,8 @@ function calendarItems(fromISO, toISO, layers) {
       for (var d = fromISO; d <= toISO; d = addDaysISO(d, 1)) {
         if (!eventOnDay(e, d)) continue;
         var c = e.contactId ? getContact(e.contactId) : null;
-        out.push({ kind: 'event', date: d, title: e.title, sub: [e.kind, eventTimeText(e), c ? c.name : '', e.place].filter(Boolean).join(' · '),
+        var won = e.kind === 'Show' ? awardsAtShow(e.title, d).filter(isAwardWon).length : 0;
+        out.push({ kind: 'event', date: d, title: e.title, trophy: won > 0, sub: [e.kind, eventTimeText(e), c ? c.name : '', e.place].filter(Boolean).join(' · '),
           time: e.allDay ? '00:00' : e.startTime || '99:99', hash: '#/aviary/calendar/' + e.id, ref: e });
       }
     });
@@ -76,35 +95,63 @@ function calendarItems(fromISO, toISO, layers) {
         time: '10:00', hash: '#/business/shipping/' + w.id, ref: w });
     });
   }
-  if (on.health) {
+  if (on.health) { // one item per clinic per day; open it to see which birds and what was done
+    var visits = {};
     HEALTH_RECORDS_SAMPLE.forEach(function (r) {
       var d = r.date ? String(r.date).slice(0, 10) : '';
       if (!d || d < fromISO || d > toISO) return;
-      var b = getBird(r.birdId);
-      var who = b ? ' · ' + (b.name || b.band || 'bird') : '';
-      var title = r.type === 'Disease Test' ? (r.disease || 'Disease') + ' test' + who : r.type === 'Immunization' ? 'Vaccination' + who : r.type === 'Vet Visit' ? 'Vet visit' + who : r.type + who;
-      var sub = r.type === 'Disease Test' ? [r.result, r.provider].filter(Boolean).join(' · ') : [r.type === 'Immunization' ? r.notes : '', r.provider].filter(Boolean).join(' · ');
-      out.push({ kind: 'health', date: d, title: title, sub: sub, time: '11:00', hash: '#/mybirds/health/' + r.id, ref: r });
+      var who = (r.provider || '').trim();
+      var key = d + '|' + who.toLowerCase();
+      (visits[key] = visits[key] || { date: d, provider: who, records: [] }).records.push(r);
+    });
+    Object.keys(visits).forEach(function (k) {
+      var v = visits[k];
+      var birds = {};
+      v.records.forEach(function (r) { birds[r.birdId] = true; });
+      var did = [];
+      v.records.forEach(function (r) {
+        var what = r.type === 'Disease Test' ? (r.disease || 'Disease') + ' test' : r.type === 'Immunization' ? 'Vaccination' : r.type;
+        if (did.indexOf(what) === -1) did.push(what);
+      });
+      var n = Object.keys(birds).length;
+      out.push({ kind: 'health', date: v.date, title: v.provider || 'Health records', sub: n + (n === 1 ? ' bird' : ' birds') + ' · ' + did.join(', '), time: '11:00',
+        hash: calendarGroupHash('visit', v.date, v.provider.toLowerCase()), ref: v });
     });
   }
-  if (on.awards) { // shows and races a bird has results for
+  if (on.awards) { // one item per show; a trophy if anything was won
+    var shows = {};
     AWARDS_SAMPLE.forEach(function (a) {
       var d = a.date ? String(a.date).slice(0, 10) : '';
       if (!d || d < fromISO || d > toISO) return;
-      var b = getBird(a.birdId);
-      out.push({ kind: 'award', date: d, title: (isTopPlacement(a) ? '★ ' : '') + (a.placement || 'Entered') + ' · ' + a.event + (b ? ' · ' + (b.name || b.band || 'bird') : ''),
-        sub: [a.kind !== 'Show' ? a.kind : '', a.category, a.entries ? 'of ' + a.entries : ''].filter(Boolean).join(' · '), time: '12:00', hash: '#/mybirds/birds/award~' + a.id, ref: a });
+      if (on.events && showEventFor(a.event, d)) return; // already on the calendar as that Show event
+      var key = d + '|' + normShow(a.event);
+      (shows[key] = shows[key] || { date: d, name: a.event, awards: [] }).awards.push(a);
+    });
+    Object.keys(shows).forEach(function (k) {
+      var g = shows[k];
+      var won = g.awards.filter(isAwardWon).length;
+      var birds = {};
+      g.awards.forEach(function (a) { birds[a.birdId] = true; });
+      var n = Object.keys(birds).length;
+      out.push({ kind: 'award', date: g.date, title: g.name, trophy: won > 0, sub: n + (n === 1 ? ' bird' : ' birds') + ' entered' + (won ? ' · ' + won + (won === 1 ? ' award' : ' awards') : ''), time: '12:00',
+        hash: calendarGroupHash('show', g.date, normShow(g.name)), ref: g });
     });
   }
-  if (on.due) { // when each disease test comes round again
+  if (on.due) { // when each disease test comes round again — one item per disease per day
+    var dues = {};
     BIRDS_SAMPLE.forEach(function (bird) {
       if (birdIsArchived(bird)) return;
       latestTests(bird.id).forEach(function (g) {
         var st = testStatus(g.latest);
         if (!st.due || st.due < fromISO || st.due > toISO) return;
-        out.push({ kind: 'due', date: st.due, title: 'Retest due: ' + g.disease + ' · ' + (bird.name || bird.band || 'bird'), sub: 'Last tested ' + formatDate(g.latest.date) + (g.latest.result ? ' · ' + g.latest.result : ''),
-          time: '09:00', hash: '#/mybirds/birds/' + bird.id, ref: g.latest });
+        var key = st.due + '|' + g.disease;
+        (dues[key] = dues[key] || { date: st.due, disease: g.disease, birds: [] }).birds.push({ bird: bird, test: g.latest });
       });
+    });
+    Object.keys(dues).forEach(function (k) {
+      var g = dues[k];
+      out.push({ kind: 'due', date: g.date, title: 'Retest due: ' + g.disease, sub: g.birds.length + (g.birds.length === 1 ? ' bird' : ' birds') + ' · ' + g.birds.slice(0, 3).map(function (x) { return x.bird.name || x.bird.band || 'bird'; }).join(', ') + (g.birds.length > 3 ? '…' : ''),
+        time: '09:00', hash: calendarGroupHash('due', g.date, g.disease), ref: g });
     });
   }
   out.sort(function (a, b) { return a.date.localeCompare(b.date) || a.time.localeCompare(b.time); });

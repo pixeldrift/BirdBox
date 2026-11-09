@@ -383,14 +383,15 @@ function awardBadges(bird, limit) {
   return box;
 }
 
-function awardRow(a, showBird) {
+// noEvent: on a show's own page the show name is already the heading, so lead with the class instead.
+function awardRow(a, noEvent) {
   var row = document.createElement('button');
   row.type = 'button';
   row.className = 'test-history-row award-row' + (isTopPlacement(a) ? ' latest' : '');
   var left = document.createElement('span');
   left.className = 'award-left';
-  left.appendChild(Object.assign(document.createElement('strong'), { textContent: a.event }));
-  left.appendChild(Object.assign(document.createElement('small'), { textContent: [a.kind !== 'Show' ? a.kind : '', a.date ? formatDate(a.date) : '', a.category, a.entries ? 'of ' + a.entries : '', a.location, mediaPhotos('award', a.id).length ? '📷 ' + mediaPhotos('award', a.id).length : ''].filter(Boolean).join(' · ') }));
+  left.appendChild(Object.assign(document.createElement('strong'), { textContent: noEvent ? (a.category || 'Entered') : a.event }));
+  left.appendChild(Object.assign(document.createElement('small'), { textContent: [a.kind !== 'Show' ? a.kind : '', noEvent ? '' : (a.date ? formatDate(a.date) : ''), noEvent ? '' : a.category, a.entries ? 'of ' + a.entries : '', noEvent ? '' : a.location, mediaPhotos('award', a.id).length ? '📷 ' + mediaPhotos('award', a.id).length : ''].filter(Boolean).join(' · ') }));
   row.appendChild(left);
   row.appendChild(Object.assign(document.createElement('span'), { className: 'award-place' + (isTopPlacement(a) ? ' top' : ''), textContent: a.placement || 'Entered' }));
   row.addEventListener('click', function () { location.hash = '#/mybirds/birds/award~' + a.id; });
@@ -427,4 +428,17 @@ function awardsSection(bird) {
     });
   }
   return section;
+}
+
+// A plain line-art trophy (no emoji), for shows where something was won.
+function trophyIcon() {
+  var ns = 'http://www.w3.org/2000/svg';
+  var s = document.createElementNS(ns, 'svg');
+  s.setAttribute('viewBox', '0 0 24 24');
+  s.setAttribute('class', 'trophy-icon');
+  s.setAttribute('aria-label', 'Won an award');
+  var p = document.createElementNS(ns, 'path');
+  p.setAttribute('d', 'M8 4h8v5a4 4 0 0 1-8 0V4zM8 6H5v1a3 3 0 0 0 3 3M16 6h3v1a3 3 0 0 1-3 3M12 13v4M9 20h6M10 17h4');
+  s.appendChild(p);
+  return s;
 }

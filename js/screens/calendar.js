@@ -34,7 +34,9 @@ const CalendarScreen = (function () {
     head.type = 'button';
     head.appendChild(el('span', 'cal-bar'));
     var text = el('span', 'cal-item-text');
-    text.appendChild(el('strong', '', it.title));
+    var titleEl = el('strong', '', it.title);
+    if (it.trophy) titleEl.appendChild(trophyIcon());
+    text.appendChild(titleEl);
     if (it.sub) text.appendChild(el('small', '', it.sub));
     head.appendChild(text);
     var detail = el('div', 'cal-detail');
@@ -295,6 +297,24 @@ const CalendarScreen = (function () {
     if (u) facts.appendChild(factRow('Handled by', userFullName(u)));
     wrap.appendChild(facts);
 
+    // A show: the awards the birds won there.
+    var showResults = e.kind === 'Show' ? eventDayList(e).reduce(function (acc, d) { return acc.concat(awardsAtShow(e.title, d)); }, []) : [];
+    if (showResults.length) {
+      var rs = el('div', 'detail-section');
+      var won = showResults.filter(isAwardWon).length;
+      var rh = el('h3', '', 'Results (' + showResults.length + ')');
+      if (won) rh.appendChild(trophyIcon());
+      rs.appendChild(rh);
+      var byBird = {};
+      showResults.forEach(function (a) { (byBird[a.birdId] = byBird[a.birdId] || []).push(a); });
+      Object.keys(byBird).forEach(function (bid) {
+        var bird = getBird(bid);
+        if (bird) rs.appendChild(birdChip(bird, function () { location.hash = '#/mybirds/birds/' + bird.id; }));
+        byBird[bid].forEach(function (a) { rs.appendChild(awardRow(a, true)); });
+      });
+      wrap.appendChild(rs);
+    }
+
     var client = e.contactId ? getContact(e.contactId) : null;
     if (client) { var cs = el('div', 'detail-section'); cs.appendChild(el('h3', '', 'Who with')); cs.appendChild(contactChip(client, function () { location.hash = '#/business/contacts/' + client.id; })); wrap.appendChild(cs); }
     if (e.notes) { var n = el('div', 'detail-section'); n.appendChild(el('h3', '', 'Notes')); n.appendChild(el('p', 'notes-text', e.notes)); wrap.appendChild(n); }
@@ -325,8 +345,93 @@ const CalendarScreen = (function () {
     main.appendChild(wrap);
   }
 
+  // ---- grouped pages: one show, one clinic's day, one retest day ----
+  function bullet(text, hash) {
+    var b = btn('list-row', '', function () { location.hash = hash; });
+    var info = el('span', 'list-row-info');
+    info.appendChild(el('span', 'list-row-title', text[0]));
+    if (text[1]) info.appendChild(el('span', 'list-row-sub', text[1]));
+    b.appendChild(info);
+    return b;
+  }
+
+  function birdBlock(birdId, rows) { // a bird's chip with its lines under it
+    var box = el('div', 'detail-section');
+    var bird = getBird(birdId);
+    if (bird) box.appendChild(birdChip(bird, function () { location.hash = '#/mybirds/birds/' + bird.id; }));
+    rows.forEach(function (r) { box.appendChild(r); });
+    return box;
+  }
+
+  function renderGroup(main, id, setTitle) {
+    var p = id.split('~'); // g ~ type ~ date ~ key
+    var type = p[1], date = p[2], key = decodeURIComponent(p[3] || '');
+    var wrap = el('div', 'detail-screen');
+    var header = el('div', 'detail-header');
+    var tt = el('div', 'detail-title');
+    var h2 = el('h2', '');
+    var sub = el('span', 'type-badge type-breeder', '');
+    tt.appendChild(h2);
+    tt.appendChild(sub);
+    header.appendChild(tt);
+    wrap.appendChild(header);
+    var facts = el('div', 'fact-grid');
+    facts.appendChild(factRow('Date', formatDate(date)));
+
+    if (type === 'show') {
+      var awards = awardsAtShow(key, date);
+      var name = awards[0] ? awards[0].event : key;
+      var won = awards.filter(isAwardWon).length;
+      setTitle(name);
+      h2.textContent = name;
+      if (won) h2.appendChild(trophyIcon());
+      sub.textContent = won ? won + (won === 1 ? ' award' : ' awards') + ' won' : 'Show';
+      var loc = awards.map(function (a) { return a.location; }).filter(Boolean)[0];
+      if (loc) facts.appendChild(factRow('Where', loc));
+      var judges = awards.map(function (a) { return a.judge; }).filter(function (v, i, arr) { return v && arr.indexOf(v) === i; });
+      if (judges.length) facts.appendChild(factRow('Judge', judges.join(', ')));
+      wrap.appendChild(facts);
+      var byBird = {};
+      awards.forEach(function (a) { (byBird[a.birdId] = byBird[a.birdId] || []).push(a); });
+      Object.keys(byBird).forEach(function (bid) {
+        wrap.appendChild(birdBlock(bid, byBird[bid].map(function (a) { return awardRow(a, true); })));
+      });
+      if (!awards.length) wrap.appendChild(el('p', 'form-note', 'No results recorded for this show.'));
+    } else if (type === 'visit') {
+      var recs = HEALTH_RECORDS_SAMPLE.filter(function (r) { return String(r.date).slice(0, 10) === date && (r.provider || '').trim().toLowerCase() === key; });
+      var clinic = recs[0] ? recs[0].provider : '';
+      setTitle(clinic || 'Health records');
+      h2.textContent = clinic || 'Health records';
+      sub.textContent = recs.length + (recs.length === 1 ? ' record' : ' records');
+      wrap.appendChild(facts);
+      var byB = {};
+      recs.forEach(function (r) { (byB[r.birdId] = byB[r.birdId] || []).push(r); });
+      Object.keys(byB).forEach(function (bid) {
+        wrap.appendChild(birdBlock(bid, byB[bid].map(function (r) {
+          var title = r.type === 'Disease Test' ? (r.disease || 'Disease') + ' test' : r.type === 'Immunization' ? 'Vaccination' : r.type;
+          return bullet([title, [r.result, r.notes].filter(Boolean).join(' · ')], '#/mybirds/health/' + r.id);
+        })));
+      });
+    } else { // due: a retest day
+      var due = [];
+      BIRDS_SAMPLE.forEach(function (bird) {
+        if (birdIsArchived(bird)) return;
+        latestTests(bird.id).forEach(function (g) { var st = testStatus(g.latest); if (g.disease === key && st.due === date) due.push({ bird: bird, test: g.latest }); });
+      });
+      setTitle('Retest due: ' + key);
+      h2.textContent = 'Retest due: ' + key;
+      sub.textContent = due.length + (due.length === 1 ? ' bird' : ' birds');
+      wrap.appendChild(facts);
+      due.forEach(function (x) {
+        wrap.appendChild(birdBlock(x.bird.id, [bullet(['Last tested ' + formatDate(x.test.date), x.test.result || 'Pending'], '#/mybirds/health/' + x.test.id)]));
+      });
+    }
+    main.appendChild(wrap);
+  }
+
   function renderDetail(main, id, navigate, setTitle) {
     clearEl(main);
+    if (id.indexOf('g~') === 0) return renderGroup(main, id, setTitle);
     if (id === 'new') return renderForm(main, null, navigate, setTitle);
     if (id.indexOf('edit~') === 0) return renderForm(main, id.slice(5), navigate, setTitle);
     return renderEvent(main, id, navigate, setTitle);

@@ -2071,3 +2071,5 @@ button.care-food { cursor: pointer; }
 
 .cal-dot-award { background: #C08A00; } .cal-dot-due { background: #8A6FB0; }
 .cal-award .cal-bar { background: #C08A00; } .cal-due .cal-bar { background: #8A6FB0; }
+
+.trophy-icon { width: 17px; height: 17px; margin-left: 6px; vertical-align: -3px; fill: none; stroke: #C08A00; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
