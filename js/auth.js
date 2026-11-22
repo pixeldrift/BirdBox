@@ -1,17 +1,59 @@
-// Logins. If js/auth-config.js defines window.BirdBoxAuth, every /api call carries the signed-in user's token, the app waits for
-// the account to exist before loading anything (the first sign-in creates it), and a signed-out visitor sees a sign-in screen.
-// Without it nothing changes: no logins, one account.
+// Logins. BirdBox signs in the same way Lilac does: Neon Auth (managed Better Auth) through the app's own domain (/api/auth, see
+// api/authproxy.js), and every API call carries the short-lived JWT it hands out, as `Authorization: Bearer …`.
 //
-//   Auth.enabled        true when logins are configured          Auth.account   { id, name }  (after sign-in)
-//   Auth.me             { userId, role, name } or null           Auth.ready     a promise that settles once we know who is here
+// Nothing to configure here. On load we ask the server whether logins are on (it answers 401 'signin' when they are); if not, the
+// app runs exactly as before with one account. If they are, the Neon Auth client (js/vendor/neon-auth.js) is loaded, the app
+// waits until we know who is here (the first sign-in creates the account), and signed-out visitors get a sign-in form.
+// A page can bring its own provider by defining window.BirdBoxAuth first (used by tests).
+//
+//   Auth.enabled        true when logins are on                   Auth.account   { id, name }  (after sign-in)
+//   Auth.me             { userId, role, name } or null            Auth.ready     a promise that settles once we know who is here
 //   Auth.refresh()      re-read the account (after renaming or loading sample data)
 const Auth = (function () {
-  var provider = window.BirdBoxAuth || null;
   var origFetch = window.fetch.bind(window);
-  var api = { enabled: !!provider, account: null, me: null, demo: null, ready: null };
+  var provider = window.BirdBoxAuth || null;
+  var api = { enabled: false, account: null, me: null, demo: null, ready: null };
   var gateShown = false;
 
-  // Email + password (and Google, if configured): one form that switches between signing in and creating an account.
+  function loadScript(src) {
+    return new Promise(function (resolve, reject) {
+      var s = document.createElement('script');
+      s.src = src;
+      s.onload = resolve;
+      s.onerror = function () { reject(new Error('Could not load ' + src)); };
+      document.head.appendChild(s);
+    });
+  }
+
+  // The Neon Auth client, talking to /api/auth on this site (which passes it on to the auth service, so its cookie is first-party).
+  function neonProvider() {
+    return loadScript('js/vendor/neon-auth.js').then(function () {
+      var client = window.NeonAuth.createAuthClient(location.origin + '/api/auth');
+      var known = { email: '', name: '' };
+      function check(result, fallback) {
+        if (result && result.error) throw new Error(result.error.message || fallback);
+        return result;
+      }
+      return {
+        form: true,
+        // The session carries the JWT in session.token (the client caches it until it nears expiry); `force` skips that cache.
+        getToken: function (force) {
+          return Promise.resolve(client.getSession(force ? { fetchOptions: { headers: { 'X-Force-Fetch': '1' } } } : undefined)).then(function (res) {
+            var data = res && res.data;
+            if (!data || !data.user) return null;
+            known.email = data.user.email || ''; known.name = data.user.name || '';
+            return (data.session && data.session.token) || null;
+          }).catch(function () { return null; });
+        },
+        signInWithEmail: function (email, password) { return Promise.resolve(client.signIn.email({ email: email, password: password })).then(function (r) { return check(r, 'Couldn’t sign in'); }); },
+        signUpWithEmail: function (email, password, name) { return Promise.resolve(client.signUp.email({ email: email, password: password, name: name || email.split('@')[0] })).then(function (r) { return check(r, 'Couldn’t create the account'); }); },
+        signOut: function () { return Promise.resolve(client.signOut()).catch(function () {}).then(function () { location.reload(); }); },
+        email: function () { return known.email; },
+      };
+    });
+  }
+
+  // Email + password: one form that switches between signing in and creating an account.
   function signInForm() {
     var creating = false;
     var form = document.createElement('form');
@@ -78,8 +120,9 @@ const Auth = (function () {
     document.body.appendChild(gate);
   }
 
-  function withToken(init) {
-    return Promise.resolve(provider.getToken()).then(function (token) {
+
+  function withToken(init, force) {
+    return Promise.resolve(provider.getToken(force)).then(function (token) {
       init = Object.assign({}, init || {});
       init.headers = Object.assign({}, init.headers || {});
       if (token) init.headers.Authorization = 'Bearer ' + token;
@@ -102,30 +145,44 @@ const Auth = (function () {
     });
   }
 
-  if (provider) {
-    api.ready = profile();
-    api.refresh = function () { return profile(); };
-    window.fetch = function (input, init) {
-      var url = typeof input === 'string' ? input : (input && input.url) || '';
-      if (!/^\/?api\//.test(url) || /^\/?api\/account\b/.test(url)) {
-        // the account call itself needs a token but must not wait for itself
-        if (/^\/?api\/account\b/.test(url)) return withToken(init).then(function (t) { return origFetch(input, t.init); });
-        return origFetch(input, init);
-      }
-      return api.ready.then(function () { return withToken(init); }).then(function (t) {
+  function isApi(url) { return /^\/?api\//.test(url) && !/^\/?api\/auth\b/.test(url); }
+  function isAccount(url) { return /^\/?api\/account\b/.test(url); }
+
+  // Everything starts here: are logins on?
+  api.ready = (provider ? Promise.resolve(true) : origFetch('/api/account').then(function (res) { return res.status === 401; }).catch(function () { return false; }))
+    .then(function (on) {
+      api.enabled = on;
+      if (!on) return null;
+      return (provider ? Promise.resolve(provider) : neonProvider()).then(function (p) { provider = p; return profile(); });
+    });
+
+  window.fetch = function (input, init) {
+    var url = typeof input === 'string' ? input : (input && input.url) || '';
+    if (!isApi(url)) return origFetch(input, init);
+    var go = function () {
+      if (!api.enabled) return origFetch(input, init);
+      return withToken(init).then(function (t) {
         return origFetch(input, t.init).then(function (res) {
-          if (res.status === 401) showSignIn('Your session has ended — please sign in again.');
-          return res;
+          if (res.status !== 401) return res;
+          // the token may have just expired: ask the session for a fresh one once before giving up
+          return withToken(init, true).then(function (t2) {
+            if (!t2.token) { showSignIn('Your session has ended — please sign in again.'); return res; }
+            return origFetch(input, t2.init).then(function (res2) { if (res2.status === 401) showSignIn('Your session has ended — please sign in again.'); return res2; });
+          });
         });
       });
     };
-    api.signOut = function () { provider.signOut(); };
-    api.email = function () { return provider.email ? provider.email() : ''; };
-  } else {
-    api.ready = Promise.resolve(null);
-    api.refresh = function () { return origFetch('/api/account').then(function (r) { return r.ok ? r.json() : null; }).then(function (p) { if (p) { api.account = p.account; api.me = p.me; api.demo = p.demo; } return p; }).catch(function () { return null; }); };
-    api.signOut = function () {};
-    api.email = function () { return ''; };
-  }
+    // the account call decides who is here, so it can't wait for itself
+    return isAccount(url) ? go() : api.ready.then(go);
+  };
+
+  api.refresh = function () {
+    return api.ready.then(function () {
+      if (api.enabled) return profile();
+      return origFetch('/api/account').then(function (r) { return r.ok ? r.json() : null; }).then(function (p) { if (p) { api.account = p.account; api.me = p.me; api.demo = p.demo; } return p; }).catch(function () { return null; });
+    });
+  };
+  api.signOut = function () { if (provider && provider.signOut) provider.signOut(); };
+  api.email = function () { return provider && provider.email ? provider.email() : ''; };
   return api;
 })();

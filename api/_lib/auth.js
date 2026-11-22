@@ -1,13 +1,15 @@
-// Who is making this request? BirdBox uses Neon Auth (Neon's managed Better Auth): the browser sends the signed-in user's JWT as
-// `Authorization: Bearer …` and we check its signature against the auth service's public keys. Modes (env AUTH_MODE):
-//   (unset)  off  — no logins yet: every request is the 'legacy' account, as before accounts existed.
-//   neon          — verify the Neon Auth token. Needs NEON_AUTH_URL (the same value as VITE_NEON_AUTH_URL in your other apps,
-//                   e.g. https://ep-xxx.neonauth.<region>.aws.neon.tech/neondb/auth). Optional NEON_AUTH_JWKS_URL overrides the keys URL.
-//   test          — trust x-test-auth-id / x-test-email headers (or a `test:<id>:<email>` token). Automated tests only; never in production.
+// Who is making this request? Same method as Lilac: Neon Auth (managed Better Auth). The browser sends the signed-in user's JWT as
+// `Authorization: Bearer …`; we check its signature against the auth service's public keys and that the issuer is that service, and
+// use the token's `sub` as the user.
 //
-// Neon Auth tokens: EdDSA (Ed25519), 15 minutes, `sub` = user id, `email`, and `iss` / `aud` both equal to the ORIGIN of the auth URL
-// (scheme + host, no path). Keys live at <auth url>/.well-known/jwks.json.
+//   NEON_AUTH_BASE_URL  the Auth URL from the Neon console (also read from VITE_NEON_AUTH_URL if that is what you have set)
+//   NEON_AUTH_JWKS_URL  optional: where the keys are, if not <auth url>/.well-known/jwks.json
+//   AUTH_MODE           optional: 'off' forces logins off, 'test' is for automated tests. Left unset, logins are on exactly when an
+//                       auth URL is set — and off (one account, no sign-in) when it isn't, which is how the app ran before accounts.
+// Tokens: EdDSA (Ed25519), about 15 minutes; `iss` is the origin of the auth URL (scheme + host, no path).
 const { createRemoteJWKSet, jwtVerify } = require('jose');
+
+function authUrl() { return (process.env.NEON_AUTH_BASE_URL || process.env.VITE_NEON_AUTH_URL || '').replace(/\/+$/, ''); }
 
 let remoteKeys = null;
 function keysFor(url) {
@@ -15,7 +17,11 @@ function keysFor(url) {
   return remoteKeys.set;
 }
 
-function mode() { return process.env.AUTH_MODE || 'off'; }
+function mode() {
+  const m = process.env.AUTH_MODE;
+  if (m === 'off' || m === 'test') return m;
+  return authUrl() ? 'neon' : 'off';
+}
 function required() { return mode() !== 'off'; }
 
 function tokenFrom(req) {
@@ -37,13 +43,12 @@ async function identify(req, getKeys) {
   }
   const token = tokenFrom(req);
   if (!token) return null;
-  const base = (process.env.NEON_AUTH_URL || '').replace(/\/+$/, '');
-  if (!base) throw new Error('Logins are not configured (NEON_AUTH_URL)');
-  const origin = new URL(base).origin;
+  const base = authUrl();
+  if (!base) throw new Error('Logins are not configured (NEON_AUTH_BASE_URL)');
   const jwks = process.env.NEON_AUTH_JWKS_URL || base + '/.well-known/jwks.json';
-  const { payload } = await jwtVerify(token, getKeys ? getKeys : keysFor(jwks), { algorithms: ['EdDSA'], issuer: origin, audience: origin });
+  const { payload } = await jwtVerify(token, getKeys ? getKeys : keysFor(jwks), { algorithms: ['EdDSA'], issuer: new URL(base).origin });
   if (!payload.sub) throw new Error('Token has no user');
   return { authId: String(payload.sub), email: String(payload.email || '') };
 }
 
-module.exports = { identify, required, mode };
+module.exports = { identify, required, mode, authUrl };

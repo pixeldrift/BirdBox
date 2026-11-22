@@ -15,22 +15,27 @@ the database belongs to exactly one account, and a request can only ever see its
 - **Use the direct Neon connection string** (host without `-pooler`) for `DATABASE_URL`; the code refuses the pooled one, because
   a pooled backend could carry one request's account setting into another's.
 
-## Turning logins on (Neon Auth)
-1. Run `sql/batches/part1…`, `part2…`, `part3…` (038 = accounts, 039 = sample data; 039 needs the species table loaded:
+## Turning logins on (Neon Auth — the same method as Lilac)
+1. Run the SQL: `sql/batches/part1…`, `part2…`, `part3…` (038 = accounts, 039 = sample data; 039 needs the species table loaded:
    `npm run seed:species`). Until 038 is run the app behaves exactly as before (one account, no logins).
-2. In `js/auth-config.js`, set `window.BIRDBOX_NEON_AUTH_URL` to your Neon Auth URL (the same value as `VITE_NEON_AUTH_URL` in your
-   other apps). The Neon Auth client is bundled in `js/vendor/neon-auth.js` (rebuild notes: `scripts/build-neon-auth.md`).
-3. In the Neon console (Auth → Settings) add this site's address to the trusted domains.
-4. Vercel environment: `AUTH_MODE=neon`, `NEON_AUTH_URL=<the same URL>`, and — once — `LEGACY_OWNER_EMAIL=<the email you will sign
-   in with>`. That login adopts everything that existed before accounts (account id `legacy`); everyone else gets a brand-new
-   account on first sign-in. (`NEON_AUTH_JWKS_URL` overrides the keys URL if it ever differs.)
-5. Deploy. Signed-out visitors see a sign-in / create-account form; the first sign-in creates the account (an Owner team member, an
-   aviary, and a copy of the sample aviary).
+2. In the Neon console (Auth), add this site's address to the trusted domains.
+3. Vercel environment: `NEON_AUTH_BASE_URL=<the Auth URL>` (the same value as `VITE_NEON_AUTH_URL` in Lilac; the server also reads
+   `VITE_NEON_AUTH_URL` if that is what you set), and — once — `LEGACY_OWNER_EMAIL=<the email you will sign in with>`: that login
+   adopts everything that existed before accounts (account id `legacy`); everyone else gets a brand-new account on first sign-in.
+   **`DATABASE_URL` must be the direct (non-pooled) Neon string** — unlike Lilac, which uses the pooled one (see below).
+4. Deploy. There is nothing to configure in the browser: the app asks the server whether logins are on, and if so loads the Neon
+   Auth client and shows a sign-in / create-account form. With no auth URL set, logins are simply off.
 
-The server accepts the signed-in user's JWT as `Authorization: Bearer …` and checks it against `<auth url>/.well-known/jwks.json`
-(EdDSA, issuer and audience = the origin of the auth URL, 15-minute expiry — the client fetches a fresh one on each request).
-Safari blocks third-party cookies, so if sign-in doesn't stick there, serve the auth URL from this site's own domain with a Vercel
-rewrite and point `BIRDBOX_NEON_AUTH_URL` at that path.
+How it works, as in Lilac: the browser talks to Neon Auth through this site (`/api/auth/*` → `api/authproxy.js`, via the rewrite in
+`vercel.json`) so the session cookie is first-party and survives on Safari and home-screen apps. The client (`@neondatabase/auth`,
+bundled into `js/vendor/neon-auth.js` — rebuild notes in `scripts/build-neon-auth.md`) gets the JWT from `getSession()`
+(`session.token`) and every API call sends it as `Authorization: Bearer …`; `api/_lib/auth.js` verifies it against
+`<auth url>/.well-known/jwks.json` (EdDSA, issuer = the origin of the auth URL) and uses the `sub` as the user. `AUTH_MODE=off` forces
+logins off even when an auth URL is set.
+
+**Why the direct connection string:** each request holds one connection and tells Postgres which account it is on that connection
+(`set_config`). A pooled (`-pooler`) connection can hand your next statement to a different backend — or one that another request has
+just used — so the setting would not be reliable. The code refuses a pooled `DATABASE_URL` and says so in the function log.
 
 `AUTH_MODE=test` (accepts `x-test-auth-id` headers or a `test:<id>:<email>` token) is for automated tests only — never set it in
 production.

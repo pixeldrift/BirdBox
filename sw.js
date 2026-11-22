@@ -1,12 +1,10 @@
-const CACHE = 'birdbox-shell-v117';
+const CACHE = 'birdbox-shell-v118';
 const ASSETS = [
   './',
   './index.html',
   './css/app.css',
   './js/app.js',
   './js/terms.js',
-  './js/vendor/neon-auth.js',
-  './js/auth-config.js',
   './js/auth.js',
   './js/nav-data.js',
   './js/ui-helpers.js',
