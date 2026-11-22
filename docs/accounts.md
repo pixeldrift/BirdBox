@@ -22,7 +22,7 @@ the database belongs to exactly one account, and a request can only ever see its
 3. Vercel environment: `NEON_AUTH_BASE_URL=<the Auth URL>` (the same value as `VITE_NEON_AUTH_URL` in Lilac; the server also reads
    `VITE_NEON_AUTH_URL` if that is what you set), and — once — `LEGACY_OWNER_EMAIL=<the email you will sign in with>`: that login
    adopts everything that existed before accounts (account id `legacy`); everyone else gets a brand-new account on first sign-in.
-   **`DATABASE_URL` must be the direct (non-pooled) Neon string** — unlike Lilac, which uses the pooled one (see below).
+   **The API uses `DATABASE_URL_UNPOOLED` (the direct Neon string) if it is set, else `DATABASE_URL`, and that one must not be the pooled string** — unlike Lilac, which uses the pooled one (see below). Neon's Vercel integration sets both, so normally there is nothing to change.
 4. Deploy. There is nothing to configure in the browser: the app asks the server whether logins are on, and if so loads the Neon
    Auth client and shows a sign-in / create-account form. With no auth URL set, logins are simply off.
 

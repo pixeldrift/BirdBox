@@ -17,8 +17,9 @@ try { neonConfig.webSocketConstructor = require('ws'); } catch (err) { /* Node 2
 let pool = null;
 function getPool() {
   if (!pool) {
-    const url = process.env.DATABASE_URL || '';
-    if (/-pooler\./.test(url)) throw new Error('DATABASE_URL must be the direct (non-pooled) Neon connection string — the host should not contain "-pooler".');
+    // Neon's Vercel integration sets both: DATABASE_URL (pooled) and DATABASE_URL_UNPOOLED (direct). Use the direct one.
+    const url = process.env.DATABASE_URL_UNPOOLED || process.env.DATABASE_URL || '';
+    if (/-pooler\./.test(url)) throw new Error('The database URL must be the direct (non-pooled) Neon connection string — set DATABASE_URL_UNPOOLED (or make DATABASE_URL the direct one); the host should not contain "-pooler".');
     pool = new Pool({ connectionString: url });
   }
   return pool;

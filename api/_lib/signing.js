@@ -6,7 +6,7 @@ const auth = require('./auth');
 
 const LIFETIME_MS = 12 * 60 * 60 * 1000;
 
-function key() { return process.env.MEDIA_SECRET || crypto.createHash('sha256').update('media|' + (process.env.DATABASE_URL || 'dev')).digest('hex'); }
+function key() { return process.env.MEDIA_SECRET || crypto.createHash('sha256').update('media|' + (process.env.DATABASE_URL_UNPOOLED || process.env.DATABASE_URL || 'dev')).digest('hex'); }
 function mac(account, id, exp) { return crypto.createHmac('sha256', key()).update(account + '|' + id + '|' + exp).digest('hex').slice(0, 32); }
 
 // '' when signing isn't needed, else '&a=…&e=…&s=…' to add to a file URL.
