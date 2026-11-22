@@ -2081,3 +2081,7 @@ button.care-food { cursor: pointer; }
 .auth-title span { color: #C9A97C; }
 .auth-text { margin: 0 0 18px; color: var(--muted); }
 .auth-btn { width: 100%; }
+
+.auth-form { display: flex; flex-direction: column; gap: 10px; text-align: left; }
+.auth-toggle { align-self: center; }
+.auth-google { margin: 0; }

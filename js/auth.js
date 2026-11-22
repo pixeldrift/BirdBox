@@ -11,6 +11,53 @@ const Auth = (function () {
   var api = { enabled: !!provider, account: null, me: null, demo: null, ready: null };
   var gateShown = false;
 
+  // Email + password (and Google, if configured): one form that switches between signing in and creating an account.
+  function signInForm() {
+    var creating = false;
+    var form = document.createElement('form');
+    form.className = 'auth-form';
+    var name = document.createElement('input');
+    name.type = 'text'; name.placeholder = 'Your name'; name.autocomplete = 'name'; name.className = 'form-input'; name.hidden = true;
+    var email = document.createElement('input');
+    email.type = 'email'; email.placeholder = 'Email'; email.autocomplete = 'email'; email.required = true; email.className = 'form-input';
+    var pass = document.createElement('input');
+    pass.type = 'password'; pass.placeholder = 'Password'; pass.autocomplete = 'current-password'; pass.required = true; pass.minLength = 8; pass.className = 'form-input';
+    var error = document.createElement('p');
+    error.className = 'form-message error'; error.hidden = true;
+    var go = document.createElement('button');
+    go.type = 'submit'; go.className = 'save-btn auth-btn'; go.textContent = 'Sign in';
+    var toggle = document.createElement('button');
+    toggle.type = 'button'; toggle.className = 'pick-link auth-toggle'; toggle.textContent = 'New here? Create an account';
+    [name, email, pass, error, go].forEach(function (e) { form.appendChild(e); });
+    if (provider.google && provider.signInWithGoogle) {
+      var g = document.createElement('button');
+      g.type = 'button'; g.className = 'add-record-btn auth-google'; g.textContent = 'Continue with Google';
+      g.addEventListener('click', function () { provider.signInWithGoogle(); });
+      form.appendChild(g);
+    }
+    form.appendChild(toggle);
+    toggle.addEventListener('click', function () {
+      creating = !creating;
+      name.hidden = !creating;
+      go.textContent = creating ? 'Create account' : 'Sign in';
+      pass.autocomplete = creating ? 'new-password' : 'current-password';
+      toggle.textContent = creating ? 'Already have an account? Sign in' : 'New here? Create an account';
+      error.hidden = true;
+    });
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      error.hidden = true;
+      go.disabled = true;
+      var job = creating ? provider.signUpWithEmail(email.value.trim(), pass.value, name.value.trim()) : provider.signInWithEmail(email.value.trim(), pass.value);
+      job.then(function () { location.reload(); }).catch(function (err) {
+        go.disabled = false;
+        error.textContent = (err && err.message) || 'That didn’t work — try again.';
+        error.hidden = false;
+      });
+    });
+    return form;
+  }
+
   function showSignIn(message) {
     if (gateShown) return;
     gateShown = true;
@@ -18,9 +65,15 @@ const Auth = (function () {
     gate.className = 'auth-gate';
     var card = document.createElement('div');
     card.className = 'auth-card';
-    card.innerHTML = '<h1 class="auth-title">Bird<span>Box</span></h1><p class="auth-text"></p><button type="button" class="save-btn auth-btn">Sign in</button>';
+    card.innerHTML = '<h1 class="auth-title">Bird<span>Box</span></h1><p class="auth-text"></p>';
     card.querySelector('.auth-text').textContent = message || 'Sign in to see your birds.';
-    card.querySelector('.auth-btn').addEventListener('click', function () { provider.signIn(); });
+    if (provider.signInWithEmail) card.appendChild(signInForm());
+    else {
+      var btn = document.createElement('button');
+      btn.type = 'button'; btn.className = 'save-btn auth-btn'; btn.textContent = 'Sign in';
+      btn.addEventListener('click', function () { provider.signIn(); });
+      card.appendChild(btn);
+    }
     gate.appendChild(card);
     document.body.appendChild(gate);
   }
@@ -29,7 +82,7 @@ const Auth = (function () {
     return Promise.resolve(provider.getToken()).then(function (token) {
       init = Object.assign({}, init || {});
       init.headers = Object.assign({}, init.headers || {});
-      if (token) init.headers['x-stack-access-token'] = token;
+      if (token) init.headers.Authorization = 'Bearer ' + token;
       return { init: init, token: token };
     });
   }

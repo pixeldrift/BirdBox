@@ -15,15 +15,22 @@ the database belongs to exactly one account, and a request can only ever see its
 - **Use the direct Neon connection string** (host without `-pooler`) for `DATABASE_URL`; the code refuses the pooled one, because
   a pooled backend could carry one request's account setting into another's.
 
-## Turning logins on (Neon Auth / Stack Auth)
-1. Run `sql/038_multi_tenant.sql`, then `sql/039_demo_data.sql` (needs the species table loaded: `npm run seed:species`).
-   Until 038 is run the app behaves exactly as before (one account, no logins).
-2. In `js/auth-config.js`, define `window.BirdBoxAuth` (instructions are in that file).
-3. Vercel environment: `AUTH_MODE=stack`, `STACK_PROJECT_ID=<your Neon Auth project id>`, and — once — `LEGACY_OWNER_EMAIL=<the email
-   you will sign in with>`. That login adopts everything that existed before accounts (account id `legacy`); everyone else gets a
-   brand-new account on first sign-in. (If your token's JWKS lives somewhere else, set `STACK_JWKS_URL`.)
-4. Deploy. Signed-out visitors see a sign-in screen; the first sign-in creates the account (an Owner team member, an aviary, and a
-   copy of the sample aviary).
+## Turning logins on (Neon Auth)
+1. Run `sql/batches/part1…`, `part2…`, `part3…` (038 = accounts, 039 = sample data; 039 needs the species table loaded:
+   `npm run seed:species`). Until 038 is run the app behaves exactly as before (one account, no logins).
+2. In `js/auth-config.js`, set `window.BIRDBOX_NEON_AUTH_URL` to your Neon Auth URL (the same value as `VITE_NEON_AUTH_URL` in your
+   other apps). The Neon Auth client is bundled in `js/vendor/neon-auth.js` (rebuild notes: `scripts/build-neon-auth.md`).
+3. In the Neon console (Auth → Settings) add this site's address to the trusted domains.
+4. Vercel environment: `AUTH_MODE=neon`, `NEON_AUTH_URL=<the same URL>`, and — once — `LEGACY_OWNER_EMAIL=<the email you will sign
+   in with>`. That login adopts everything that existed before accounts (account id `legacy`); everyone else gets a brand-new
+   account on first sign-in. (`NEON_AUTH_JWKS_URL` overrides the keys URL if it ever differs.)
+5. Deploy. Signed-out visitors see a sign-in / create-account form; the first sign-in creates the account (an Owner team member, an
+   aviary, and a copy of the sample aviary).
+
+The server accepts the signed-in user's JWT as `Authorization: Bearer …` and checks it against `<auth url>/.well-known/jwks.json`
+(EdDSA, issuer and audience = the origin of the auth URL, 15-minute expiry — the client fetches a fresh one on each request).
+Safari blocks third-party cookies, so if sign-in doesn't stick there, serve the auth URL from this site's own domain with a Vercel
+rewrite and point `BIRDBOX_NEON_AUTH_URL` at that path.
 
 `AUTH_MODE=test` (accepts `x-test-auth-id` headers or a `test:<id>:<email>` token) is for automated tests only — never set it in
 production.

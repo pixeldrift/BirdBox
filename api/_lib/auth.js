@@ -1,8 +1,12 @@
-// Who is making this request? BirdBox uses Neon Auth (Stack Auth): the browser sends the signed-in user's access token and
-// we check its signature against the project's public keys. Modes (env AUTH_MODE):
+// Who is making this request? BirdBox uses Neon Auth (Neon's managed Better Auth): the browser sends the signed-in user's JWT as
+// `Authorization: Bearer …` and we check its signature against the auth service's public keys. Modes (env AUTH_MODE):
 //   (unset)  off  — no logins yet: every request is the 'legacy' account, as before accounts existed.
-//   stack         — verify the Stack Auth / Neon Auth token (needs STACK_PROJECT_ID, or STACK_JWKS_URL).
-//   test          — trust x-test-auth-id / x-test-email headers. For automated tests only; never set in production.
+//   neon          — verify the Neon Auth token. Needs NEON_AUTH_URL (the same value as VITE_NEON_AUTH_URL in your other apps,
+//                   e.g. https://ep-xxx.neonauth.<region>.aws.neon.tech/neondb/auth). Optional NEON_AUTH_JWKS_URL overrides the keys URL.
+//   test          — trust x-test-auth-id / x-test-email headers (or a `test:<id>:<email>` token). Automated tests only; never in production.
+//
+// Neon Auth tokens: EdDSA (Ed25519), 15 minutes, `sub` = user id, `email`, and `iss` / `aud` both equal to the ORIGIN of the auth URL
+// (scheme + host, no path). Keys live at <auth url>/.well-known/jwks.json.
 const { createRemoteJWKSet, jwtVerify } = require('jose');
 
 let remoteKeys = null;
@@ -17,11 +21,11 @@ function required() { return mode() !== 'off'; }
 function tokenFrom(req) {
   const h = req.headers || {};
   const bearer = String(h.authorization || '');
-  return h['x-stack-access-token'] || (/^bearer /i.test(bearer) ? bearer.slice(7) : '');
+  return /^bearer /i.test(bearer) ? bearer.slice(7).trim() : '';
 }
 
 // -> { authId, email } for a valid login, or null when there isn't one (or auth is off). Throws on a bad token.
-// `getKeys` lets tests supply their own key set instead of fetching Stack's.
+// `getKeys` lets tests supply their own key set instead of fetching the real one.
 async function identify(req, getKeys) {
   const m = mode();
   if (m === 'off') return null;
@@ -33,12 +37,13 @@ async function identify(req, getKeys) {
   }
   const token = tokenFrom(req);
   if (!token) return null;
-  const project = process.env.STACK_PROJECT_ID;
-  const url = process.env.STACK_JWKS_URL || (project ? 'https://api.stack-auth.com/api/v1/projects/' + project + '/.well-known/jwks.json' : '');
-  if (!url && !getKeys) throw new Error('Logins are not configured (STACK_PROJECT_ID)');
-  const { payload } = await jwtVerify(token, getKeys ? getKeys : keysFor(url), project ? { audience: project } : {});
+  const base = (process.env.NEON_AUTH_URL || '').replace(/\/+$/, '');
+  if (!base) throw new Error('Logins are not configured (NEON_AUTH_URL)');
+  const origin = new URL(base).origin;
+  const jwks = process.env.NEON_AUTH_JWKS_URL || base + '/.well-known/jwks.json';
+  const { payload } = await jwtVerify(token, getKeys ? getKeys : keysFor(jwks), { algorithms: ['EdDSA'], issuer: origin, audience: origin });
   if (!payload.sub) throw new Error('Token has no user');
-  return { authId: String(payload.sub), email: String(payload.email || payload.primary_email || '') };
+  return { authId: String(payload.sub), email: String(payload.email || '') };
 }
 
 module.exports = { identify, required, mode };
