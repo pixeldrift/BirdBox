@@ -19,8 +19,10 @@
   box-sizing: border-box;
 }
 
+/* The top of the page, behind the status bar, is the same olive as the app bar — iOS blends the edge of the screen into this colour, so
+   it can't show as a pale fade. (The paper texture below is a fixed layer that covers everything else.) */
 html {
-  background: var(--bg);
+  background: var(--brand);
 }
 
 html, body {
@@ -57,6 +59,7 @@ h1, h2, h3 {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  padding-top: calc(46px + var(--safe-top)); /* room for the fixed app bar */
 }
 
 #app-bar {
@@ -68,8 +71,11 @@ h1, h2, h3 {
   padding: var(--safe-top) 12px 0 8px;
   background: var(--brand);
   color: #fff;
-  position: sticky;
+  /* fixed (not sticky) so iOS treats it as the top bar and fills the status-bar area with its own colour */
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 10;
 }
 
