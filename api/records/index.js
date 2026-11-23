@@ -89,7 +89,7 @@ async function checkRefs(schema, values) {
     const f = schema.fields[key];
     const v = values[f.col];
     if (!f.ref || !v) continue;
-    const target = { contact: ['contacts', 'id'], bird: ['birds', 'id'], location: ['locations', 'id'], building: ['buildings', 'code'], room: ['rooms', 'id'], supply: ['supplies', 'id'], user: ['users', 'id'] }[f.ref];
+    const target = { contact: ['contacts', 'id'], bird: ['birds', 'id'], place: ['places', 'id'], supply: ['supplies', 'id'], user: ['users', 'id'] }[f.ref];
     const found = await sql(`select 1 from ${target[0]} where ${target[1]} = $1`, [v]);
     if (!found.length) return 'That ' + f.ref + ' isn’t in your records';
   }
@@ -98,7 +98,7 @@ async function checkRefs(schema, values) {
 
 // Things that point at a record are tidied up when it's deleted.
 async function cleanupAfterDelete(type, id) {
-  const targetType = { contacts: 'contact', transactions: 'transaction', health: 'health', locations: 'location', buildings: 'building', rooms: 'room', cages: 'cage', supplies: 'supply', awards: 'award' }[type];
+  const targetType = { contacts: 'contact', transactions: 'transaction', health: 'health', places: 'place', supplies: 'supply', awards: 'award' }[type];
   const steps = [];
   if (targetType) steps.push(['delete from media_links where target_type = $1 and target_id = $2', [targetType, id]]);
   if (type === 'contacts') {
@@ -108,7 +108,7 @@ async function cleanupAfterDelete(type, id) {
     steps.push(['update birds set location_contact_id = null where location_contact_id = $1', [id]]);
     steps.push(['update supplies set vendor_id = null where vendor_id = $1', [id]]);
   }
-  const careTarget = { locations: 'location', buildings: 'building', rooms: 'room', cages: 'cage' }[type];
+  const careTarget = { places: 'place' }[type];
   if (careTarget) steps.push(['delete from care_items where target_type = $1 and target_id = $2', [careTarget, id]]);
   if (type === 'events') steps.push(['delete from event_links where event_id = $1', [id]]);
   if (type === 'contacts') steps.push(['update events set contact_id = null where contact_id = $1', [id]]);
@@ -120,12 +120,7 @@ async function cleanupAfterDelete(type, id) {
     steps.push(['update task_done set done_by = null where done_by = $1', [id]]);
   }
   if (type === 'supplies') steps.push(['delete from care_items where supply_id = $1', [id]]);
-  if (type === 'rooms') steps.push(['update cages set room_id = null where room_id = $1', [id]]);
-  if (type === 'buildings') steps.push(['update rooms set building_code = null where building_code = $1', [id]]);
-  if (type === 'locations') steps.push(['update rooms set location_id = null where location_id = $1', [id]]);
-  if (type === 'cages') steps.push(['update birds set cage = null where cage = $1', [id]]);
-  if (type === 'buildings') steps.push(['update cages set building_code = null where building_code = $1', [id]]);
-  if (type === 'locations') steps.push(['update buildings set location_id = null where location_id = $1', [id]]);
+  if (type === 'places') steps.push(['update birds set cage = null where cage = $1', [id]]);
   for (const [text, params] of steps) {
     try { await sql(text, params); } catch (err) { /* that table may not exist yet */ }
   }
@@ -194,6 +189,15 @@ module.exports = withAccount(async function handler(req, res) {
       if (!cols.length) { res.status(400).json({ error: 'Nothing to change' }); return; }
       const refError = await checkRefs(schema, result.values);
       if (refError) { res.status(400).json({ error: refError }); return; }
+      if (type === 'places' && result.values.parent_id) {
+        // anything can go inside anything — except a place can't be put inside itself, or inside something that is inside it
+        let up = result.values.parent_id;
+        for (let hops = 0; up && hops < 200; hops++) {
+          if (up === id) { res.status(400).json({ error: 'A place can’t go inside itself or inside something that’s inside it' }); return; }
+          const row = (await sql('select parent_id from places where id = $1', [up]))[0];
+          up = row ? row.parent_id : null;
+        }
+      }
       const rows = await sql(
         `update ${schema.table} set ${cols.map((c, i) => c + ' = $' + (i + 1)).join(', ')} where ${schema.pk} = $${cols.length + 1} returning *`,
         cols.map((c) => result.values[c]).concat([id]));
@@ -205,6 +209,7 @@ module.exports = withAccount(async function handler(req, res) {
 
     if (req.method === 'DELETE') {
       if (schema.noDelete) { res.status(405).json({ error: 'That one can be edited but not deleted' }); return; }
+      if (type === 'places') await sql('update places set parent_id = (select parent_id from places where id = $1) where parent_id = $1', [id]); // what was inside moves up one level
       const rows = await sql(`delete from ${schema.table} where ${schema.pk} = $1 returning ${schema.pk}`, [id]);
       if (!rows.length) { res.status(404).json({ error: 'Record not found' }); return; }
       if (type === 'users') {

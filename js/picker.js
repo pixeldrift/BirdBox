@@ -235,41 +235,37 @@ const Picker = (function () {
     }));
   }
 
-  // Locations > buildings (and cages) as one tree. `kind` is which level can be chosen.
-  function placeTree(kind) {
-    var items = [];
-    LOCATIONS_SAMPLE.slice().sort(function (a, b) { return a.name.localeCompare(b.name); }).forEach(function (l) {
-      items.push({ id: 'loc:' + l.id, title: l.name, sub: l.description, parentId: null, selectable: false, hay: l.description,
-        lead: function () { return pickLead(makeThumb({ icon: 'icons/tinted/aviary/Caging.png' }), l.name, l.description); } });
+  // Every place as one tree, browsed from the top (or searched by name, type, or where it is). Any place can be chosen.
+  // opts.exclude: ids to leave out (a place can't go inside itself, so editing one leaves it — and what's inside it — out).
+  function placeItems(exclude, includeLoose) {
+    var out = [], have = {};
+    PLACES.forEach(function (p) { have[p.id] = true; });
+    PLACES.slice().sort(function (a, b) { return String(a.name).localeCompare(String(b.name), undefined, { numeric: true }); }).forEach(function (p) {
+      if (exclude.indexOf(p.id) !== -1) return;
+      var where = placePathLabel(p.id);
+      var sub = [placeTypeLabel(p.type), where].filter(Boolean).join(' · ');
+      out.push({ id: p.id, title: p.name, sub: sub, parentId: p.parentId && have[p.parentId] && exclude.indexOf(p.parentId) === -1 ? p.parentId : null, selectable: true,
+        hay: lowerJoin([p.type, p.description, where]),
+        lead: function () { return pickLead(makeThumb({ icon: 'icons/tinted/aviary/Caging.png' }), p.name, sub); } });
     });
-    BUILDINGS_SAMPLE.slice().sort(function (a, b) { return String(a.nickname).localeCompare(String(b.nickname), undefined, { numeric: true }); }).forEach(function (b) {
-      var loc = buildingLocation(b);
-      var sub = [b.code, b.description].filter(Boolean).join(' · ');
-      items.push({ id: kind === 'building' ? b.code : 'bld:' + b.code, title: 'Building ' + b.nickname, sub: sub, parentId: loc ? 'loc:' + loc.id : null,
-        selectable: kind === 'building', hay: lowerJoin([b.code, b.description, loc ? loc.name : '']),
-        lead: function () { return pickLead(makeThumb({ icon: 'icons/tinted/aviary/Caging.png' }), 'Building ' + b.nickname, sub); } });
-    });
-    if (kind === 'cage') {
-      allCages().forEach(function (c) {
-        var b = buildingForCage(c.code);
-        var info = cagePlaceLabel(c.code);
-        items.push({ id: c.code, title: c.code, sub: info, parentId: b ? 'bld:' + b.code : null, selectable: true, hay: info,
-          lead: function () { return pickLead(makeThumb({ icon: 'icons/tinted/aviary/Caging.png' }), c.code, info); } });
+    if (includeLoose) {
+      allCages().filter(function (c) { return !c.setUp; }).forEach(function (c) {
+        out.push({ id: c.code, title: c.name, sub: 'Not set up yet', parentId: null, selectable: true, hay: 'not set up',
+          lead: function () { return pickLead(makeThumb({ icon: 'icons/tinted/aviary/Caging.png' }), c.name, 'Not set up yet'); } });
       });
     }
-    return items;
+    return out;
   }
 
-  function locations(opts) {
-    return create(Object.assign({ placeholder: 'Search locations…' }, opts, {
-      items: function () {
-        return LOCATIONS_SAMPLE.map(function (l) {
-          return { id: l.id, title: l.name, sub: l.description, hay: l.description,
-            lead: function () { return pickLead(makeThumb({ icon: 'icons/tinted/aviary/Caging.png' }), l.name, l.description); } };
-        });
-      },
+  function places(opts) {
+    opts = opts || {};
+    var exclude = opts.exclude || [];
+    return create(Object.assign({ placeholder: 'Search places, or tap to browse…', tree: true, rootLabel: 'All places' }, opts, {
+      items: function () { return placeItems(exclude, opts.includeLoose); },
     }));
   }
+  // (the same list, for the places birds live in)
+  function cages(opts) { return places(Object.assign({ placeholder: T('Search cages, or tap to browse…'), includeLoose: true }, opts)); }
 
   function users(opts) {
     return create(Object.assign({ placeholder: 'Search your team…' }, opts, {
@@ -282,32 +278,6 @@ const Picker = (function () {
             lead: function () { return pickLead(makeThumb({ text: ((u.firstName || '').charAt(0) + (u.lastName || '').charAt(0)).toUpperCase() }), label, u.role); } };
         });
       },
-    }));
-  }
-
-  function rooms(opts) {
-    return create(Object.assign({ placeholder: 'Search rooms…' }, opts, {
-      items: function () {
-        return ROOMS_SAMPLE.map(function (r) {
-          var b = buildingForRoom(r);
-          var sub = [b ? 'Building ' + b.nickname : '', r.description].filter(Boolean).join(' · ');
-          return { id: r.id, title: r.name, sub: sub, hay: sub, lead: function () { return pickLead(makeThumb({ icon: 'icons/tinted/aviary/Caging.png' }), r.name, sub); } };
-        });
-      },
-    }));
-  }
-
-  function buildings(opts) {
-    return create(Object.assign({ placeholder: 'Search buildings, or tap to browse…', tree: true, rootLabel: 'All locations' }, opts, {
-      items: function () { return placeTree('building'); },
-    }));
-  }
-
-  // Cages, browsed Location › Building › Cage (or searched by number, building or location).
-  function cages(opts) {
-    var exclude = opts.exclude || [];
-    return create(Object.assign({ placeholder: T('Search cages, or tap to browse…'), tree: true, rootLabel: 'All locations' }, opts, {
-      items: function () { return placeTree('cage').filter(function (i) { return exclude.indexOf(i.id) === -1; }); },
     }));
   }
 
@@ -359,21 +329,14 @@ const Picker = (function () {
           lead: function () { return pickLead(makeThumb(url ? { src: url } : { icon: 'icons/tinted/aviary/Supplies.png' }), s.name, sub); } };
       });
     }
-    if (kind === 'cages') {
-      return allCages().filter(keep).map(function (c) {
-        var info = cagePlaceLabel(c.code);
-        return { id: c.code, title: c.code, sub: info, hay: info, lead: function () { return pickLead(icon('aviary/Caging.png'), c.code, info); } };
-      });
-    }
-    if (kind === 'buildings') {
-      return BUILDINGS_SAMPLE.filter(keep).map(function (b) {
-        var loc = buildingLocation(b);
-        var sub = [b.code, loc ? loc.name : '', b.description].filter(Boolean).join(' · ');
-        return { id: b.code, title: 'Building ' + b.nickname, sub: sub, hay: sub, lead: function () { return pickLead(icon('aviary/Caging.png'), 'Building ' + b.nickname, sub); } };
+    if (kind === 'cages' || kind === 'places') {
+      return PLACES.filter(keep).map(function (p) {
+        var info = [placeTypeLabel(p.type), placePathLabel(p.id)].filter(Boolean).join(' · ');
+        return { id: p.id, title: p.name, sub: info, hay: info, lead: function () { return pickLead(icon('aviary/Caging.png'), p.name, info); } };
       });
     }
     return [];
   }
 
-  return { listItems: listItems, create: create, birds: birds, contacts: contacts, locations: locations, users: users, rooms: rooms, buildings: buildings, cages: cages };
+  return { listItems: listItems, create: create, birds: birds, contacts: contacts, users: users, places: places, cages: cages };
 })();

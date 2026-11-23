@@ -65,10 +65,10 @@ const FeedWaterScreen = (function () {
       if (state.view === 'place') {
         body.appendChild(countRow);
         var list = el('div', 'list-rows');
-        var rows = allCages().filter(function (c) { return !q || (c.code + ' ' + cagePlaceLabel(c.code)).toLowerCase().indexOf(q) !== -1; }).map(function (c) {
-          return { cage: c, plan: effectiveCare('cage', c.code, plan) };
+        var rows = allCages().filter(function (c) { return !q || (c.name + ' ' + cagePlaceLabel(c.code)).toLowerCase().indexOf(q) !== -1; }).map(function (c) {
+          return { cage: c, plan: effectiveCare('place', c.code, plan) };
         }).filter(function (r) { return state.show.indexOf('noplan') === -1 || !r.plan.items.length; });
-        setCount(rows.length, 'cage', 'cages');
+        setCount(rows.length, 'place', 'places');
         rows.forEach(function (r) {
           var b = el('button', 'list-row');
           b.type = 'button';
@@ -76,14 +76,14 @@ const FeedWaterScreen = (function () {
           fillThumb(av, { icon: 'icons/tinted/aviary/Caging.png' });
           b.appendChild(av);
           var info = el('span', 'list-row-info');
-          info.appendChild(el('span', 'list-row-title', r.cage.code));
+          info.appendChild(el('span', 'list-row-title', r.cage.name));
           info.appendChild(el('span', 'list-row-sub', r.plan.items.length ? summary(r.plan.items) : 'No plan — ' + cagePlaceLabel(r.cage.code)));
           b.appendChild(info);
           b.appendChild(el('span', 'type-badge ' + (r.plan.items.length ? 'type-breeder' : 'status-inactive-user'), r.plan.items.length ? (r.plan.own ? 'Own plan' : 'From ' + r.plan.from.label) : 'No plan'));
           b.addEventListener('click', function () { location.hash = '#/aviary/caging/' + r.cage.code; });
           list.appendChild(b);
         });
-        if (!rows.length) list.appendChild(el('p', 'list-empty', allCages().length ? 'Nothing matches.' : T('No cages yet.')));
+        if (!rows.length) list.appendChild(el('p', 'list-empty', allCages().length ? 'Nothing matches.' : 'No places yet.'));
         body.appendChild(list);
         return;
       }

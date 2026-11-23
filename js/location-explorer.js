@@ -1,19 +1,16 @@
-// The Caging explorer: one consistent way to move around My Aviary > Locations > Buildings > Rooms > Cages > birds.
+// The Caging explorer: one consistent way to move around My Aviary > any place > any place inside it > … > birds.
 //   Browse — drill down one level at a time, with breadcrumbs
 //   Tree   — everything at once, with ▸ twirl-downs (opening a branch and selecting it are separate)
-//   All    — every location, building, room or cage in one list, wherever it sits
+//   All    — every place in one list, wherever it sits, optionally just one kind (a dropdown)
 // Browse and All can be shown as a list or as a grid; where you are is kept when you switch.
 // Every entry — at any level, and the "Unassigned birds" one — is the same LocationItem.
 // Built on js/location-model.js; the detail pages stay in js/screens/caging.js.
 const LocationExplorer = (function () {
   var state = {
-    mode: 'browse', present: 'list', focus: 'aviary:main', allKind: 'cage',
-    query: '', sort: 'name', filters: { unassigned: false, birds: false, empty: false, notSetUp: false },
+    mode: 'browse', present: 'list', focus: 'aviary:main', allType: '',
+    query: '', sort: 'name', filters: { birds: false, empty: false, notSetUp: false },
     expanded: {}, prefill: null, editing: false, moveNote: null,
   };
-
-  // What each kind of place can be dragged onto in the tree's edit mode.
-  var KIND_PARENTS = { cage: ['room', 'building'], room: ['building', 'location'], building: ['location'] };
 
   function el(tag, cls, text) {
     var e = document.createElement(tag);
@@ -59,17 +56,19 @@ const LocationExplorer = (function () {
 
   function plural(n, one, many) { return n + ' ' + (n === 1 ? one : many); }
 
-  var ICONS = {
-    aviary: 'icons/places/aviary.svg', location: 'icons/places/location.svg', building: 'icons/places/building.svg',
-    room: 'icons/places/room.svg', cage: 'icons/tinted/aviary/Caging.png', loose: 'icons/places/birds.svg',
-  };
+  // The picture for a kind of place: the ones that ship with the app have their own; anything else gets the cage picture.
+  var TYPE_ICONS = { location: 'icons/places/location.svg', building: 'icons/places/building.svg', room: 'icons/places/room.svg' };
+  function iconFor(node) {
+    if (node.kind === 'aviary') return 'icons/places/aviary.svg';
+    if (node.kind === 'loose') return 'icons/places/birds.svg';
+    return TYPE_ICONS[String(node.type).toLowerCase()] || 'icons/tinted/aviary/Caging.png';
+  }
 
   // ---- the one item component --------------------------------------------------------------
 
   function thumbFor(node) {
-    var photo = node.kind === 'loose' ? '' : mediaMainPhotoUrl(node.kind, node.key);
-    if (node.kind === 'aviary') photo = mediaMainPhotoUrl('aviary', 'main');
-    return makeThumb(photo ? { src: photo } : { icon: ICONS[node.kind] || ICONS.cage });
+    var photo = node.kind === 'loose' ? '' : mediaMainPhotoUrl(node.kind === 'aviary' ? 'aviary' : 'place', node.key);
+    return makeThumb(photo ? { src: photo } : { icon: iconFor(node) });
   }
 
   // node: a LocationModel node, or a bird ({ kind: 'bird', bird }). opts: { path: 'Home farm › Building F2', onOpen }
@@ -92,7 +91,7 @@ const LocationExplorer = (function () {
     var sub;
     if (node.kind === 'bird') sub = [birdBandLabel(node.bird), node.bird.sex].filter(Boolean).join(' · ');
     else if (opts.path) sub = opts.path; // searching or browsing All: where it is
-    else sub = node.kind === 'loose' ? T('No cage set') : node.kind === 'cage' ? (node.record && node.record.description) || '' : LocationModel.countsLine(node);
+    else sub = node.kind === 'loose' ? 'No place set' : node.kind === 'place' ? (node.children.length ? LocationModel.countsLine(node) : [node.typeLabel, node.record && node.record.description].filter(Boolean).join(' · ')) : LocationModel.countsLine(node);
     info.appendChild(el('span', 'loc-sub', sub));
     b.appendChild(info);
 
@@ -103,7 +102,7 @@ const LocationExplorer = (function () {
     b.appendChild(foot);
 
     if (node.kind !== 'bird') {
-      var n = node.kind === 'cage' || node.kind === 'loose' ? node.directBirds : node.birds;
+      var n = node.kind === 'loose' ? node.directBirds : node.birds;
       b.appendChild(el('span', 'loc-badge', n ? plural(n, 'bird', 'birds') : 'Empty'));
       b.appendChild(el('span', 'loc-chev', '›'));
     }
@@ -111,15 +110,15 @@ const LocationExplorer = (function () {
     return b;
   }
 
-  // "3 cages", "2 rooms · 5 cages" → in a card, just the one number that matters.
+  // In a card, just the one number that matters: "3 Cages", "5 items", "2 birds", or "Empty".
   function contentsLabel(n) {
-    if (n.kind === 'cage' || n.kind === 'loose') return n.directBirds ? plural(n.directBirds, 'bird', 'birds') : 'Empty';
+    if (n.kind === 'loose') return n.directBirds ? plural(n.directBirds, 'bird', 'birds') : 'Empty';
     var kids = n.children.filter(function (c) { return c.kind !== 'loose'; });
-    if (!kids.length) return 'Empty';
+    if (!kids.length) return n.directBirds ? plural(n.directBirds, 'bird', 'birds') : 'Empty';
     var kinds = {};
-    kids.forEach(function (c) { kinds[c.kind] = (kinds[c.kind] || 0) + 1; });
+    kids.forEach(function (c) { kinds[c.type] = (kinds[c.type] || 0) + 1; });
     var ks = Object.keys(kinds);
-    return ks.length === 1 ? plural(kids.length, ks[0], LocationModel.PLURAL[ks[0]]) : plural(kids.length, 'item', 'items');
+    return ks.length === 1 ? kids.length + ' ' + LocationModel.pluralType(placeTypeLabel(ks[0]), kids.length) : plural(kids.length, 'item', 'items');
   }
 
   // ---- helpers ---------------------------------------------------------------------------
@@ -139,8 +138,7 @@ const LocationExplorer = (function () {
 
   function matchesFilters(node) {
     var f = state.filters;
-    if (f.unassigned && !node.unassigned) return false;
-    var hasBirds = node.kind === 'cage' || node.kind === 'loose' ? node.directBirds > 0 : node.birds > 0;
+    var hasBirds = node.kind === 'loose' ? node.directBirds > 0 : node.birds > 0;
     if (f.birds && !hasBirds) return false;
     if (f.empty && (hasBirds || node.kind === 'loose')) return false;
     if (f.notSetUp && node.setUp !== false) return false;
@@ -149,7 +147,7 @@ const LocationExplorer = (function () {
 
   function filtersActive() {
     var f = state.filters;
-    return f.unassigned || f.birds || f.empty || f.notSetUp;
+    return f.birds || f.empty || f.notSetUp;
   }
 
   function sortNodes(list) {
@@ -157,24 +155,12 @@ const LocationExplorer = (function () {
     if (state.sort === 'birds') {
       out.sort(function (a, b) { return (b.birds || 0) - (a.birds || 0) || String(a.name).localeCompare(String(b.name), undefined, { numeric: true }); });
     } else if (state.sort === 'items') {
-      var size = function (n) { return n.counts.cages + n.counts.rooms + n.counts.buildings; };
+      var size = function (n) { return n.counts.places || 0; };
       out.sort(function (a, b) { return size(b) - size(a) || String(a.name).localeCompare(String(b.name), undefined, { numeric: true }); });
     } else {
       out.sort(function (a, b) { return String(a.name).localeCompare(String(b.name), undefined, { numeric: true }); });
     }
     return out;
-  }
-
-  // Where "Add new" should put things, given what's selected: the kinds that make sense there, and the parent to pre-fill.
-  function addOptions(node) {
-    var kinds = { aviary: ['location', 'building', 'room', 'cage'], location: ['building', 'room'], building: ['room', 'cage'], room: ['cage'] }[node.kind] || [];
-    return kinds.map(function (kind) {
-      var prefill = {};
-      if (node.kind === 'location') prefill.locationId = node.key;
-      if (node.kind === 'building') prefill.buildingCode = node.key;
-      if (node.kind === 'room') { prefill.roomId = node.key; var rb = node.record && node.record.buildingCode; if (rb) prefill.buildingCode = rb; }
-      return { kind: kind, label: { location: 'Location', building: 'Building', room: 'Room', cage: T('Cage') }[kind], prefill: prefill };
-    });
   }
 
   function takePrefill() {
@@ -193,32 +179,20 @@ const LocationExplorer = (function () {
     function detailHash(node) {
       if (node.kind === 'aviary') return 'aviary';
       if (node.kind === 'loose') return 'unassigned';
-      return node.kind === 'cage' ? node.key : node.kind + '~' + node.key;
+      return node.key;
     }
 
-    function startAdd(kind, prefill) {
+    // Add a place: opens the form with where it goes and a suggested kind already filled in (both can be changed).
+    function startAdd(prefill) {
       state.prefill = prefill || {};
-      navigate('new~' + kind);
-    }
-
-    function openAddMenu(options) {
-      if (options.length === 1) { startAdd(options[0].kind, options[0].prefill); return; }
-      Modal.open({
-        title: 'Add new',
-        build: function (body, close) {
-          options.forEach(function (o) {
-            var row = btn('btn-positive loc-add-row', '+ ' + o.label, function () { close(); startAdd(o.kind, o.prefill); });
-            body.appendChild(row);
-          });
-        },
-      });
+      navigate('new');
     }
 
     function openFilters() {
       Modal.open({
         title: 'Filter',
         build: function (body, close) {
-          var rows = [['unassigned', 'Unassigned only', 'Not placed under a location or building yet'], ['birds', 'Has birds', ''], ['empty', 'Empty — no birds', ''], ['notSetUp', 'Not set up yet', T('Cage numbers used on birds that have no cage record')]];
+          var rows = [['birds', 'Has birds', ''], ['empty', 'Empty — no birds', ''], ['notSetUp', 'Not set up yet', 'Names used on birds that aren’t set up as a place']];
           rows.forEach(function (r) {
             var label = el('label', 'loc-filter-row');
             var cb = el('input');
@@ -233,7 +207,7 @@ const LocationExplorer = (function () {
           });
           var done = btn('save-btn', 'Show results', function () { close(); draw(); });
           body.appendChild(done);
-          body.appendChild(btn('add-record-btn', 'Clear filters', function () { state.filters = { unassigned: false, birds: false, empty: false, notSetUp: false }; close(); draw(); }));
+          body.appendChild(btn('add-record-btn', 'Clear filters', function () { state.filters = { birds: false, empty: false, notSetUp: false }; close(); draw(); }));
         },
       });
     }
@@ -256,9 +230,9 @@ const LocationExplorer = (function () {
       card.appendChild(thumb);
       var info = el('div', 'loc-head-info');
       info.appendChild(el('strong', 'loc-head-name', node.name));
-      var line = node.kind === 'loose' ? T('Birds with no cage set') : node.kind === 'cage' ? (node.record && node.record.description) || '' : LocationModel.countsLine(node);
+      var line = node.kind === 'loose' ? 'Birds with no place set' : node.kind === 'place' && !node.children.length ? [node.typeLabel, node.record && node.record.description].filter(Boolean).join(' · ') : LocationModel.countsLine(node);
       info.appendChild(el('span', 'loc-sub', line));
-      var n = node.kind === 'cage' || node.kind === 'loose' ? node.directBirds : node.birds;
+      var n = node.kind === 'loose' ? node.directBirds : node.birds;
       info.appendChild(el('span', 'loc-badge', n ? plural(n, 'bird', 'birds') : 'Empty'));
       card.appendChild(info);
       card.appendChild(el('span', 'loc-chev', '›'));
@@ -279,18 +253,17 @@ const LocationExplorer = (function () {
       var sbox = ListTools.searchBox({ query: state.query });
       var search = sbox.input;
       search.classList.add('loc-search');
-      search.placeholder = state.mode === 'browse' ? 'Search ' + (focus.kind === 'aviary' ? 'My Aviary' : focus.name) + '…' : state.mode === 'tree' ? 'Search ' + model.root.name + '…' : 'Search all ' + LocationModel.PLURAL[state.allKind] + '…';
+      search.placeholder = state.mode === 'browse' ? 'Search ' + (focus.kind === 'aviary' ? 'My Aviary' : focus.name) + '…' : state.mode === 'tree' ? 'Search ' + model.root.name + '…' : 'Search all ' + (state.allType ? LocationModel.pluralType(placeTypeLabel(state.allType), 2).toLowerCase() : 'places') + '…';
       search.addEventListener('input', function (e) { state.query = e.target.value; drawResults(); });
       bar.appendChild(sbox.box);
-      var addTarget = state.mode === 'all' ? null : focus;
-      var opts = state.mode === 'all' ? [{ kind: state.allKind, label: LocationModel.KINDS[state.allKind], prefill: {} }] : addOptions(addTarget);
-      if (opts.length && (state.mode !== 'tree' || state.editing)) bar.appendChild(btn('loc-add', '+ Add new', function () { openAddMenu(opts); }));
+      var addParent = state.mode === 'all' ? '' : focus.kind === 'place' ? focus.key : '';
+      if (state.mode !== 'tree' || state.editing) bar.appendChild(btn('loc-add', '+ Add new', function () { startAdd({ parentId: addParent, type: state.mode === 'all' && state.allType ? state.allType : suggestedPlaceType(addParent) }); }));
       if (state.mode === 'tree') {
         // The pencil (as on the Home Screen) turns edit mode on; in edit mode "+ Add new" appears beside it, and items can be dragged, renamed or deleted.
         var edit = btn('loc-edit-inline' + (state.editing ? ' on' : ''), state.editing ? '✓' : '✎', function () {
           state.editing = !state.editing;
           state.moveNote = null;
-          if (state.editing) LocationModel.descendants(model.root, model.byId).forEach(function (n) { if (n.children.length) state.expanded[n.id] = true; });
+          if (state.editing) LocationModel.descendants(model.root).forEach(function (n) { if (n.children.length) state.expanded[n.id] = true; });
           draw();
         });
         edit.setAttribute('aria-label', state.editing ? 'Done editing' : 'Edit the tree');
@@ -310,7 +283,7 @@ const LocationExplorer = (function () {
       sel.addEventListener('change', function () { state.sort = sel.value; drawResults(); });
       sortWrap.appendChild(sel);
       ctl.appendChild(sortWrap);
-      var activeCount = ['unassigned', 'birds', 'empty', 'notSetUp'].filter(function (k) { return state.filters[k]; }).length;
+      var activeCount = ['birds', 'empty', 'notSetUp'].filter(function (k) { return state.filters[k]; }).length;
       var filterBtn = iconBtn('loc-filter-btn' + (activeCount ? ' on' : ''), 'funnel', activeCount ? 'Filter — ' + activeCount + ' on' : 'Filter', openFilters);
       if (activeCount) filterBtn.appendChild(el('span', 'loc-filter-count', String(activeCount)));
       ctl.appendChild(filterBtn);
@@ -318,7 +291,7 @@ const LocationExplorer = (function () {
       ctl.appendChild(segmented([['browse', 'Browse'], ['tree', 'Tree'], ['all', 'All']], state.mode, function (m) { state.mode = m; state.editing = false; state.moveNote = null; draw(); }, 'loc-modes-mini'));
       if (state.mode === 'tree') {
         var group = el('div', 'loc-seg loc-present');
-        group.appendChild(iconBtn('loc-seg-btn', 'expand', 'Expand all', function () { LocationModel.descendants(model.root, model.byId).forEach(function (n) { if (n.children.length) state.expanded[n.id] = true; }); state.expanded[model.root.id] = true; drawResults(); }));
+        group.appendChild(iconBtn('loc-seg-btn', 'expand', 'Expand all', function () { LocationModel.descendants(model.root).forEach(function (n) { if (n.children.length) state.expanded[n.id] = true; }); state.expanded[model.root.id] = true; drawResults(); }));
         group.appendChild(iconBtn('loc-seg-btn', 'collapse', 'Collapse all', function () { state.expanded = {}; drawResults(); }));
         ctl.appendChild(group);
       } else {
@@ -328,7 +301,7 @@ const LocationExplorer = (function () {
 
       // 4. active filters, and what the search covers
       var chips = el('div', 'loc-chips');
-      var labels = { unassigned: 'Unassigned only', birds: 'Has birds', empty: 'Empty', notSetUp: 'Not set up' };
+      var labels = { birds: 'Has birds', empty: 'Empty', notSetUp: 'Not set up' };
       Object.keys(labels).forEach(function (k) {
         if (!state.filters[k]) return;
         var c = btn('loc-chip', labels[k] + '  ✕', function () { state.filters[k] = false; draw(); });
@@ -346,7 +319,7 @@ const LocationExplorer = (function () {
         var searching = state.query.trim() || filtersActive();
         if (state.mode === 'browse') return searching ? 'Looking through everything inside ' + (focus.kind === 'aviary' ? 'My Aviary' : focus.name) + '.' : '';
         if (state.mode === 'tree') return searching ? 'Looking through everything in My Aviary.' : '';
-        return searching ? 'Looking through all ' + LocationModel.PLURAL[state.allKind] + ', wherever they are.' : '';
+        return searching ? 'Looking through all ' + (state.allType ? LocationModel.pluralType(placeTypeLabel(state.allType), 2).toLowerCase() : 'places') + ', wherever they are.' : '';
       }
 
       // ---- results ---------------------------------------------------------------------
@@ -382,40 +355,42 @@ const LocationExplorer = (function () {
         body.appendChild(inspector(focus));
 
         var nodes;
-        if (focus.kind === 'cage' || focus.kind === 'loose') {
-          var birds = (focus.birdList || []).filter(function (bd) {
-            var q = state.query.trim().toLowerCase();
-            return !q || [bd.name, bd.band, birdShortLabel(bd)].join(' ').toLowerCase().indexOf(q) !== -1;
-          });
-          body.appendChild(el('p', 'loc-level', T('Birds in this ' + (focus.kind === 'cage' ? 'cage' : 'group'))));
-          var box = el('div', 'loc-items' + (state.present === 'grid' ? ' grid' : ''));
-          birds.forEach(function (bd) { box.appendChild(item({ kind: 'bird', bird: bd }, { parent: focus.name, onOpen: function () { location.hash = '#/mybirds/birds/' + bd.id; } })); });
-          body.appendChild(box);
-          if (!birds.length) body.appendChild(empty(focus.directBirds ? 'No birds match.' : 'No birds here yet.'));
+        var q0 = state.query.trim().toLowerCase();
+        var hereBirds = (focus.birdList || []).filter(function (bd) { return !q0 || [bd.name, bd.band, birdShortLabel(bd)].join(' ').toLowerCase().indexOf(q0) !== -1; });
+        if (focus.kind === 'loose') {
+          body.appendChild(el('p', 'loc-level', 'Birds with no place'));
+          var lbox = el('div', 'loc-items' + (state.present === 'grid' ? ' grid' : ''));
+          hereBirds.forEach(function (bd) { lbox.appendChild(item({ kind: 'bird', bird: bd }, { parent: focus.name, onOpen: function () { location.hash = '#/mybirds/birds/' + bd.id; } })); });
+          body.appendChild(lbox);
+          if (!hereBirds.length) body.appendChild(empty(focus.directBirds ? 'No birds match.' : 'No birds here yet.'));
           return;
         }
         if (searching) {
-          nodes = LocationModel.descendants(focus, model.byId).filter(function (n) { return matchesQuery(n, model) && matchesFilters(n); });
+          nodes = LocationModel.descendants(focus).filter(function (n) { return matchesQuery(n, model) && matchesFilters(n); });
         } else {
           nodes = focus.children.filter(matchesFilters);
         }
         nodes = searching ? sortNodes(nodes) : state.sort === 'name' ? nodes : sortNodes(nodes);
-        body.appendChild(el('p', 'loc-level', searching ? plural(nodes.length, 'match', 'matches') : levelLabel(focus)));
-        body.appendChild(list(nodes, { paths: !!searching }));
-        if (!nodes.length) body.appendChild(empty(searching ? 'Nothing matches.' : emptyText(focus)));
+        if (nodes.length || !hereBirds.length) {
+          body.appendChild(el('p', 'loc-level', searching ? plural(nodes.length, 'match', 'matches') : levelLabel(focus)));
+          body.appendChild(list(nodes, { paths: !!searching }));
+          if (!nodes.length) body.appendChild(empty(searching ? 'Nothing matches.' : emptyText(focus)));
+        }
+        if (hereBirds.length && focus.kind === 'place') { // birds kept directly in this place (a place can hold both places and birds)
+          body.appendChild(el('p', 'loc-level', 'Birds here'));
+          var bbox = el('div', 'loc-items' + (state.present === 'grid' ? ' grid' : ''));
+          hereBirds.forEach(function (bd) { bbox.appendChild(item({ kind: 'bird', bird: bd }, { parent: focus.name, onOpen: function () { location.hash = '#/mybirds/birds/' + bd.id; } })); });
+          body.appendChild(bbox);
+        }
       }
 
       function levelLabel(n) {
         var kids = n.children.filter(function (c) { return c.kind !== 'loose'; });
-        var kinds = {};
-        kids.forEach(function (c) { kinds[c.typeLabel] = true; });
-        var names = Object.keys(kinds);
-        return names.length ? 'In ' + (n.kind === 'aviary' ? 'My Aviary' : n.name) : '';
+        return kids.length ? 'In ' + (n.kind === 'aviary' ? 'My Aviary' : n.name) : '';
       }
 
       function emptyText(n) {
-        if (n.kind === 'aviary') return T('Nothing here yet — tap “+ Add new” to add a location, building, room or cage.');
-        if (n.kind === 'room') return T('No cages in this room yet.');
+        if (n.kind === 'aviary') return 'Nothing here yet — tap “+ Add new” to add your first place: a building, room, coop, cage, shelf or something of your own.';
         return 'Nothing in ' + n.name + ' yet — tap “+ Add new”.';
       }
 
@@ -424,7 +399,7 @@ const LocationExplorer = (function () {
         var show = null; // when searching: matches plus the branches that lead to them
         if (searching) {
           show = {};
-          LocationModel.descendants(model.root, model.byId).forEach(function (n) {
+          LocationModel.descendants(model.root).forEach(function (n) {
             if (matchesQuery(n, model) && matchesFilters(n)) { show[n.id] = true; LocationModel.ancestors(n, model.byId).forEach(function (a) { show[a.id] = true; }); }
           });
         }
@@ -437,7 +412,7 @@ const LocationExplorer = (function () {
         if (!state.editing) body.appendChild(inspector(focus));
         if (!state.treeOpened) { // first time in Tree: open every branch so the whole hierarchy is visible
           state.treeOpened = true;
-          LocationModel.descendants(model.root, model.byId).forEach(function (n) { if (n.children.length) state.expanded[n.id] = true; });
+          LocationModel.descendants(model.root).forEach(function (n) { if (n.children.length) state.expanded[n.id] = true; });
         }
         var tree = el('div', 'loc-tree' + (state.editing ? ' editing' : ''));
         function row(n, parentEl) {
@@ -459,9 +434,9 @@ const LocationExplorer = (function () {
             var chev = it.querySelector('.loc-chev');
             if (chev) {
               var tools = el('span', 'loc-tools');
-              if (n.kind !== 'loose') tools.appendChild(toolBtn('pencil', n.kind === 'cage' ? 'Edit' : 'Rename', function () { renameNode(n); }));
-              if (n.kind !== 'loose' && !(n.kind === 'cage' && !n.setUp)) tools.appendChild(toolBtn('trash', 'Delete', function () { deleteNode(n); }));
-              if (KIND_PARENTS[n.kind]) { var hd = el('span', 'loc-handle', '≡'); hd.dataset.id = n.id; hd.addEventListener('click', function (e) { e.stopPropagation(); }); tools.appendChild(hd); }
+              if (n.kind === 'place') tools.appendChild(toolBtn('pencil', 'Rename', function () { renameNode(n); }));
+              if (n.kind === 'place' && n.setUp !== false) tools.appendChild(toolBtn('trash', 'Delete', function () { deleteNode(n); }));
+              if (n.kind === 'place') { var hd = el('span', 'loc-handle', '≡'); hd.dataset.id = n.id; hd.addEventListener('click', function (e) { e.stopPropagation(); }); tools.appendChild(hd); }
               chev.parentNode.replaceChild(tools, chev);
             }
           }
@@ -493,12 +468,9 @@ const LocationExplorer = (function () {
         return b;
       }
 
-      var NAME_FIELD = { location: ['locations', 'name'], building: ['buildings', 'nickname'], room: ['rooms', 'name'] };
-
       function renameNode(n) {
-        if (n.kind === 'cage') { navigate('edit~cage~' + n.key); return; } // a cage's number is its identity; its other details are on the edit page
-        var f = NAME_FIELD[n.kind];
-        var current = n.kind === 'building' ? n.record.nickname : n.record.name;
+        if (!n.setUp) { navigate('new~' + n.key); return; } // a name that's only on birds: set it up as a place first
+        var current = n.record.name;
         Modal.open({
           title: 'Rename ' + n.typeLabel.toLowerCase(),
           build: function (mbody, close) {
@@ -509,10 +481,8 @@ const LocationExplorer = (function () {
               var v = inp.value.trim();
               if (!v) { clearEl(msg); msg.appendChild(el('p', 'form-message error', 'Give it a name.')); return; }
               go.disabled = true;
-              var change = {}; change[f[1]] = v;
-              updateRecord(f[0], n.key, change).then(function () { close(); state.moveNote = { text: 'Renamed to “' + (n.kind === 'building' ? 'Building ' + v : v) + '”.' }; draw(); }).catch(function (err) { go.disabled = false; clearEl(msg); msg.appendChild(el('p', 'form-message error', err.message)); });
+              updateRecord('places', n.key, { name: v }).then(function () { close(); state.moveNote = { text: 'Renamed to “' + v + '”.' }; draw(); }).catch(function (err) { go.disabled = false; clearEl(msg); msg.appendChild(el('p', 'form-message error', err.message)); });
             });
-            if (n.kind === 'building') mbody.appendChild(el('p', 'form-note', 'The name after “Building” — its code (' + n.key + ') stays the same.'));
             mbody.appendChild(inp);
             mbody.appendChild(msg);
             mbody.appendChild(go);
@@ -523,25 +493,23 @@ const LocationExplorer = (function () {
       }
 
       function deleteNode(n) {
-        var type = { location: 'locations', building: 'buildings', room: 'rooms', cage: 'cages' }[n.kind];
-        var note = n.kind === 'location' ? ' Its buildings and rooms stay, just no longer on a location.'
-          : n.kind === 'building' ? T(' Its rooms and cages stay, just no longer filed under it.')
-          : n.kind === 'room' ? T(' Its cages stay, just no longer in a room.')
-          : (n.directBirds ? ' The ' + n.directBirds + ' bird' + (n.directBirds === 1 ? '' : 's') + T(' in it will be left with no cage.') : '');
+        var inside = n.children.filter(function (c) { return c.kind !== 'loose'; }).length;
+        var note = (inside ? ' What’s inside it (' + inside + ') moves up one level.' : '') + (n.directBirds ? ' The ' + n.directBirds + ' bird' + (n.directBirds === 1 ? '' : 's') + ' in it will be left with no place.' : '');
         Modal.confirm({
           title: 'Delete ' + n.typeLabel.toLowerCase() + '?', message: 'Delete “' + n.name + '”?' + note + ' This can’t be undone.', confirmLabel: 'Delete', danger: true,
-          onConfirm: function () { deleteRecord(type, n.key).then(function () { state.moveNote = { text: 'Deleted ' + n.name + '.' }; draw(); }).catch(failMove); },
+          onConfirm: function () { deleteRecord('places', n.key).then(function () { state.moveNote = { text: 'Deleted ' + n.name + '.' }; draw(); }).catch(failMove); },
         });
       }
 
       // ---- drag and drop in edit mode (pointer events, so it works on touch too) ----
       var drag = null;
       // Can `node` live directly under `parent` (a place, or My Aviary itself meaning "no parent")? Staying put doesn't count.
+      // Anything can go inside anything — except into itself, or into something that's inside it (that would be a loop).
       function canDrop(node, parent) {
         if (!node || !parent || parent.id === node.id) return false;
         if (parent.id === node.parentId) return false;
-        if (parent.kind === 'aviary') return true;
-        return (KIND_PARENTS[node.kind] || []).indexOf(parent.kind) !== -1;
+        if (parent.kind === 'loose') return false;
+        return LocationModel.ancestors(parent, model.byId).every(function (a) { return a.id !== node.id; });
       }
 
       // Where would a drop at this point go? Over the middle of a row it goes into that row; near its top or bottom edge, or in
@@ -634,33 +602,12 @@ const LocationExplorer = (function () {
       window.addEventListener('pointercancel', onUp);
       state.unbind = function () { window.removeEventListener('pointermove', onMove); window.removeEventListener('pointerup', onUp); window.removeEventListener('pointercancel', onUp); };
 
-      // What to save to put `node` under `target` (and to put it back).
-      function moveChanges(node, target) {
-        var key = target.kind === 'aviary' ? '' : target.key;
-        if (node.kind === 'cage') {
-          var rec = getCage(node.key) || {};
-          return { type: 'cages', id: node.key, exists: !!getCage(node.key),
-            to: { roomId: target.kind === 'room' ? key : '', buildingCode: target.kind === 'building' ? key : '' }, from: { roomId: rec.roomId || '', buildingCode: rec.buildingCode || '' } };
-        }
-        if (node.kind === 'room') {
-          return { type: 'rooms', id: node.key, exists: true,
-            to: { buildingCode: target.kind === 'building' ? key : '', locationId: target.kind === 'location' ? key : '' }, from: { buildingCode: node.record.buildingCode || '', locationId: node.record.locationId || '' } };
-        }
-        return { type: 'buildings', id: node.key, exists: true, to: { locationId: target.kind === 'location' ? key : '' }, from: { locationId: node.record.locationId || '' } };
-      }
-
-      function save(c, values) {
-        return c.exists || getCage(c.id) || c.type !== 'cages' ? updateRecord(c.type, c.id, values) : createRecord('cages', Object.assign({ code: c.id }, values));
-      }
-
       function moveNode(node, target) {
-        var c = moveChanges(node, target);
+        var to = target.kind === 'aviary' ? '' : target.key;
+        var from = node.parentId === 'aviary:main' ? '' : (model.byId[node.parentId] || {}).key || '';
         var where = target.kind === 'aviary' ? 'out of its parent' : 'to ' + target.name;
-        save(c, c.to).then(function () {
-          var after = LocationModel.build().byId[node.id];
-          var landed = after && (target.kind === 'aviary' ? after.parentId === 'aviary:main' : after.parentId === target.id);
-          state.moveNote = landed ? { text: 'Moved ' + node.name + ' ' + where + '.', undo: function () { save(c, c.from).then(function () { state.moveNote = { text: 'Put ' + node.name + ' back.' }; draw(); }).catch(failMove); } }
-            : { text: node.name + ' stays where its number puts it (it starts with its building’s code).', undo: null };
+        movePlace(node.key, to).then(function () {
+          state.moveNote = { text: 'Moved ' + node.name + ' ' + where + '.', undo: function () { movePlace(node.key, from).then(function () { state.moveNote = { text: 'Put ' + node.name + ' back.' }; draw(); }).catch(failMove); } };
           draw();
         }).catch(failMove);
       }
@@ -668,15 +615,23 @@ const LocationExplorer = (function () {
       function failMove(err) { state.moveNote = { text: (err && err.message) || 'That didn’t move — try again.' }; draw(); }
 
       function drawAll() {
-        var kinds = [['location', 'Locations'], ['building', 'Buildings'], ['room', 'Rooms'], ['cage', T('Cages')]];
-        var all = LocationModel.descendants(model.root, model.byId);
+        var all = LocationModel.descendants(model.root).filter(function (n) { return n.kind === 'place'; });
         var counts = {};
-        kinds.forEach(function (k) { counts[k[0]] = all.filter(function (n) { return n.kind === k[0]; }).length; });
-        body.appendChild(segmented(kinds.map(function (k) { return [k[0], k[1] + ' ' + counts[k[0]]]; }), state.allKind, function (k) { state.allKind = k; draw(); }, 'loc-kinds'));
-        var nodes = all.filter(function (n) { return (n.kind === state.allKind || (state.allKind === 'cage' && n.kind === 'loose')) && matchesQuery(n, model) && matchesFilters(n); });
+        all.forEach(function (n) { counts[n.type] = (counts[n.type] || 0) + 1; });
+        // a dropdown of the kinds of place you actually have (with how many of each)
+        var pick = el('select', 'form-input loc-type-select');
+        pick.setAttribute('aria-label', 'Kind of place');
+        var allOpt = el('option', '', 'All places (' + all.length + ')'); allOpt.value = ''; pick.appendChild(allOpt);
+        placeTypes().filter(function (t) { return counts[t] || t === state.allType; }).forEach(function (t) {
+          var o = el('option', '', LocationModel.pluralType(placeTypeLabel(t), 2) + ' (' + (counts[t] || 0) + ')'); o.value = t; pick.appendChild(o);
+        });
+        pick.value = state.allType;
+        pick.addEventListener('change', function () { state.allType = pick.value; draw(); });
+        body.appendChild(pick);
+        var nodes = all.filter(function (n) { return (!state.allType || n.type === state.allType) && matchesQuery(n, model) && matchesFilters(n); });
         nodes = sortNodes(nodes);
         body.appendChild(list(nodes, { paths: true }));
-        if (!nodes.length) body.appendChild(empty(counts[state.allKind] ? 'Nothing matches.' : 'No ' + LocationModel.PLURAL[state.allKind] + ' yet — tap “+ Add new”.'));
+        if (!nodes.length) body.appendChild(empty(all.length ? 'Nothing matches.' : 'No places yet — tap “+ Add new”.'));
       }
 
       function drawResults() {

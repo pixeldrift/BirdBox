@@ -145,9 +145,9 @@ function waybillPayload(wb, changes) {
   }, changes || {});
 }
 
-// Put a cage under a building (or take it out: buildingCode ''). Cages seen only on birds are set up first.
-function assignCageToBuilding(code, buildingCode) {
-  return getCage(code) ? updateRecord('cages', code, { buildingCode: buildingCode }) : createRecord('cages', { code: code, buildingCode: buildingCode });
+// Put a place inside another (or take it out: parentId ''). A code seen only on birds is set up as a place first.
+function movePlace(id, parentId) {
+  return getPlace(id) ? updateRecord('places', id, { parentId: parentId || '' }) : createRecord('places', { name: id, type: 'Cage', parentId: parentId || '' });
 }
 
 // ---- how linked records look in a list (a tappable row that opens the record) -------------
@@ -192,5 +192,5 @@ function healthRow(r) {
 }
 
 function cageLinkRow(code) {
-  return relationRow({ icon: 'icons/tinted/aviary/Caging.png' }, code, cagePlaceLabel(code), '#/aviary/caging/' + code);
+  return relationRow({ icon: 'icons/tinted/aviary/Caging.png' }, placeName(code), cagePlaceLabel(code), '#/aviary/caging/' + code);
 }

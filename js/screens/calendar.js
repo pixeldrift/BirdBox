@@ -250,7 +250,7 @@ const CalendarScreen = (function () {
   }
 
   // ---- one event ----
-  var LINK_KINDS = [['bird', 'Bird', 'birds'], ['contact', 'Contact', 'contacts'], ['waybill', 'Shipment', 'waybills'], ['cage', 'Cage', 'cages']];
+  var LINK_KINDS = [['bird', 'Bird', 'birds'], ['contact', 'Contact', 'contacts'], ['waybill', 'Shipment', 'waybills'], ['place', 'Place', 'places']];
 
   function linkPopup(e, done) {
     var kind = 'bird';

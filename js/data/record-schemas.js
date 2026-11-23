@@ -156,38 +156,31 @@ var RECORD_TYPES_UI = {
     fields: [],
     defaults: {},
   },
-  locations: {
-    singular: 'location', pk: 'id', hash: '#/aviary/caging/',
-    list: function () { return LOCATIONS_SAMPLE; },
+  // Places: a building, room, cage, coop, shelf, box — anything. A name, a type you choose (or invent), and what it's inside.
+  places: {
+    singular: 'place', pk: 'id', hash: '#/aviary/caging/',
+    list: function () { return PLACES; },
     nameOf: function (r) { return r.name; },
     fields: [
-      { key: 'name', label: 'Name', type: 'text', required: true, hint: 'A site — e.g. Home farm, Fallbrook, Rental barn.' },
+      { key: 'name', label: 'Name', type: 'text', required: true, hint: 'e.g. Home farm, Flight room, Coop 2, Shelf A, F2-010.' },
+      { key: 'type', label: 'What kind of place', type: 'placetype', required: true },
+      { key: 'parentId', label: 'Inside', type: 'text', ref: 'place', hint: 'Optional — what this is inside. Anything can go inside anything.',
+        pickerOpts: function (rec) { return rec ? { exclude: [rec.id].concat(placeDescendants(rec.id).map(function (d) { return d.id; })) } : {}; } },
       { key: 'description', label: 'Description', type: 'textarea' },
     ],
-    defaults: {},
+    defaults: { type: 'Cage' },
+    afterSave: function (saved) { // a type you invented is remembered, even before anything else uses it
+      var known = placeTypes().some(function (t) { return t.toLowerCase() === String(saved.type).toLowerCase(); });
+      var stored = PLACE_TYPE_ROWS.some(function (r) { return r.name.toLowerCase() === String(saved.type).toLowerCase(); });
+      if (!stored && PLACE_TYPE_DEFAULTS.every(function (t) { return t.toLowerCase() !== String(saved.type).toLowerCase(); })) createRecord('placeTypes', { name: saved.type, sort: PLACE_TYPE_ROWS.length + 1 }).catch(function () {});
+      return known;
+    },
   },
-  buildings: {
-    singular: 'building', pk: 'code', hash: '#/aviary/caging/',
-    list: function () { return BUILDINGS_SAMPLE; },
-    nameOf: function (r) { return r.nickname; },
-    fields: [
-      { key: 'code', label: 'Code', type: 'text', required: true, createOnly: true, hint: 'The letters at the start of its cage numbers — F2 for cages like F2-001. Can’t be changed later.' },
-      { key: 'nickname', label: 'Name', type: 'text', required: true },
-      { key: 'description', label: 'Description', type: 'textarea' },
-      { key: 'locationId', label: 'Location', type: 'text', ref: 'location', hint: 'Optional — which site it’s on.' },
-    ],
-    defaults: {},
-  },
-  rooms: {
-    singular: 'room', pk: 'id', hash: '#/aviary/caging/',
-    list: function () { return ROOMS_SAMPLE; },
+  placeTypes: {
+    singular: 'place type', pk: 'id', hash: '#/aviary/caging/',
+    list: function () { return PLACE_TYPE_ROWS; },
     nameOf: function (r) { return r.name; },
-    fields: [
-      { key: 'name', label: 'Name', type: 'text', required: true, hint: 'e.g. Flight room, Nursery, Quarantine.' },
-      { key: 'description', label: 'Description', type: 'textarea' },
-      { key: 'buildingCode', label: 'Building', type: 'text', ref: 'building', hint: 'Optional — which building it’s in.' },
-      { key: 'locationId', label: 'Location', type: 'text', ref: 'location', hint: 'Optional — only needed if it isn’t in a building.' },
-    ],
+    fields: [{ key: 'name', label: 'Name', type: 'text', required: true }],
     defaults: {},
   },
   aviary: {
@@ -204,18 +197,6 @@ var RECORD_TYPES_UI = {
       { key: 'website', label: 'Website', type: 'text' },
       { key: 'socials', label: 'Social links', type: 'text', hint: 'Optional — e.g. Instagram, Facebook.' },
       { key: 'keeps', label: 'What I keep', type: 'enum', options: ['Parrots & exotic birds', 'Chickens & poultry'], hint: 'Changes the words the app uses — “coop” and “hatch” for chickens, “cage” and “clutch” for parrots.' },
-    ],
-    defaults: {},
-  },
-  cages: {
-    singular: 'cage', pk: 'code', hash: '#/aviary/caging/',
-    list: function () { return CAGES_SAMPLE; },
-    nameOf: function (r) { return r.code; },
-    fields: [
-      { key: 'code', label: 'Cage number', type: 'text', required: true, createOnly: true, hint: 'e.g. F2-010. Can’t be changed later.' },
-      { key: 'buildingCode', label: 'Building', type: 'text', ref: 'building', hint: 'Optional — which building it’s in.' },
-      { key: 'roomId', label: 'Room', type: 'text', ref: 'room', hint: 'Optional — which room it’s in.' },
-      { key: 'description', label: 'Description', type: 'textarea' },
     ],
     defaults: {},
   },

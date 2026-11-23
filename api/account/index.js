@@ -10,7 +10,7 @@ const auth = require('../_lib/auth');
 // "remove sample data" deletes exactly those rows and nothing you added.
 
 // Tables copied from the demo account, in a safe order. (Photos, menus and your own settings are never copied.)
-const DEMO_TABLES = ['locations', 'buildings', 'rooms', 'cages', 'contacts', 'users', 'birds', 'transactions', 'health_records', 'show_results',
+const DEMO_TABLES = ['places', 'contacts', 'users', 'birds', 'transactions', 'health_records', 'show_results',
   'waybills', 'waybill_files', 'bird_transfers', 'supplies', 'care_items', 'tasks', 'task_done', 'events', 'event_links'];
 
 async function columnsOf(table) {
@@ -39,7 +39,7 @@ async function removeDemo() {
 }
 
 async function demoLoaded() {
-  return (await sql`select 1 from birds where is_demo limit 1`).length > 0 || (await sql`select 1 from cages where is_demo limit 1`).length > 0;
+  return (await sql`select 1 from birds where is_demo limit 1`).length > 0 || (await sql`select 1 from places where is_demo limit 1`).length > 0;
 }
 
 function newAccountId() { return 'acct-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }

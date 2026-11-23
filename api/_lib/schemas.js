@@ -61,7 +61,7 @@ const SCHEMAS = {
   care: {
     table: 'care_items', pk: 'id', idPrefix: 'care-', order: 'id',
     fields: {
-      targetType: { col: 'target_type', type: 'enum', required: true, options: ['aviary', 'location', 'building', 'room', 'cage', 'bird'] },
+      targetType: { col: 'target_type', type: 'enum', required: true, options: ['aviary', 'place', 'bird'] },
       targetId: { col: 'target_id', type: 'text', required: true, max: 80 },
       supplyId: { col: 'supply_id', type: 'text', ref: 'supply' },
       label: { col: 'label', type: 'text', max: 160 },
@@ -193,11 +193,21 @@ const SCHEMAS = {
       homeTile: { col: 'home_tile', type: 'boolean' },
     },
   },
-  locations: {
-    table: 'locations', pk: 'id', idPrefix: 'loc-', order: 'name',
+  // Every place — a building, room, cage, coop, shelf, box or anything the person has invented — is one record: a name, a type and a parent.
+  places: {
+    table: 'places', pk: 'id', idPrefix: 'pl-', order: 'name',
     fields: {
       name: { col: 'name', type: 'text', required: true, max: 120 },
+      type: { col: 'type', type: 'text', required: true, max: 40 },
+      parentId: { col: 'parent_id', type: 'text', ref: 'place' },
       description: { col: 'description', type: 'text', max: 400 },
+    },
+  },
+  placeTypes: {
+    table: 'place_types', pk: 'id', idPrefix: 'pt-', order: 'sort, name',
+    fields: {
+      name: { col: 'name', type: 'text', required: true, max: 40 },
+      sort: { col: 'sort', type: 'number' },
     },
   },
   aviary: {
@@ -211,31 +221,6 @@ const SCHEMAS = {
       website: { col: 'website', type: 'text', max: 200 },
       socials: { col: 'socials', type: 'text', max: 400 },
       keeps: { col: 'keeps', type: 'enum', options: ['Parrots & exotic birds', 'Chickens & poultry'] }, // sets the words the app uses (js/terms.js)
-    },
-  },
-  rooms: {
-    table: 'rooms', pk: 'id', idPrefix: 'room-', order: 'name',
-    fields: {
-      name: { col: 'name', type: 'text', required: true, max: 120 },
-      description: { col: 'description', type: 'text', max: 400 },
-      buildingCode: { col: 'building_code', type: 'text', ref: 'building' },
-      locationId: { col: 'location_id', type: 'text', ref: 'location' },
-    },
-  },
-  buildings: {
-    table: 'buildings', pk: 'code', idPrefix: '', order: 'code',
-    fields: {
-      nickname: { col: 'nickname', type: 'text', required: true, max: 80 },
-      description: { col: 'description', type: 'text', max: 400 },
-      locationId: { col: 'location_id', type: 'text', ref: 'location' },
-    },
-  },
-  cages: {
-    table: 'cages', pk: 'code', idPrefix: '', order: 'code',
-    fields: {
-      buildingCode: { col: 'building_code', type: 'text', ref: 'building' },
-      roomId: { col: 'room_id', type: 'text', ref: 'room' },
-      description: { col: 'description', type: 'text', max: 400 },
     },
   },
 };

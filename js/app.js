@@ -216,7 +216,7 @@
   window.addEventListener('hashchange', route);
 
   main.textContent = 'Loading…';
-  Promise.all([birdsLoaded, contactsLoaded, transactionsLoaded, healthLoaded, buildingsLoaded, waybillsLoaded, transfersLoaded, usersLoaded, suppliesLoaded, careLoaded, tasksLoaded, eventsLoaded, locationsLoaded, roomsLoaded, aviaryLoaded, cagesLoaded, filesLoaded, navigationLoaded]).then(route);
+  Promise.all([birdsLoaded, contactsLoaded, transactionsLoaded, healthLoaded, buildingsLoaded, placeTypesLoaded, waybillsLoaded, transfersLoaded, usersLoaded, suppliesLoaded, careLoaded, tasksLoaded, eventsLoaded, locationsLoaded, roomsLoaded, aviaryLoaded, cagesLoaded, filesLoaded, navigationLoaded]).then(route);
 
   if ('serviceWorker' in navigator) {
     // The app shell is served from the phone's cache first and refreshed in the background, so right after an update the

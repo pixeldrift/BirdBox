@@ -9,7 +9,7 @@ const BirdPopups = (function () {
 
   // What to show for a bird's location: its cage, the person it's with, or a free-text place.
   function locationLabel(bird) {
-    if (bird.cage) return bird.cage;
+    if (bird.cage) return placeName(bird.cage);
     if (bird.locationContactId) {
       var c = getContact(bird.locationContactId);
       return c ? 'With ' + c.name : 'With someone';
@@ -43,19 +43,19 @@ const BirdPopups = (function () {
     function drawPanel() {
       clearEl(panel);
       if (mode === 'cage') {
-        panel.appendChild(el('p', 'form-note', T('Browse your locations, buildings and cages — or search for a cage number.')));
+        panel.appendChild(el('p', 'form-note', T('Browse your places — buildings, rooms, coops, cages — or search by name.')));
         panel.appendChild(Picker.cages({
           value: picked.cage, allowClear: true, onChange: function (code) { picked.cage = code; },
-          // A cage that doesn't exist yet can be added right here, filed under the building its number starts with.
+          // A place that doesn't exist yet can be added right here (it can be moved inside something later).
           addNew: {
             needsText: true,
-            label: function (typed) { return typed ? T('+ Add cage “') + typed.toUpperCase() + '”' : T('+ New cage — type its number above'); },
+            label: function (typed) { return typed ? T('+ Add “') + typed.trim() + '”' : T('+ New place — type its name above'); },
             onClick: function (typed, done) {
-              var code = typed.toUpperCase().replace(/[^A-Z0-9-]/g, '');
-              if (!code) return;
-              if (getCage(code)) { done(code); return; }
-              var guess = buildingForCage(code);
-              createRecord('cages', { code: code, buildingCode: guess ? guess.code : '' }).then(function () { done(code); })
+              var name = typed.trim();
+              if (!name) return;
+              var same = PLACES.filter(function (p) { return p.name.toLowerCase() === name.toLowerCase(); })[0];
+              if (same) { done(same.id); return; }
+              createRecord('places', { name: name, type: 'Cage' }).then(function (rec) { done(rec.id); })
                 .catch(function (err) { Modal.alert(err.message); });
             },
           },

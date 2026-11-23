@@ -73,12 +73,11 @@ function taskDoneRow(taskId, iso, sub) {
 // The cages a feeding round covers: those under its place (or all cages), each with the plan that applies.
 function taskSubitems(t) {
   if (t.kind !== 'Feeding') return [];
-  var scope = ['aviary', 'location', 'building', 'room'];
-  if (t.targetType && scope.indexOf(t.targetType) === -1) return [];
+  if (t.targetType && ['aviary', 'place'].indexOf(t.targetType) === -1) return [];
   return allCages().filter(function (c) {
     if (!t.targetType || t.targetType === 'aviary') return true;
-    return careChain('cage', c.code).some(function (x) { return x.type === t.targetType && x.id === t.targetId; });
-  }).map(function (c) { return { key: c.code, label: T('Cage ') + c.code, plan: effectiveCare('cage', c.code) }; })
+    return careChain('place', c.code).some(function (x) { return x.type === t.targetType && x.id === t.targetId; });
+  }).map(function (c) { return { key: c.code, label: careLabel('place', c.code), plan: effectiveCare('place', c.code) }; })
     .filter(function (s) { return s.plan.items.length; });
 }
 

@@ -54,6 +54,8 @@ function updateRecord(type, id, changes) {
 }
 
 function deleteRecord(type, id) {
+  var goneRec = type === 'places' ? findRecord(type, id) : null;
+  var goneParent = goneRec ? goneRec.parentId : null; // what was inside moves up to here
   return recordsRequest('DELETE', type, id).then(function () {
     var def = RECORD_TYPES_UI[type];
     var list = def.list();
@@ -71,12 +73,12 @@ function deleteRecord(type, id) {
       TASKS_SAMPLE.forEach(function (t) { if (t.assignedTo === id) t.assignedTo = null; });
       TASK_DONE_SAMPLE.forEach(function (d) { if (d.doneBy === id) d.doneBy = null; });
     }
-    if (type === 'rooms') CAGES_SAMPLE.forEach(function (c) { if (c.roomId === id) c.roomId = null; });
-    if (type === 'cages') BIRDS_SAMPLE.forEach(function (b) { if (b.cage === id) b.cage = null; });
-    if (type === 'buildings') { CAGES_SAMPLE.forEach(function (c) { if (c.buildingCode === id) c.buildingCode = null; }); ROOMS_SAMPLE.forEach(function (r) { if (r.buildingCode === id) r.buildingCode = null; }); }
-    if (type === 'locations') { BUILDINGS_SAMPLE.forEach(function (b) { if (b.locationId === id) b.locationId = null; }); ROOMS_SAMPLE.forEach(function (r) { if (r.locationId === id) r.locationId = null; }); }
+    if (type === 'places') {
+      PLACES.forEach(function (p) { if (p.parentId === id) p.parentId = goneParent || null; });
+      BIRDS_SAMPLE.forEach(function (b) { if (b.cage === id) b.cage = null; });
+    }
     MEDIA.forEach(function (m) {
-      var target = { contacts: 'contact', transactions: 'transaction', health: 'health', locations: 'location', buildings: 'building', rooms: 'room', cages: 'cage', supplies: 'supply', awards: 'award' }[type];
+      var target = { contacts: 'contact', transactions: 'transaction', health: 'health', places: 'place', supplies: 'supply', awards: 'award' }[type];
       if (target) m.links = m.links.filter(function (l) { return !(l.targetType === target && l.targetId === id); });
     });
     afterRecordsChange(type);

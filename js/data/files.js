@@ -252,12 +252,9 @@ function mediaTargetInfo(link) {
     return c ? { text: c.name, hash: '#/business/contacts/' + id, kind: 'Contact' } : null;
   }
   if (t === 'aviary') return { text: AVIARY.name, hash: '#/aviary/caging/aviary', kind: 'Aviary' };
-  if (t === 'location') { var lo = getLocation(id); return lo ? { text: lo.name, hash: '#/aviary/caging/location~' + id, kind: 'Location' } : null; }
-  if (t === 'building') { var bu = getBuilding(id); return bu ? { text: 'Building ' + bu.nickname, hash: '#/aviary/caging/building~' + id, kind: 'Building' } : null; }
-  if (t === 'room') { var ro = getRoom(id); return ro ? { text: ro.name, hash: '#/aviary/caging/room~' + id, kind: 'Room' } : null; }
+  if (t === 'place') { var pl = getPlace(id); return pl ? { text: pl.name, hash: '#/aviary/caging/' + id, kind: placeTypeLabel(pl.type) } : null; }
   if (t === 'supply') { var su = getSupply(id); return su ? { text: su.name, hash: '#/aviary/supplies/' + id, kind: 'Supply' } : null; }
   if (t === 'award') { var aw = getAward(id), ab = aw ? getBird(aw.birdId) : null; return aw ? { text: awardLabel(aw) + (ab ? ' · ' + birdShortLabel(ab) : ''), hash: '#/mybirds/birds/award~' + id, kind: 'Award' } : null; }
-  if (t === 'cage') return { text: T('Cage ') + id, hash: '#/aviary/caging/' + id, kind: T('Cage') };
   return null;
 }
 

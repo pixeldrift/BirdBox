@@ -1,10 +1,8 @@
-// Caging: where the birds live. A hierarchy you can use as much or as little of as you like —
-//   My Aviary  >  Location (a site)  >  Building  >  Room  >  Cage  >  birds
-// Every level below My Aviary is optional. The list is the explorer (js/location-explorer.js);
-// the pages here are each place's own page: photos, what's in it, and where it sits. Places are
-// added, edited and deleted here (js/data/record-schemas.js); a bird points at its cage by the cage's code.
-// Routes: <cage> · building~<code> · location~<id> · room~<id> · aviary · unassigned
-//         new~cage|building|location|room · edit~cage|building|location|room~<key>
+// Caging: where the birds live. One tree of places, as deep as you like:
+//   My Aviary  >  any place (a building, room, coop, cage, shelf, box… or a kind you invented)  >  any place inside it  >  birds
+// The list is the explorer (js/location-explorer.js); the pages here are each place's own page: photos, what's in it, and where it sits.
+// Places are added, edited and deleted through js/data/record-schemas.js; a bird points at its place by the place's id.
+// Routes: <place id> · aviary · unassigned · new · new~<code on birds> · edit~<place id>
 const CagingScreen = (function () {
   var UNASSIGNED = 'unassigned';
 
@@ -19,10 +17,8 @@ const CagingScreen = (function () {
     location.hash = '#/mybirds/birds/' + birdId;
   }
 
-  var TYPE_OF = { cage: 'cages', building: 'buildings', location: 'locations', room: 'rooms' };
-
-  function pageHash(kind, key) {
-    return '#/aviary/caging/' + (kind === 'cage' ? key : kind + '~' + key);
+  function pageHash(id) {
+    return '#/aviary/caging/' + id;
   }
 
   function icon() {
@@ -87,192 +83,95 @@ const CagingScreen = (function () {
   }
 
   function summary(node) {
-    var n = node.kind === 'cage' || node.kind === 'loose' ? node.directBirds : node.birds;
-    return (node.kind === 'cage' ? '' : LocationModel.countsLine(node) + (LocationModel.countsLine(node) ? ' · ' : '')) + birdCount(n);
+    var inside = node.kind === 'loose' ? '' : LocationModel.countsLine(node);
+    var n = node.kind === 'loose' ? node.directBirds : node.birds;
+    return (inside ? inside + ' · ' : '') + birdCount(n);
   }
 
-  function photos(kind, key, name, again) {
-    return PhotosSection.render({ ownerType: kind, ownerId: key, name: name, photos: mediaPhotos(kind, key), refresh: again });
+  function photos(key, name, again) {
+    return PhotosSection.render({ ownerType: 'place', ownerId: key, name: name, photos: mediaPhotos('place', key), refresh: again });
   }
 
   // A tappable row for a place, the same one the explorer uses.
-  function placeRow(model, kind, key, navigate) {
-    var node = model.byId[kind + ':' + key];
+  function placeRow(model, key, navigate) {
+    var node = model.byId['place:' + key];
     if (!node) return el('span');
-    return LocationExplorer.item(node, { onOpen: function () { navigate(kind === 'cage' ? key : kind + '~' + key); } });
+    return LocationExplorer.item(node, { onOpen: function () { navigate(key); } });
   }
 
-  function saveCage(code, changes) {
-    return getCage(code) ? updateRecord('cages', code, changes) : createRecord('cages', Object.assign({ code: code }, changes));
+  // Save a change to a place; a code that's only on birds is set up as a place first.
+  function savePlace(id, changes) {
+    return getPlace(id) ? updateRecord('places', id, changes) : createRecord('places', Object.assign({ name: id, type: 'Cage' }, changes));
   }
 
-  function renderCage(main, id, navigate, setTitle) {
+  // The page for the unassigned birds, or for any place (including a code that's on birds but not set up yet).
+  function renderPlace(main, id, navigate, setTitle) {
     var isLoose = id === UNASSIGNED;
     var birds = isLoose ? BIRDS_SAMPLE.filter(function (b) { return !b.cage && !birdIsArchived(b); }) : birdsInCage(id);
-    var rec = isLoose ? null : getCage(id);
-    if (!isLoose && !rec && !birds.length) { main.appendChild(el('p', '', T('Cage not found.'))); return; }
-    setTitle(isLoose ? 'Unassigned birds' : id);
-    var again = function () { clearEl(main); renderCage(main, id, navigate, setTitle); };
+    var rec = isLoose ? null : getPlace(id);
+    if (!isLoose && !rec && !birds.length) { main.appendChild(el('p', '', 'Place not found.')); return; }
+    var name = isLoose ? 'Unassigned birds' : rec ? rec.name : id;
+    setTitle(name);
+    var again = function () { clearEl(main); renderPlace(main, id, navigate, setTitle); };
     var model = LocationModel.build();
+    var node = isLoose ? model.byId['loose:none'] : model.byId['place:' + id];
 
     var wrap = el('div', 'detail-screen');
-    wrap.appendChild(header(isLoose ? 'Unassigned birds' : id, isLoose ? birdCount(birds.length) : cagePlaceLabel(id) + ' · ' + birdCount(birds.length),
-      rec ? function () { navigate('edit~cage~' + id); } : null, isLoose ? '' : mediaMainPhotoUrl('cage', id)));
+    wrap.appendChild(header(name, isLoose ? birdCount(birds.length) : [placeTypeLabel(rec ? rec.type : 'Cage'), node ? summary(node) : birdCount(birds.length)].join(' · '),
+      rec ? function () { navigate('edit~' + id); } : null, isLoose ? '' : mediaMainPhotoUrl('place', id)));
 
     if (!isLoose) {
-      wrap.appendChild(describe(rec, rec ? function () { navigate('edit~cage~' + id); } : null));
-      wrap.appendChild(photos('cage', id, T('cage ') + id, again));
-      wrap.appendChild(CareSection.render({ targetType: 'cage', targetId: id, name: T('this cage'), refresh: again }));
-      wrap.appendChild(CareSection.render({ targetType: 'cage', targetId: id, name: T('this cage'), refresh: again, plan: 'cleaning' }));
-      // Where this cage is — assign or change it from here (or from the room's / building's page).
+      var where = placePathLabel(id);
+      if (where) { var facts = el('div', 'fact-grid'); facts.appendChild(factRow('Inside', where)); wrap.appendChild(facts); }
+      wrap.appendChild(describe(rec, rec ? function () { navigate('edit~' + id); } : null));
+      wrap.appendChild(photos(id, name, again));
+      wrap.appendChild(CareSection.render({ targetType: 'place', targetId: id, name: name, refresh: again }));
+      wrap.appendChild(CareSection.render({ targetType: 'place', targetId: id, name: name, refresh: again, plan: 'cleaning' }));
+
+      // What this place is inside — any place will do.
+      var cannot = [id].concat(placeDescendants(id).map(function (d) { return d.id; }));
       wrap.appendChild(Relations.one({
-        title: 'Room', parentName: 'cage', value: rec && rec.roomId || '', find: getRoom,
-        render: function (r) { return placeRow(model, 'room', r.id, navigate); },
-        picker: function (cfg) { return Picker.rooms(Object.assign({ placeholder: T('Put this cage in a room — search…') }, cfg)); },
-        set: function (rid) { return saveCage(id, { roomId: rid || '' }); }, refresh: again,
+        title: 'Inside', parentName: 'place', value: rec && rec.parentId || '', find: getPlace,
+        render: function (p) { return placeRow(model, p.id, navigate); },
+        picker: function (cfg) { return Picker.places(Object.assign({ placeholder: 'Put this inside something — search or browse…', exclude: cannot }, cfg)); },
+        set: function (pid) { return savePlace(id, { parentId: pid || '' }); }, refresh: again,
       }));
-      wrap.appendChild(Relations.one({
-        title: 'Building', parentName: 'cage', value: rec ? rec.buildingCode || '' : '', find: getBuilding,
-        render: function (b) { return placeRow(model, 'building', b.code, navigate); },
-        picker: function (cfg) { return Picker.buildings(Object.assign({ placeholder: 'Assign to a building — browse or search…' }, cfg)); },
-        set: function (code) { return assignCageToBuilding(id, code || ''); }, refresh: again,
+
+      // What's inside this place — anything, of any kind.
+      var kids = placeChildren(id);
+      wrap.appendChild(Relations.many({
+        title: 'Inside it', related: kids, render: function (c) { return placeRow(model, c.id, navigate); }, parentName: 'place',
+        empty: 'Nothing is inside this yet.', refresh: again,
+        unlink: function (c) { return savePlace(c.id, { parentId: '' }); },
+        candidates: function () { return Picker.listItems('places', function (p) { return p.id !== id && p.parentId !== id && cannot.indexOf(p.id) === -1 && placeAncestors(rec || { parentId: '' }).every(function (a) { return a.id !== p.id; }) ; }); },
+        link: function (childId) { return savePlace(childId, { parentId: id }); },
+        addPlaceholder: '+ Put an existing place inside — search…',
+        addNew: { label: '+ Add a new place inside', onClick: function () { LocationExplorer.setPrefill({ parentId: id, type: suggestedPlaceType(id) }); navigate('new'); } },
       }));
     }
 
-    // The birds in this cage — add one from here (it moves out of its old cage) or remove one.
+    // The birds here — add one from here (it moves out of its old place) or remove one.
     wrap.appendChild(Relations.many({
       title: 'Birds', related: birds, render: function (bd) { return birdChip(bd, function () { goToBird(bd.id); }); },
-      parentName: 'cage', empty: isLoose ? T('Every bird has a cage.') : T('No birds in this cage.'), refresh: again,
+      parentName: 'place', empty: isLoose ? 'Every bird has a place.' : 'No birds directly here.', refresh: again,
       unlink: isLoose ? null : function (bd) { return editBird(bd.id, { cage: '' }); },
       candidates: isLoose ? null : function () {
         return Picker.listItems('birds', function (bd) { return bd.cage !== id; }).map(function (it) {
           var bd = getBird(it.id);
-          if (bd && bd.cage) it.hay = (it.hay || '') + ' ' + bd.cage;
+          if (bd && bd.cage) it.hay = (it.hay || '') + ' ' + placeName(bd.cage);
           return it;
         });
       },
       link: function (birdId) { return editBird(birdId, { cage: id }); },
-      addPlaceholder: T('Add a bird to this cage'),
+      addPlaceholder: 'Add a bird here',
       itemName: function (bd) { return birdShortLabel(bd); },
     }));
 
     if (!isLoose && !rec) {
       var note = el('div', 'detail-section');
-      note.appendChild(el('p', 'form-note', T('This cage number is on some birds but hasn’t been set up yet. Set it up to give it a description and photos.')));
-      note.appendChild(addButton(T('Set up this cage'), function () { navigate('new~cage~' + id); }));
+      note.appendChild(el('p', 'form-note', 'This name is on some birds but hasn’t been set up as a place yet. Set it up to give it a type, a description and photos.'));
+      note.appendChild(addButton('Set up this place', function () { navigate('new~' + id); }));
       wrap.appendChild(note);
-    }
-    main.appendChild(wrap);
-  }
-
-  function renderRoom(main, id, navigate, setTitle) {
-    var r = getRoom(id);
-    if (!r) { main.appendChild(el('p', '', 'Room not found.')); return; }
-    setTitle(r.name);
-    var again = function () { clearEl(main); renderRoom(main, id, navigate, setTitle); };
-    var model = LocationModel.build();
-    var node = model.byId['room:' + id];
-    var wrap = el('div', 'detail-screen');
-    wrap.appendChild(header(r.name, summary(node), function () { navigate('edit~room~' + id); }, mediaMainPhotoUrl('room', id)));
-    wrap.appendChild(describe(r, function () { navigate('edit~room~' + id); }));
-    wrap.appendChild(photos('room', id, r.name, again));
-    wrap.appendChild(CareSection.render({ targetType: 'room', targetId: id, name: r.name, refresh: again }));
-    wrap.appendChild(CareSection.render({ targetType: 'room', targetId: id, name: r.name, refresh: again, plan: 'cleaning' }));
-    wrap.appendChild(Relations.one({
-      title: 'Building', parentName: 'room', value: r.buildingCode || '', find: getBuilding,
-      render: function (b) { return placeRow(model, 'building', b.code, navigate); },
-      picker: function (cfg) { return Picker.buildings(Object.assign({ placeholder: 'Put this room in a building — search…' }, cfg)); },
-      set: function (code) { return updateRecord('rooms', id, { buildingCode: code || '' }); }, refresh: again,
-    }));
-    wrap.appendChild(Relations.many({
-      title: T('Cages'), related: node.children.map(function (c) { return c.record; }), render: function (c) { return placeRow(model, 'cage', c.code, navigate); }, parentName: 'room',
-      empty: T('No cages in this room yet.'), refresh: again,
-      unlink: function (c) { return saveCage(c.code, { roomId: '' }); },
-      candidates: function () { return Picker.listItems('cages', function (c) { return c.roomId !== id; }); },
-      link: function (code) { return saveCage(code, { roomId: id }); },
-      addPlaceholder: T('+ Add an existing cage — search…'),
-      addNew: { label: T('+ Add a new cage to this room'), onClick: function () { LocationExplorer.setPrefill({ roomId: id, buildingCode: r.buildingCode || '' }); navigate('new~cage'); } },
-    }));
-    main.appendChild(wrap);
-  }
-
-  function renderBuilding(main, code, navigate, setTitle) {
-    var b = getBuilding(code);
-    if (!b) { main.appendChild(el('p', '', 'Building not found.')); return; }
-    setTitle('Building ' + b.nickname);
-    var again = function () { clearEl(main); renderBuilding(main, code, navigate, setTitle); };
-    var model = LocationModel.build();
-    var node = model.byId['building:' + code];
-    var rooms = node.children.filter(function (c) { return c.kind === 'room'; }).map(function (c) { return c.record; });
-    var cages = node.children.filter(function (c) { return c.kind === 'cage'; }).map(function (c) { return c.record; });
-    var wrap = el('div', 'detail-screen');
-    wrap.appendChild(header('Building ' + b.nickname, summary(node), function () { navigate('edit~building~' + code); }, mediaMainPhotoUrl('building', code)));
-    var facts = el('div', 'fact-grid');
-    facts.appendChild(factRow('Code', b.code));
-    wrap.appendChild(facts);
-    wrap.appendChild(describe(b, function () { navigate('edit~building~' + code); }));
-    wrap.appendChild(photos('building', code, 'Building ' + b.nickname, again));
-    wrap.appendChild(CareSection.render({ targetType: 'building', targetId: code, name: 'Building ' + b.nickname, refresh: again }));
-    wrap.appendChild(CareSection.render({ targetType: 'building', targetId: code, name: 'Building ' + b.nickname, refresh: again, plan: 'cleaning' }));
-
-    wrap.appendChild(Relations.one({
-      title: 'Location', parentName: 'building', value: b.locationId || '', find: getLocation,
-      render: function (l) { return placeRow(model, 'location', l.id, navigate); },
-      picker: function (cfg) { return Picker.locations(Object.assign({ placeholder: 'Put this building on a location — search…' }, cfg)); },
-      set: function (id) { return updateRecord('buildings', code, { locationId: id || '' }); }, refresh: again,
-    }));
-
-    wrap.appendChild(Relations.many({
-      title: 'Rooms', related: rooms, render: function (r) { return placeRow(model, 'room', r.id, navigate); }, parentName: 'building',
-      empty: T('No rooms in this building. Rooms are optional — cages can sit right in the building.'), refresh: again,
-      unlink: function (r) { return updateRecord('rooms', r.id, { buildingCode: '' }); },
-      candidates: function () { return Picker.listItems('rooms', function (r) { return r.buildingCode !== code; }); },
-      link: function (rid) { return updateRecord('rooms', rid, { buildingCode: code }); },
-      addPlaceholder: '+ Add an existing room — search…',
-      addNew: { label: '+ Add a new room here', onClick: function () { LocationExplorer.setPrefill({ buildingCode: code }); navigate('new~room'); } },
-    }));
-
-    wrap.appendChild(Relations.many({
-      title: T('Cages (not in a room)'), related: cages, render: function (c) { return placeRow(model, 'cage', c.code, navigate); }, parentName: 'building',
-      empty: T('No cages directly in this building.'), refresh: again,
-      unlink: function (c) { return assignCageToBuilding(c.code, ''); },
-      candidates: function () { return Picker.listItems('cages', function (c) { var bb = buildingForCage(c.code); return !(bb && bb.code === code); }); },
-      link: function (cageCode) { return saveCage(cageCode, { buildingCode: code, roomId: '' }); },
-      addPlaceholder: T('+ Add an existing cage — search…'),
-      addNew: { label: T('+ Add a new cage to this building'), onClick: function () { LocationExplorer.setPrefill({ buildingCode: code }); navigate('new~cage'); } },
-    }));
-    main.appendChild(wrap);
-  }
-
-  function renderLocation(main, id, navigate, setTitle) {
-    var l = getLocation(id);
-    if (!l) { main.appendChild(el('p', '', 'Location not found.')); return; }
-    setTitle(l.name);
-    var again = function () { clearEl(main); renderLocation(main, id, navigate, setTitle); };
-    var model = LocationModel.build();
-    var node = model.byId['location:' + id];
-    var buildings = node.children.filter(function (c) { return c.kind === 'building'; }).map(function (c) { return c.record; });
-    var rooms = node.children.filter(function (c) { return c.kind === 'room'; }).map(function (c) { return c.record; });
-    var wrap = el('div', 'detail-screen');
-    wrap.appendChild(header(l.name, summary(node), function () { navigate('edit~location~' + id); }, mediaMainPhotoUrl('location', id)));
-    wrap.appendChild(describe(l, function () { navigate('edit~location~' + id); }));
-    wrap.appendChild(photos('location', id, l.name, again));
-    wrap.appendChild(CareSection.render({ targetType: 'location', targetId: id, name: l.name, refresh: again }));
-    wrap.appendChild(CareSection.render({ targetType: 'location', targetId: id, name: l.name, refresh: again, plan: 'cleaning' }));
-    wrap.appendChild(Relations.many({
-      title: 'Buildings', related: buildings, render: function (b) { return placeRow(model, 'building', b.code, navigate); }, parentName: 'location',
-      empty: 'No buildings on this location yet.', refresh: again,
-      unlink: function (b) { return updateRecord('buildings', b.code, { locationId: '' }); },
-      candidates: function () { return Picker.listItems('buildings', function (b) { return b.locationId !== id; }); },
-      link: function (code) { return updateRecord('buildings', code, { locationId: id }); },
-      addPlaceholder: '+ Add an existing building — search…',
-      addNew: { label: '+ Add a new building here', onClick: function () { LocationExplorer.setPrefill({ locationId: id }); navigate('new~building'); } },
-    }));
-    if (rooms.length) {
-      wrap.appendChild(Relations.many({
-        title: 'Rooms (not in a building)', related: rooms, render: function (r) { return placeRow(model, 'room', r.id, navigate); }, parentName: 'location',
-        refresh: again, unlink: function (r) { return updateRecord('rooms', r.id, { locationId: '' }); },
-      }));
     }
     main.appendChild(wrap);
   }
@@ -298,33 +197,43 @@ const CagingScreen = (function () {
     main.appendChild(wrap);
   }
 
-  // new~<kind>  — parents are pre-filled from where "Add new" was tapped (see LocationExplorer).
-  // new~cage~<code> sets up a cage number that's already on birds.
+  // new — parent and type are pre-filled from where "Add new" was tapped (see LocationExplorer).
+  // new~<code> sets up a name that's already on birds.  edit~<place id> changes a place.
   function renderForm(main, parts, navigate, setTitle) {
-    var mode = parts[0], kind = parts[1], key = parts[2] || '';
-    var type = TYPE_OF[kind];
-    if (!type) { main.appendChild(el('p', '', 'Not found.')); return; }
+    var mode = parts[0], key = parts[parts.length - 1] === parts[0] ? '' : parts[parts.length - 1]; // (old links had a kind in the middle: edit~cage~F2-001)
     var prefill = LocationExplorer.takePrefill();
-    if (mode === 'new' && kind === 'cage' && key) { prefill.code = key; var guess = buildingForCage(key); if (guess && !prefill.buildingCode) prefill.buildingCode = guess.code; }
-    if (mode === 'new' && prefill.roomId && kind !== 'cage') delete prefill.roomId;
+    if (mode === 'new' && key) { prefill.name = key; prefill.type = prefill.type || 'Cage'; }
+    if (mode === 'new' && !prefill.type) prefill.type = suggestedPlaceType(prefill.parentId || '');
     var backList = function () { location.hash = '#/aviary/caging'; };
+    var made = null;
     RecordForm.render(main, {
-      type: type, id: mode === 'edit' ? key : null, prefill: prefill, setTitle: setTitle, navigate: navigate,
-      after: function (savedKey) { location.hash = pageHash(kind, savedKey); },
-      onCancel: function () { if (mode === 'edit') location.hash = pageHash(kind, key); else backList(); },
+      type: 'places', id: mode === 'edit' ? key : null, prefill: prefill, setTitle: setTitle, navigate: navigate,
+      after: function (savedId) {
+        if (mode === 'new' && key && key !== savedId) { // set up a name that was on birds: those birds now point at the new place
+          Promise.all(BIRDS_SAMPLE.filter(function (b) { return b.cage === key; }).map(function (b) { return editBird(b.id, { cage: savedId }); }))
+            .catch(function () {}).then(function () { location.hash = pageHash(savedId); });
+        } else location.hash = pageHash(savedId);
+      },
+      onCancel: function () { if (mode === 'edit') location.hash = pageHash(key); else backList(); },
       afterDelete: backList,
     });
+  }
+
+  // Links made before places were one kind of thing (building~F2, room~room-1, location~loc-1) still open the right page.
+  function legacyId(parts) {
+    if (parts[0] === 'building') return 'bld-' + parts[1];
+    if (parts[0] === 'room' || parts[0] === 'location') return parts[1];
+    return null;
   }
 
   function renderDetail(main, id, navigate, setTitle) {
     clearEl(main);
     var parts = id.split('~');
     if (parts[0] === 'new' || parts[0] === 'edit') return renderForm(main, parts, navigate, setTitle);
-    if (parts[0] === 'building') return renderBuilding(main, parts[1], navigate, setTitle);
-    if (parts[0] === 'location') return renderLocation(main, parts[1], navigate, setTitle);
-    if (parts[0] === 'room') return renderRoom(main, parts[1], navigate, setTitle);
+    var old = legacyId(parts);
+    if (old) id = old;
     if (id === 'aviary') return renderAviary(main, navigate, setTitle);
-    return renderCage(main, id, navigate, setTitle);
+    return renderPlace(main, id, navigate, setTitle);
   }
 
   return { renderList: renderList, renderDetail: renderDetail };

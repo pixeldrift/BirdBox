@@ -707,7 +707,7 @@ const BirdsAddScreen = (function () {
       var result = check({
         id: rowIds[i], band: cell(r, 'band'), name: cell(r, 'name'), sex: cell(r, 'sex'), speciesCode: code, speciesName: spName,
         subspecies: cell(r, 'subspecies'), mutation: cell(r, 'mutation'), hatchDate: cell(r, 'hatch_date'),
-        status: cell(r, 'status'), cage: cell(r, 'cage'), motherId: mother.id, fatherId: father.id,
+        status: cell(r, 'status'), cage: placeIdForText(cell(r, 'cage')), motherId: mother.id, fatherId: father.id,
         pairedId: paired.id, cost: cell(r, 'cost'), price: cell(r, 'price'),
         registryPublic: parseBool(cell(r, 'registry_public')), notes: cell(r, 'notes'),
       });

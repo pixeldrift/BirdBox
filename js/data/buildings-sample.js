@@ -1,29 +1,14 @@
-// Lightweight building lookup, loaded from Postgres (via /api/buildings)
-// instead of hardcoded here — see sql/005_buildings.sql for the schema and
-// the seed data this replaced. Just enough to give a cage a friendly location
-// name; BirdBox doesn't need a full Buildings/Cages entity yet — Birds.cage
-// (a plain code like "F2-001" or "FLN") is grouped directly into "cages in
-// use" by the Caging screen.
-var BUILDINGS_SAMPLE = [];
+// Places — buildings, rooms, cages, coops, shelves… anything — loaded from Postgres (see sql/040_places.sql). Also My Aviary, the master record.
+// Where birds live: one tree of PLACES. A place is a name, a type you choose (Building, Room, Cage, Coop, Box, Shelf… or your own) and a parent —
+// any place can sit inside any other (sql/040_places.sql). A bird points at its place by the place's id (bird.cage), and a code on a bird with
+// no place record yet still counts as a place ("not set up").
+var PLACES = [];
+var PLACE_TYPE_ROWS = [];
+var BUILDINGS_SAMPLE = []; // (kept empty: buildings are places now)
 var LOCATIONS_SAMPLE = [];
 var CAGES_SAMPLE = [];
+var ROOMS_SAMPLE = [];
 
-var buildingsLoaded = fetch('/api/records?type=buildings')
-  .then(function (res) {
-    if (!res.ok) throw new Error('Failed to load buildings');
-    return res.json();
-  })
-  .then(function (buildings) {
-    BUILDINGS_SAMPLE.length = 0;
-    Array.prototype.push.apply(BUILDINGS_SAMPLE, buildings);
-  })
-  .catch(function (err) {
-    console.error('Could not load buildings from the server:', err);
-  });
-
-// Where birds live: Location > Building > Cage > birds. Every level is optional. A bird points at
-// its cage by the cage's code (bird.cage); cages are records of their own (sql/014_locations_cages.sql),
-// but a code on a bird with no cage record yet still counts as a cage ("not set up").
 function loadList(type, target) {
   return fetch('/api/records?type=' + type)
     .then(function (res) {
@@ -39,88 +24,128 @@ function loadList(type, target) {
     });
 }
 
-var ROOMS_SAMPLE = [];
 // "My Aviary": the one master record every location, building, room and cage sits under (sql/018_aviary_rooms.sql).
 var AVIARY = { id: 'main', name: 'My Aviary', description: '', address: '', phone: '', email: '', website: '', socials: '', keeps: '' };
 var AVIARY_ROWS = [];
 var aviaryLoaded = loadList('aviary', AVIARY_ROWS).then(function () {
   if (AVIARY_ROWS[0]) Object.assign(AVIARY, AVIARY_ROWS[0]);
 });
-var roomsLoaded = loadList('rooms', ROOMS_SAMPLE);
-var locationsLoaded = loadList('locations', LOCATIONS_SAMPLE);
-var cagesLoaded = loadList('cages', CAGES_SAMPLE);
+var placesLoaded = loadList('places', PLACES);
+var placeTypesLoaded = loadList('placeTypes', PLACE_TYPE_ROWS);
+var buildingsLoaded = placesLoaded, roomsLoaded = placesLoaded, locationsLoaded = placesLoaded, cagesLoaded = placesLoaded;
 
-function getCage(code) {
-  return CAGES_SAMPLE.filter(function (c) { return c.code === code; })[0] || null;
+// ---- the types ----
+// What the app ships with. "Cage" is shown as "Coop" (etc.) for people who keep chickens — see js/terms.js.
+var PLACE_TYPE_DEFAULTS = ['Location', 'Building', 'Room', 'Cage', 'Coop', 'Run', 'Pen', 'Box', 'Shelf', 'Flight', 'Brooder', 'Nest Box'];
+
+function placeTypeLabel(type) {
+  return type === 'Cage' ? T('Cage') : type;
 }
 
-function getBuilding(code) {
-  return BUILDINGS_SAMPLE.filter(function (b) { return b.code === code; })[0] || null;
+// Every type to pick from: the ones that ship with the app, the ones you've added, and any already in use.
+function placeTypes() {
+  var seen = {}, out = [];
+  function add(t) {
+    var label = placeTypeLabel(t);
+    if (!t || seen[label.toLowerCase()]) return;
+    seen[label.toLowerCase()] = true;
+    out.push(t);
+  }
+  PLACE_TYPE_DEFAULTS.forEach(add);
+  PLACE_TYPE_ROWS.slice().sort(function (a, b) { return (a.sort || 0) - (b.sort || 0) || String(a.name).localeCompare(b.name); }).forEach(function (r) { add(r.name); });
+  PLACES.forEach(function (p) { add(p.type); });
+  return out;
 }
 
-function getLocation(id) {
-  return LOCATIONS_SAMPLE.filter(function (l) { return l.id === id; })[0] || null;
+// ---- the tree ----
+function getPlace(id) {
+  if (!id) return null;
+  for (var i = 0; i < PLACES.length; i++) if (PLACES[i].id === id) return PLACES[i];
+  return null;
 }
 
-function getRoom(id) {
-  return ROOMS_SAMPLE.filter(function (r) { return r.id === id; })[0] || null;
+// What to call a place when all you have is its id (a code on a bird with no place record just shows as itself).
+function placeName(id) {
+  var p = getPlace(id);
+  return p ? p.name : id || '';
 }
 
-// The room a cage is in, if it was filed under one.
-function roomForCage(cageCode) {
-  var rec = cageCode ? getCage(cageCode) : null;
-  return rec && rec.roomId ? getRoom(rec.roomId) : null;
+function placeParent(place) {
+  return place && place.parentId ? getPlace(place.parentId) : null;
 }
 
-// The building a room is in: the one it was filed under, else the one its location... none.
-function buildingForRoom(room) {
-  return room && room.buildingCode ? getBuilding(room.buildingCode) : null;
+// The places above one, outermost first: [Home farm, Building 6, Flight room].
+function placeAncestors(place) {
+  var out = [], cur = placeParent(place), guard = 0;
+  while (cur && guard++ < 100) { out.unshift(cur); cur = placeParent(cur); }
+  return out;
 }
 
-// The location a room is on: directly, or through its building.
-function roomLocation(room) {
-  if (!room) return null;
-  if (room.locationId) return getLocation(room.locationId);
-  return buildingLocation(buildingForRoom(room));
+function placeChildren(id) {
+  return PLACES.filter(function (p) { return p.parentId === id; });
 }
 
-// The building a cage is in: the one it was filed under (directly or through its room), else the one its code starts with.
-function buildingForCage(cageCode) {
-  if (!cageCode) return null;
-  var rec = getCage(cageCode);
-  var room = roomForCage(cageCode);
-  if (room) return buildingForRoom(room);
-  if (rec && rec.buildingCode) return getBuilding(rec.buildingCode);
-  var prefix = cageCode.indexOf('-') !== -1 ? cageCode.split('-')[0] : cageCode;
-  return getBuilding(prefix);
+// Everything inside a place, however deep.
+function placeDescendants(id) {
+  var out = [];
+  (function rec(pid, depth) {
+    if (depth > 100) return;
+    placeChildren(pid).forEach(function (c) { out.push(c); rec(c.id, depth + 1); });
+  })(id, 0);
+  return out;
 }
 
-function buildingLocation(building) {
-  return building && building.locationId ? getLocation(building.locationId) : null;
+// "Home farm › Building 6" — where a place is, not counting the place itself.
+function placePathLabel(id) {
+  var p = getPlace(id);
+  return p ? placeAncestors(p).map(function (a) { return a.name; }).join(' › ') : '';
 }
 
-// Every cage: the set-up ones plus any code used on a bird that has no record yet.
+// Places you'd think of as holding birds directly: the ones with nothing inside, plus any that have birds in them, plus codes used on birds
+// that have no record yet. [{ code (the id), name, parentId, description, type, setUp }]
 function allCages() {
-  var out = CAGES_SAMPLE.map(function (c) { return { code: c.code, buildingCode: c.buildingCode, roomId: c.roomId, description: c.description, setUp: true }; });
+  var hasKids = {};
+  PLACES.forEach(function (p) { if (p.parentId) hasKids[p.parentId] = true; });
+  var hasBirds = {};
+  BIRDS_SAMPLE.forEach(function (b) { if (b.cage && !birdIsArchived(b)) hasBirds[b.cage] = true; });
+  var out = PLACES.filter(function (p) { return !hasKids[p.id] || hasBirds[p.id]; })
+    .map(function (p) { return { code: p.id, name: p.name, parentId: p.parentId, description: p.description, type: p.type, setUp: true }; });
   var have = {};
-  out.forEach(function (c) { have[c.code] = true; });
+  PLACES.forEach(function (p) { have[p.id] = true; });
   BIRDS_SAMPLE.forEach(function (b) {
-    if (b.cage && !have[b.cage]) {
-      have[b.cage] = true;
-      out.push({ code: b.cage, buildingCode: null, description: '', setUp: false });
-    }
+    if (b.cage && !have[b.cage]) { have[b.cage] = true; out.push({ code: b.cage, name: b.cage, parentId: null, description: '', type: 'Cage', setUp: false }); }
   });
-  return out.sort(function (a, b) { return a.code.localeCompare(b.code); });
+  return out.sort(function (a, b) { return String(a.name).localeCompare(String(b.name), undefined, { numeric: true }); });
 }
 
-function birdsInCage(code) {
-  return BIRDS_SAMPLE.filter(function (b) { return b.cage === code && !birdIsArchived(b); });
+function birdsInCage(id) {
+  return BIRDS_SAMPLE.filter(function (b) { return b.cage === id && !birdIsArchived(b); });
 }
 
-// "Building 2 · Home farm" for a cage — whatever of it is known.
-function cagePlaceLabel(cageCode) {
-  var b = buildingForCage(cageCode);
-  var room = roomForCage(cageCode);
-  var loc = room ? roomLocation(room) : buildingLocation(b);
-  return [b ? 'Building ' + b.nickname : '', room ? room.name : '', loc ? loc.name : ''].filter(Boolean).join(' · ') || 'No building set';
+// "Home farm › Building 6" for a place — whatever of it is known.
+function cagePlaceLabel(id) {
+  return placePathLabel(id) || 'Not inside anything';
+}
+
+// A hint (never a rule) for what kind of place to offer when adding one inside `parentId` ('' = at the top): what its neighbours are,
+// else the usual next step down.
+function suggestedPlaceType(parentId) {
+  var kids = PLACES.filter(function (p) { return (p.parentId || '') === (parentId || ''); });
+  if (kids.length) {
+    var count = {};
+    kids.forEach(function (k) { count[k.type] = (count[k.type] || 0) + 1; });
+    return Object.keys(count).sort(function (a, b) { return count[b] - count[a]; })[0];
+  }
+  var parent = getPlace(parentId);
+  var next = { Location: 'Building', Building: 'Room', Room: 'Cage', Coop: 'Nest Box', Run: 'Cage', Shelf: 'Box' };
+  return parent ? next[parent.type] || 'Cage' : 'Building';
+}
+
+// A place given as text (a CSV import, say): the place with that id, else the one with that name, else the text itself (a name not set up yet).
+function placeIdForText(text) {
+  var t = String(text || '').trim();
+  if (!t) return '';
+  if (getPlace(t)) return t;
+  var same = PLACES.filter(function (p) { return p.name.toLowerCase() === t.toLowerCase(); })[0];
+  return same ? same.id : t;
 }

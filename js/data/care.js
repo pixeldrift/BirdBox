@@ -1,6 +1,6 @@
-// Care plans: what each cage, room, building, location, bird — or the whole aviary — is fed and given
-// (sql/023_care_plans.sql). The most specific plan wins: a bird's own plan, else its cage's, else its room's,
-// else its building's, else its location's, else the aviary-wide one.
+// Care plans: what each place (a cage, coop, room, building… anything), bird — or the whole aviary — is fed and given
+// (sql/023_care_plans.sql). The most specific plan wins: a bird's own plan, else its place's, else the place around that, and so on
+// outward, else the aviary-wide one.
 var CARE_SAMPLE = [];
 
 var MEAL_TIMES = ['Morning', 'Midday', 'Evening', 'Night', 'Anytime'];
@@ -25,44 +25,27 @@ function careItems(targetType, targetId, plan) {
     .sort(function (a, b) { return MEAL_TIMES.indexOf(a.mealTime) - MEAL_TIMES.indexOf(b.mealTime); });
 }
 
-// The places above a target, most specific first: [{ type, id, label }].
+// The places above a target, most specific first: [{ type, id, label }] — the target itself, then (for a bird) its place, then every place
+// around that, outward, and last the whole aviary. A place can sit inside any other, so this walks as far up as it goes.
 function careChain(targetType, targetId) {
-  var chain = [];
-  var self = { type: targetType, id: targetId, label: careLabel(targetType, targetId) };
-  var cageCode = null, room = null, building = null, location = null;
+  var chain = [{ type: targetType, id: targetId, label: careLabel(targetType, targetId) }];
+  var placeId = null;
   if (targetType === 'bird') {
     var bird = getBird(targetId);
-    chain.push(self);
-    cageCode = bird ? bird.cage : null;
-    if (cageCode) chain.push({ type: 'cage', id: cageCode, label: careLabel('cage', cageCode) });
-  } else {
-    chain.push(self);
-    if (targetType === 'cage') cageCode = targetId;
+    placeId = bird ? bird.cage : null;
+    if (placeId) chain.push({ type: 'place', id: placeId, label: careLabel('place', placeId) });
+  } else if (targetType === 'place') {
+    placeId = targetId;
   }
-  if (targetType === 'cage' || cageCode) {
-    room = roomForCage(cageCode);
-    building = buildingForCage(cageCode);
-    location = room ? roomLocation(room) : buildingLocation(building);
-  } else if (targetType === 'room') {
-    room = getRoom(targetId); building = buildingForRoom(room); location = roomLocation(room);
-  } else if (targetType === 'building') {
-    building = getBuilding(targetId); location = buildingLocation(building);
-  } else if (targetType === 'location') {
-    location = getLocation(targetId);
-  }
-  if (room && targetType !== 'room') chain.push({ type: 'room', id: room.id, label: room.name });
-  if (building && targetType !== 'building') chain.push({ type: 'building', id: building.code, label: 'Building ' + building.nickname });
-  if (location && targetType !== 'location') chain.push({ type: 'location', id: location.id, label: location.name });
+  var here = placeId ? getPlace(placeId) : null;
+  if (here) placeAncestors(here).reverse().forEach(function (a) { chain.push({ type: 'place', id: a.id, label: careLabel('place', a.id) }); });
   if (targetType !== 'aviary') chain.push({ type: 'aviary', id: 'main', label: AVIARY.name });
   return chain;
 }
 
 function careLabel(type, id) {
   if (type === 'bird') { var b = getBird(id); return b ? (b.name || b.band || 'bird') : 'bird'; }
-  if (type === 'cage') return T('Cage ') + id;
-  if (type === 'room') { var r = getRoom(id); return r ? r.name : 'room'; }
-  if (type === 'building') { var bl = getBuilding(id); return bl ? 'Building ' + bl.nickname : 'building'; }
-  if (type === 'location') { var l = getLocation(id); return l ? l.name : 'location'; }
+  if (type === 'place') { var p = getPlace(id); return p ? (p.type === 'Cage' ? T('Cage ') + p.name : p.name) : T('Cage ') + id; }
   return AVIARY.name;
 }
 
@@ -110,9 +93,8 @@ function cleaningJobTasks() {
 
 function careTargetHash(type, id) {
   if (type === 'bird') return '#/mybirds/birds/' + id;
-  if (type === 'cage') return '#/aviary/caging/' + id;
   if (type === 'aviary') return '#/aviary/caging/aviary';
-  return '#/aviary/caging/' + type + '~' + id;
+  return '#/aviary/caging/' + id;
 }
 
 // A line as words: "Pellets — ¼ cup, Morning".

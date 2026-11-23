@@ -9,7 +9,7 @@ const RecordForm = (function () {
     return e;
   }
 
-  var PICKERS = { contact: 'contacts', bird: 'birds', location: 'locations', building: 'buildings', room: 'rooms', user: 'users' };
+  var PICKERS = { contact: 'contacts', bird: 'birds', place: 'places', user: 'users' };
 
   // Handles the "new" and "edit~<id>" routes for a screen. Returns true if it took over.
   function route(main, id, type, navigate, setTitle) {
@@ -46,9 +46,26 @@ const RecordForm = (function () {
       var control, get;
       var current = base[f.key] === null || base[f.key] === undefined ? '' : base[f.key];
       if (f.ref) {
-        var rp = Picker[PICKERS[f.ref]]({ value: current, allowClear: !f.required });
+        var rp = Picker[PICKERS[f.ref]](Object.assign({ value: current, allowClear: !f.required }, f.pickerOpts ? f.pickerOpts(rec) : {}));
         control = rp.el;
         get = rp.get;
+      } else if (f.type === 'placetype') {
+        // pick from the types (the ones that ship with the app, ones you've made, ones in use) — or make a new one right here
+        control = el('div');
+        var sel = el('select', 'form-input');
+        placeTypes().forEach(function (t) { var o = el('option', '', placeTypeLabel(t)); o.value = t; sel.appendChild(o); });
+        var neu = el('option', '', '+ A new kind of place…'); neu.value = '__new__'; sel.appendChild(neu);
+        if (current && placeTypes().indexOf(current) === -1) { var cur = el('option', '', current); cur.value = current; sel.insertBefore(cur, neu); }
+        sel.value = current || 'Cage';
+        var custom = el('input', 'form-input');
+        custom.placeholder = 'Name it — e.g. Hutch, Pasture, Tractor';
+        custom.style.display = 'none';
+        custom.style.marginTop = '8px';
+        sel.addEventListener('change', function () { custom.style.display = sel.value === '__new__' ? '' : 'none'; if (sel.value === '__new__') custom.focus(); });
+        control.appendChild(sel);
+        control.appendChild(custom);
+        get = function () { return sel.value === '__new__' ? custom.value.trim() : sel.value; };
+        control.addEventListener('change', function () {}); // (the select's own change event bubbles to showWhen handlers)
       } else if (f.type === 'enum') {
         control = el('select', 'form-input');
         if (!f.required) { var blank = el('option', '', '—'); blank.value = ''; control.appendChild(blank); }
@@ -85,7 +102,7 @@ const RecordForm = (function () {
         get = function () { return control.value; };
       }
       getters[f.key] = get;
-      var label = el(f.ref || f.type === 'suggest' ? 'div' : 'label', 'form-field');
+      var label = el(f.ref || f.type === 'suggest' || f.type === 'placetype' ? 'div' : 'label', 'form-field');
       fieldEls[f.key] = label;
       controls[f.key] = control;
       label.appendChild(el('span', 'form-label', T(f.label) + (f.required || f.requiredIfShown ? ' *' : '')));
@@ -129,6 +146,7 @@ const RecordForm = (function () {
       save.textContent = 'Saving…';
       var job = editing ? updateRecord(opts.type, opts.id, data) : createRecord(opts.type, data);
       job.then(function (saved) {
+        if (def.afterSave) def.afterSave(Object.assign({}, data, saved));
         goTo(saved[def.pk]);
       }).catch(function (err) {
         save.disabled = false;
@@ -145,11 +163,10 @@ const RecordForm = (function () {
       del.type = 'button';
       var delMsg = el('div');
       del.addEventListener('click', function () {
-        var inCage = opts.type === 'cages' ? birdsInCage(opts.id).length : 0;
+        var inCage = opts.type === 'places' ? birdsInCage(opts.id).length : 0;
+        var inside = opts.type === 'places' ? placeChildren(opts.id).length : 0;
         var note = opts.type === 'contacts' ? ' Their shipments and accounting entries stay, just no longer linked to them.' :
-          opts.type === 'buildings' ? T(' Its cages stay, just no longer filed under it.') :
-          opts.type === 'locations' ? ' Its buildings stay, just no longer on a location.' :
-          opts.type === 'cages' ? (inCage ? ' The ' + inCage + ' bird' + (inCage === 1 ? '' : 's') + T(' in it will be left with no cage.') : '') : '';
+          opts.type === 'places' ? (inside ? ' What’s inside it (' + inside + ') moves up one level.' : '') + (inCage ? ' The ' + inCage + ' bird' + (inCage === 1 ? '' : 's') + ' in it will be left with no place.' : '') : '';
         Modal.confirm({
           title: 'Delete ' + def.singular + '?', message: 'Delete “' + def.nameOf(rec) + '”?' + note + ' This can’t be undone.', confirmLabel: 'Delete', danger: true,
           onConfirm: function () {
