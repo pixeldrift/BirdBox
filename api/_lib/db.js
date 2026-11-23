@@ -125,7 +125,9 @@ function withAccount(handler, opts) {
       await store.run(s, () => handler(req, res));
     } catch (err) {
       broken = true;
-      throw err;
+      console.error('request failed:', err && err.message);
+      // Say what went wrong (the connection, the role, a missing table…) instead of a bare 500, so a problem can be fixed from the screen.
+      if (!res.headersSent) res.status(500).json({ error: 'The database request failed', detail: String((err && err.message) || err).slice(0, 240), code: err && err.code });
     } finally {
       try { await client.query('discard all'); } catch (e) { broken = true; }
       client.release(broken ? true : undefined);

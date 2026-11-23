@@ -142,6 +142,6 @@ module.exports = withAccount(async function handler(req, res) {
     res.status(405).json({ error: 'Method not allowed' });
   } catch (err) {
     console.error('account:', err.message);
-    res.status(500).json({ error: 'Could not handle that request' });
+    res.status(500).json({ error: 'Could not open your account', detail: String(err.message || err).slice(0, 240), code: err.code });
   }
 }, { allowNew: true });

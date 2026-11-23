@@ -2091,3 +2091,6 @@ button.care-food { cursor: pointer; }
 .auth-form { display: flex; flex-direction: column; gap: 10px; text-align: left; }
 .auth-toggle { align-self: center; }
 .auth-google { margin: 0; }
+
+.auth-detail { word-break: break-word; margin: 0 0 14px; }
+.auth-card .add-record-btn.auth-btn { margin: 10px 0 0; }

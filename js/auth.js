@@ -100,6 +100,28 @@ const Auth = (function () {
     return form;
   }
 
+  // Signed in, but our own server couldn't open the account: say why, with a way to retry or sign out.
+  function showProblem(detail) {
+    if (gateShown) return;
+    gateShown = true;
+    var gate = document.createElement('div');
+    gate.className = 'auth-gate';
+    var card = document.createElement('div');
+    card.className = 'auth-card';
+    card.innerHTML = '<h1 class="auth-title">Bird<span>Box</span></h1><p class="auth-text">Something went wrong opening your account.</p><p class="form-note auth-detail"></p>';
+    card.querySelector('.auth-detail').textContent = detail;
+    var retry = document.createElement('button');
+    retry.type = 'button'; retry.className = 'save-btn auth-btn'; retry.textContent = 'Try again';
+    retry.addEventListener('click', function () { location.reload(); });
+    var out = document.createElement('button');
+    out.type = 'button'; out.className = 'add-record-btn auth-btn'; out.textContent = 'Sign out';
+    out.addEventListener('click', function () { if (provider && provider.signOut) provider.signOut(); else location.reload(); });
+    card.appendChild(retry);
+    card.appendChild(out);
+    gate.appendChild(card);
+    document.body.appendChild(gate);
+  }
+
   function showSignIn(message) {
     if (gateShown) return;
     gateShown = true;
@@ -135,7 +157,12 @@ const Auth = (function () {
       if (!t.token) { showSignIn(); return new Promise(function () { /* wait here until they sign in (the page reloads) */ }); }
       return origFetch('/api/account', t.init).then(function (res) {
         if (res.status === 401) { showSignIn('Your session has ended — please sign in again.'); return new Promise(function () {}); }
-        if (!res.ok) throw new Error('Could not open your account');
+        if (!res.ok) {
+          return res.json().catch(function () { return {}; }).then(function (b) {
+            showProblem((b.error || 'Could not open your account') + (b.detail ? ' — ' + b.detail : '') + (b.code ? ' (' + b.code + ')' : ''));
+            return new Promise(function () { /* stay on the message */ });
+          });
+        }
         return res.json();
       });
     }).then(function (p) {
