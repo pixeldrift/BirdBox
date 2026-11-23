@@ -58,13 +58,17 @@ const ProfileUI = (function () {
     badge.textContent = me.role;
     t.appendChild(badge);
     head.appendChild(t);
-    // Sign out sits at the right of your name
-    var out = button('signout-btn', 'Sign out', function () {
+    section.appendChild(head);
+    // Sign out: small and quiet, at the top right of the card, opposite "My Profile"
+    var out = button('signout-link', 'Sign out', function () {
       if (typeof Auth !== 'undefined' && Auth.enabled) Auth.signOut();
       else { setCurrentUser(''); again(); }
     });
-    head.appendChild(out);
-    section.appendChild(head);
+    var top = document.createElement('div');
+    top.className = 'section-head';
+    top.appendChild(section.firstChild);
+    top.appendChild(out);
+    section.insertBefore(top, section.firstChild);
     var facts = document.createElement('div');
     facts.className = 'fact-grid';
     facts.appendChild(factRow('Email', me.email || '—'));

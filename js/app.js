@@ -65,7 +65,7 @@
       var iconWrap = document.createElement('span');
       iconWrap.className = 'home-tile-icon';
       var img = document.createElement('img');
-      img.src = group.icon;
+      img.src = navIcon(group.id, null, group.icon);
       img.alt = '';
       iconWrap.appendChild(img);
 
@@ -115,7 +115,7 @@
 
       var tabIcon = document.createElement('img');
       tabIcon.className = 'tab-icon';
-      tabIcon.src = screen.icon;
+      tabIcon.src = navIcon(group.id, screen.id, screen.icon);
       tabIcon.alt = '';
       tab.appendChild(tabIcon);
 
@@ -160,7 +160,7 @@
     iconWrap.className = 'screen-icon';
     iconWrap.style.background = group.tint;
     var img = document.createElement('img');
-    img.src = activeScreen.icon;
+    img.src = navIcon(group.id, activeScreen.id, activeScreen.icon);
     img.alt = '';
     iconWrap.appendChild(img);
 

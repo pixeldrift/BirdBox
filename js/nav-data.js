@@ -136,3 +136,27 @@ const NAV = [
     ],
   },
 ];
+
+// "My Birds" (and its Birds tab) wear the bird you keep: a chicken for chicken keepers, a parrot for parrot keepers. If you keep both — or
+// haven't said — it follows what's most of your flock; with nothing to go on it stays the little songbird.
+function myBirdsIcon() {
+  var base = 'icons/tinted/mybirds/';
+  var k = typeof Terms !== 'undefined' ? Terms.keeps() : { exotic: false, poultry: false };
+  if (k.poultry && !k.exotic) return base + 'Chicken.png';
+  if (k.exotic && !k.poultry) return base + 'Parrot.png';
+  var chickens = 0, parrots = 0;
+  (typeof BIRDS_SAMPLE !== 'undefined' ? BIRDS_SAMPLE : []).forEach(function (b) {
+    var name = [b.speciesName, b.species, b.scientificName].filter(Boolean).join(' ');
+    if (/chicken|gallus|\bhen\b|rooster|bantam/i.test(name)) chickens += 1;
+    else if (/parrot|macaw|conure|cockatoo|cockatiel|budgie|parakeet|lovebird|amazon|african grey|caique|lory|lorikeet|eclectus|pionus|quaker|psittac/i.test(name)) parrots += 1;
+  });
+  if (chickens > parrots) return base + 'Chicken.png';
+  if (parrots > 0) return base + 'Parrot.png';
+  return base + 'Birds.png';
+}
+
+// The picture for a home tile or tab: My Birds and the Birds tab are the bird you keep; everything else is as listed.
+function navIcon(groupId, screenId, fallback) {
+  if (groupId === 'mybirds' && (!screenId || screenId === 'birds')) return myBirdsIcon();
+  return fallback;
+}
