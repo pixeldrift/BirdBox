@@ -30,14 +30,30 @@ ${unique ? `    alter table ${tbl} drop constraint if exists ${unique.old};\n   
   end if;
 `;
 }
+const base = `
+-- tables from the first set-up steps that were never created here
+create table if not exists health_records (
+  id text primary key, bird_id text not null, type text not null, date date not null,
+  provider text not null default '', notes text not null default '', attachments jsonb not null default '[]'
+);
+create index if not exists health_records_bird_idx on health_records (bird_id);
+create table if not exists bird_transfers (
+  id text primary key, bird_id text not null, contact_id text, direction text not null check (direction in ('Out', 'In')),
+  method text not null, date date, notes text not null default '', created_at timestamptz not null default now()
+);
+create index if not exists bird_transfers_bird_idx on bird_transfers (bird_id);
+`;
 const out = `-- FINISH SET-UP — one statement. Paste ALL of this file into the Neon SQL editor and run it once (it can take a few seconds).
 -- It catches up the database changes from 028–037 if any were missed, then loads the sample aviary. Safe to run again.
 -- Afterwards run the check at the bottom of this file on its own.
 do $finish$
 begin
+${base}
 ${body1}
 
--- the two newest tables follow the per-account rules too
+-- the tables above follow the per-account rules too
+${tenant('health_records', 'id')}
+${tenant('bird_transfers', 'id')}
 ${tenant('test_rules', 'id', { old: 'test_rules_disease_key', name: 'test_rules_unique', cols: 'disease' })}
 ${tenant('show_results', 'id')}
 -- the sample aviary

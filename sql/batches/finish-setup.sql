@@ -3,6 +3,19 @@
 -- Afterwards run the check at the bottom of this file on its own.
 do $finish$
 begin
+
+-- tables from the first set-up steps that were never created here
+create table if not exists health_records (
+  id text primary key, bird_id text not null, type text not null, date date not null,
+  provider text not null default '', notes text not null default '', attachments jsonb not null default '[]'
+);
+create index if not exists health_records_bird_idx on health_records (bird_id);
+create table if not exists bird_transfers (
+  id text primary key, bird_id text not null, contact_id text, direction text not null check (direction in ('Out', 'In')),
+  method text not null, date date, notes text not null default '', created_at timestamptz not null default now()
+);
+create index if not exists bird_transfers_bird_idx on bird_transfers (bird_id);
+
 -- ======================================================================================================
 -- 028_supply_main_image.sql
 -- ======================================================================================================
@@ -123,7 +136,47 @@ alter table media_links add constraint media_links_target_type_check
   check (target_type in ('bird', 'health', 'waybill', 'transaction', 'contact', 'aviary', 'location', 'building', 'room', 'cage', 'supply', 'award'));
 
 
--- the two newest tables follow the per-account rules too
+-- the tables above follow the per-account rules too
+
+  if to_regclass('public.health_records') is not null and not exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'health_records' and column_name = 'account_id') then
+    alter table health_records add column account_id text;
+    alter table health_records add column if not exists is_demo boolean not null default false;
+    update health_records set account_id = 'legacy';
+    alter table health_records alter column account_id set default nullif(current_setting('app.account_id', true), '');
+    alter table health_records alter column account_id set not null;
+    alter table health_records drop constraint if exists health_records_pkey cascade;
+    alter table health_records add primary key (account_id, id);
+  end if;
+  if to_regclass('public.health_records') is not null then
+    alter table health_records enable row level security;
+    alter table health_records force row level security;
+    drop policy if exists tenant_isolation on health_records;
+    create policy tenant_isolation on health_records using (account_id = nullif(current_setting('app.account_id', true), '')) with check (account_id = nullif(current_setting('app.account_id', true), ''));
+    drop policy if exists demo_read on health_records;
+    create policy demo_read on health_records for select using (account_id = 'demo' and current_setting('app.loading_demo', true) = 'on');
+    grant select, insert, update, delete on health_records to birdbox_app;
+  end if;
+
+
+  if to_regclass('public.bird_transfers') is not null and not exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'bird_transfers' and column_name = 'account_id') then
+    alter table bird_transfers add column account_id text;
+    alter table bird_transfers add column if not exists is_demo boolean not null default false;
+    update bird_transfers set account_id = 'legacy';
+    alter table bird_transfers alter column account_id set default nullif(current_setting('app.account_id', true), '');
+    alter table bird_transfers alter column account_id set not null;
+    alter table bird_transfers drop constraint if exists bird_transfers_pkey cascade;
+    alter table bird_transfers add primary key (account_id, id);
+  end if;
+  if to_regclass('public.bird_transfers') is not null then
+    alter table bird_transfers enable row level security;
+    alter table bird_transfers force row level security;
+    drop policy if exists tenant_isolation on bird_transfers;
+    create policy tenant_isolation on bird_transfers using (account_id = nullif(current_setting('app.account_id', true), '')) with check (account_id = nullif(current_setting('app.account_id', true), ''));
+    drop policy if exists demo_read on bird_transfers;
+    create policy demo_read on bird_transfers for select using (account_id = 'demo' and current_setting('app.loading_demo', true) = 'on');
+    grant select, insert, update, delete on bird_transfers to birdbox_app;
+  end if;
+
 
   if to_regclass('public.test_rules') is not null and not exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'test_rules' and column_name = 'account_id') then
     alter table test_rules add column account_id text;
