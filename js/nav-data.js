@@ -70,7 +70,7 @@ const NAV = [
         blurb: 'Visual reports: sales, production, and inbreeding coefficients.' },
       { id: 'contacts', label: 'Contacts', icon: 'icons/tinted/business/Contacts.png',
         blurb: 'Buyers, sellers, and vendor address book.' },
-      { id: 'media', label: 'Media', icon: 'icons/tinted/classifieds/Notes.png',
+      { id: 'media', label: 'Media', icon: 'icons/tinted/classifieds/Media.png',
         blurb: 'Every photo, receipt, waybill and document in one searchable library.' },
     ],
   },

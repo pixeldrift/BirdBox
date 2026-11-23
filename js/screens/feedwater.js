@@ -43,7 +43,7 @@ const FeedWaterScreen = (function () {
       top.appendChild(seg);
       if (state.view === 'place') top.appendChild(CareSection.render({ targetType: 'aviary', targetId: 'main', name: AVIARY.name, refresh: draw, plan: plan })); // the aviary-wide plan, editable right here
       var tools = ListTools.create({
-        screen: cleaning ? 'cleaning' : 'feedwater', noView: true, placeholder: state.view === 'place' ? T('Search cages…') : (cleaning ? 'Search supplies…' : 'Search foods…'), ariaLabel: 'Search', query: state.query,
+        screen: cleaning ? 'cleaning' : 'feedwater', noView: true, add: state.view === 'food' ? { label: '+ Add Supply', onClick: function () { location.hash = '#/aviary/supplies/new'; } } : null, placeholder: state.view === 'place' ? T('Search cages…') : (cleaning ? 'Search supplies…' : 'Search foods…'), ariaLabel: 'Search', query: state.query,
         onQuery: function (v) { state.query = v; drawBody(); }, onRedraw: function () { drawBody(); },
         filters: [{ key: 'show', label: '', options: state.view === 'place' ? [['noplan', 'No plan yet']] : [['low', 'Running low']] }],
         get: function (k) { return state[k]; }, set: function (k, v) { state[k] = v; },
@@ -61,7 +61,6 @@ const FeedWaterScreen = (function () {
       var count = el('p', 'list-count');
       var countRow = el('div', 'count-row');
       countRow.appendChild(count);
-      if (state.view === 'food') countRow.appendChild(btn('add-mini', '+ Add Supply', function () { location.hash = '#/aviary/supplies/new'; }));
       function setCount(n, one, many) { clearEl(count); count.appendChild(el('strong', '', String(n))); count.appendChild(document.createTextNode(' ' + (n === 1 ? one : many))); }
       if (state.view === 'place') {
         body.appendChild(countRow);

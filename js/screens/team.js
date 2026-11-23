@@ -41,15 +41,8 @@ const TeamScreen = (function () {
 
   function renderList(main, navigate) {
     var wrap = el('div', 'list-screen');
-    var actions = el('div', 'list-actions');
-    var add = el('button', 'btn-positive', '+ Add Team Member');
-    add.type = 'button';
-    add.addEventListener('click', function () { navigate('new'); });
-    actions.appendChild(add);
-    var search = el('input', 'search-input');
-    search.type = 'search';
-    search.placeholder = 'Search your team…';
-    search.value = state.query;
+    var top = ListTools.topRow({ placeholder: 'Search your team…', ariaLabel: 'Search your team', query: state.query,
+      onQuery: function (v) { state.query = v; draw(); }, add: { label: '+ Add Team Member', onClick: function () { navigate('new'); } } });
     var chips = el('div', 'filter-chips');
     var count = el('p', 'list-count');
     var list = el('div', 'list-rows');
@@ -74,10 +67,9 @@ const TeamScreen = (function () {
         list.appendChild(el('p', 'list-empty', USERS_SAMPLE.length ? 'No one matches.' : 'No team members yet — add yourself and anyone who helps, like employees and volunteers.'));
       }
     }
-    search.addEventListener('input', function (e) { state.query = e.target.value; draw(); });
     draw();
     var note = el('p', 'form-note', 'Team members are also listed in your address book under Contacts → My Team. Logins and permissions come later.');
-    [actions, search, chips, count, list, note].forEach(function (e) { wrap.appendChild(e); });
+    [top, chips, count, list, note].forEach(function (e) { wrap.appendChild(e); });
     main.appendChild(wrap);
   }
 

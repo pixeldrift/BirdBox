@@ -116,11 +116,11 @@ const RegistrySearchScreen = (function () {
     intro.className = 'form-note';
     intro.textContent = 'Search the public registry by exact band number.';
 
-    var searchInput = document.createElement('input');
-    searchInput.type = 'search';
-    searchInput.placeholder = 'e.g. AR 10001 CA';
-    searchInput.className = 'search-input';
-    searchInput.setAttribute('aria-label', 'Search band number');
+    var sb = ListTools.searchBox({ placeholder: 'e.g. AR 10001 CA', ariaLabel: 'Search band number' });
+    var searchInput = sb.input;
+    var top = document.createElement('div');
+    top.className = 'list-top';
+    top.appendChild(sb.box);
 
     var resultWrap = document.createElement('div');
 
@@ -139,7 +139,7 @@ const RegistrySearchScreen = (function () {
     });
 
     wrap.appendChild(intro);
-    wrap.appendChild(searchInput);
+    wrap.appendChild(top);
     wrap.appendChild(resultWrap);
     main.appendChild(wrap);
   }

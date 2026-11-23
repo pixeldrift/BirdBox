@@ -50,7 +50,7 @@ const SuppliesScreen = (function () {
   function renderList(main, navigate) {
     var wrap = el('div', 'list-screen');
     tools = ListTools.create({
-      screen: 'supplies', placeholder: 'Search supplies…', ariaLabel: 'Search supplies', query: state.query,
+      screen: 'supplies', add: { label: '+ Add Supply', onClick: function () { navigate('new'); } }, placeholder: 'Search supplies…', ariaLabel: 'Search supplies', query: state.query,
       onQuery: function (v) { state.query = v; draw(); }, onRedraw: function () { draw(); },
       filters: [{ key: 'show', label: '', options: [['Running low', 'Running low']].concat(SUPPLY_CATEGORIES.map(function (c) { return [c, c]; })) }],
       get: function (k) { return state[k]; }, set: function (k, v) { state[k] = v; },
@@ -58,7 +58,6 @@ const SuppliesScreen = (function () {
     var count = el('p', 'list-count');
     var countRow = el('div', 'count-row');
     countRow.appendChild(count);
-    countRow.appendChild(btn('add-mini', '+ Add Supply', function () { navigate('new'); }));
     var list = el('div', 'list-rows');
 
     function draw() {

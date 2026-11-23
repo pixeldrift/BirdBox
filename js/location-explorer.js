@@ -276,12 +276,12 @@ const LocationExplorer = (function () {
 
       // 2. one search box, with Add new beside it
       var bar = el('div', 'loc-searchbar');
-      var search = el('input', 'search-input loc-search');
-      search.type = 'search';
-      search.value = state.query;
+      var sbox = ListTools.searchBox({ query: state.query });
+      var search = sbox.input;
+      search.classList.add('loc-search');
       search.placeholder = state.mode === 'browse' ? 'Search ' + (focus.kind === 'aviary' ? 'My Aviary' : focus.name) + '…' : state.mode === 'tree' ? 'Search ' + model.root.name + '…' : 'Search all ' + LocationModel.PLURAL[state.allKind] + '…';
       search.addEventListener('input', function (e) { state.query = e.target.value; drawResults(); });
-      bar.appendChild(search);
+      bar.appendChild(sbox.box);
       var addTarget = state.mode === 'all' ? null : focus;
       var opts = state.mode === 'all' ? [{ kind: state.allKind, label: LocationModel.KINDS[state.allKind], prefill: {} }] : addOptions(addTarget);
       if (opts.length && (state.mode !== 'tree' || state.editing)) bar.appendChild(btn('loc-add', '+ Add new', function () { openAddMenu(opts); }));

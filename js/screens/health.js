@@ -26,7 +26,7 @@ const HealthScreen = (function () {
     wrap.className = 'list-screen';
 
     var tools = ListTools.create({
-      screen: 'health', noView: true, placeholder: 'Search health records…', ariaLabel: 'Search health records', query: state.query,
+      screen: 'health', noView: true, add: { label: '+ Add Health Record', onClick: function () { navigate('new'); } }, placeholder: 'Search health records…', ariaLabel: 'Search health records', query: state.query,
       onQuery: function (v) { state.query = v; draw(); }, onRedraw: function () { draw(); },
       filters: function () {
         var f = [{ key: 'types', label: 'Type', options: RECORD_TYPES.map(function (t) { return [t, t]; }) }];
@@ -45,12 +45,6 @@ const HealthScreen = (function () {
     var countRow = document.createElement('div');
     countRow.className = 'count-row';
     countRow.appendChild(countLabel);
-    var addBtn = document.createElement('button');
-    addBtn.type = 'button';
-    addBtn.className = 'add-mini';
-    addBtn.textContent = '+ Add Health Record';
-    addBtn.addEventListener('click', function () { navigate('new'); });
-    countRow.appendChild(addBtn);
 
     var listWrap = document.createElement('div');
     listWrap.className = 'list-rows';

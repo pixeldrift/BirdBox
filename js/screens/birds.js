@@ -16,7 +16,21 @@ const BirdsScreen = (function () {
     wrap.className = 'list-screen';
 
     var tools = ListTools.create({
-      screen: 'birds', placeholder: 'Search birds…', ariaLabel: 'Search birds', query: state.query,
+      screen: 'birds', add: { label: '+ Add Bird', onClick: function () {
+      Modal.open({
+        title: 'Add birds',
+        build: function (body, close) {
+          [['+ Add one bird', 'new'], [T('+ Add a clutch — a batch of chicks at once'), 'clutch'], ['Import many birds from a CSV file', 'import']].forEach(function (a) {
+            var b = document.createElement('button');
+            b.type = 'button';
+            b.className = 'btn-positive loc-add-row';
+            b.textContent = a[0];
+            b.addEventListener('click', function () { close(); navigate(a[1]); });
+            body.appendChild(b);
+          });
+        },
+      });
+      } }, placeholder: 'Search birds…', ariaLabel: 'Search birds', query: state.query,
       onQuery: function (v) { state.query = v; draw(); }, onRedraw: function () { draw(); },
       filters: function () {
         var f = [{ key: 'status', label: 'Status', options: STATUSES.filter(function (s) { return s !== 'All'; }).concat(['Archived']).map(function (s) { return [s, s]; }) }];
@@ -34,26 +48,6 @@ const BirdsScreen = (function () {
     var countRow = document.createElement('div');
     countRow.className = 'count-row';
     countRow.appendChild(countLabel);
-    var addMini = document.createElement('button');
-    addMini.type = 'button';
-    addMini.className = 'add-mini';
-    addMini.textContent = '+ Add Bird';
-    addMini.addEventListener('click', function () {
-      Modal.open({
-        title: 'Add birds',
-        build: function (body, close) {
-          [['+ Add one bird', 'new'], [T('+ Add a clutch — a batch of chicks at once'), 'clutch'], ['Import many birds from a CSV file', 'import']].forEach(function (a) {
-            var b = document.createElement('button');
-            b.type = 'button';
-            b.className = 'btn-positive loc-add-row';
-            b.textContent = a[0];
-            b.addEventListener('click', function () { close(); navigate(a[1]); });
-            body.appendChild(b);
-          });
-        },
-      });
-    });
-    countRow.appendChild(addMini);
 
     var listWrap = document.createElement('div');
     listWrap.className = 'list-rows';

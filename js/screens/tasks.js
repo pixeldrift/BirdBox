@@ -123,7 +123,7 @@ const TasksScreen = (function () {
     var wrap = el('div', 'list-screen');
     var me = currentUserId();
     var tools = ListTools.create({
-      screen: 'tasks', noSearch: true, noView: true,
+      screen: 'tasks', noSearch: true, noView: true, add: { label: fixedKind ? '+ Add ' + fixedKind + ' Task' : '+ Add Task', onClick: function () { prefill = fixedKind ? { kind: fixedKind } : {}; navigate('new'); } },
       onRedraw: function () { draw(); },
       filters: (USERS_SAMPLE.length ? [{ key: 'who', label: 'Assigned to', options: USERS_SAMPLE.slice().sort(function (a, b) { return (b.id === me) - (a.id === me); }).map(function (u) { return [u.id, userFullName(u) + (u.id === me ? ' (Me)' : '')]; }).concat([['none', 'Not assigned']]) }] : [])
         .concat(fixedKind ? [] : [{ key: 'kind', label: 'Kind', options: TASK_KINDS.map(function (k) { return [k, k]; }) }]),
@@ -137,9 +137,8 @@ const TasksScreen = (function () {
     var countLabel = el('p', 'list-count');
     var countRow = el('div', 'count-row');
     countRow.appendChild(countLabel);
-    countRow.appendChild(btn('add-mini', fixedKind ? '+ Add ' + fixedKind + ' Task' : '+ Add Task', function () { prefill = fixedKind ? { kind: fixedKind } : {}; navigate('new'); }));
     var body = el('div');
-    [bar, tools.chips, countRow, body].forEach(function (e) { wrap.appendChild(e); });
+    [tools.bar.firstChild, bar, tools.chips, countRow, body].forEach(function (e) { wrap.appendChild(e); });
     main.appendChild(wrap);
 
     function setCount(n, text) { clearEl(countLabel); countLabel.appendChild(el('strong', '', String(n))); countLabel.appendChild(document.createTextNode(' ' + text)); }

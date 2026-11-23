@@ -5,6 +5,7 @@
 //                                  filters: [{ key, label, options: [[value, label], …] }, …]   ← pick any number of each
 //                                           (or a function returning that list, when the options change)
 //                                  get(key) → array of picked values, set(key, array) })
+//   add: { label, onClick } puts a small add button beside the search box (the top row of every list page)
 //   noSearch / noView leave out the search box / list-grid toggle; tools.filterBtn is the button on its own
 //   tools.bar   the search + toggle + filter row     tools.chips   the active-filter chips
 //   tools.view  'list' | 'grid' (remembered)         tools.card(spec) builds a grid card
@@ -26,6 +27,11 @@ const ListTools = (function () {
     funnel: 'M3 4h18l-7 8.5V19l-4 2v-8.5z',
     list: 'M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01',
     grid: 'M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z',
+    pencil: 'M4 20h4L19 9l-4-4L4 16zM13.5 6.5l4 4',
+    check: 'M5 12.5l4.5 4.5L19 7.5',
+    close: 'M6 6l12 12M18 6L6 18',
+    prev: 'M15 5l-7 7 7 7',
+    next: 'M9 5l7 7-7 7',
   };
   function icon(name) {
     var s = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -38,20 +44,37 @@ const ListTools = (function () {
     return s;
   }
 
+  // The search box used everywhere (a pair of binoculars before the text). Returns { box, input } — box is what you add to the page.
+  function searchBox(o) {
+    var input = el('input', 'search-input'); // the binoculars come from the stylesheet, for every search box in the app
+    input.type = 'search';
+    input.placeholder = o.placeholder || 'Search…';
+    input.setAttribute('aria-label', o.ariaLabel || 'Search');
+    input.value = o.query || '';
+    if (o.onQuery) input.addEventListener('input', function (e) { o.onQuery(e.target.value); });
+    return { box: input, input: input };
+  }
+
+  // The top row of a list page, always in the same place: the search box, with a small add button to its right.
+  //   topRow({ placeholder, ariaLabel, query, onQuery, noSearch, add: { label, onClick } })
+  function topRow(o) {
+    var row = el('div', 'list-top');
+    if (!o.noSearch) row.appendChild(searchBox(o).box);
+    else row.appendChild(el('span', 'list-top-gap'));
+    if (o.add) row.appendChild(btn('add-mini', o.add.label, o.add.onClick));
+    return row;
+  }
+
   function loadView(screen) { try { return localStorage.getItem('birdbox-view-' + screen) === 'grid' ? 'grid' : 'list'; } catch (e) { return 'list'; } }
   function saveView(screen, v) { try { localStorage.setItem('birdbox-view-' + screen, v); } catch (e) { /* just not remembered */ } }
 
   function create(o) {
     var api = { view: loadView(o.screen) };
 
-    var bar = el('div', 'list-tools');
-    var search = el('input', 'search-input');
-    search.type = 'search';
-    search.placeholder = o.placeholder || 'Search…';
-    search.setAttribute('aria-label', o.ariaLabel || 'Search');
-    search.value = o.query || '';
-    search.addEventListener('input', function (e) { o.onQuery(e.target.value); });
-    if (!o.noSearch) bar.appendChild(search);
+    var bar = el('div', 'list-tools-wrap');
+    if (!o.noSearch || o.add) bar.appendChild(topRow(o));
+    var sub = el('div', 'list-tools');
+    bar.appendChild(sub);
 
     var seg = el('div', 'loc-seg loc-present');
     function drawSeg() {
@@ -67,11 +90,11 @@ const ListTools = (function () {
       });
     }
     drawSeg();
-    if (!o.noView) bar.appendChild(seg);
+    if (!o.noView) sub.appendChild(seg);
 
     var filterBtn = btn('loc-filter-btn', '', function () { openFilters(); });
     filterBtn.appendChild(icon('funnel'));
-    bar.appendChild(filterBtn);
+    sub.appendChild(filterBtn);
     api.bar = bar;
     api.filterBtn = filterBtn;
 
@@ -163,5 +186,5 @@ const ListTools = (function () {
     return api;
   }
 
-  return { create: create };
+  return { create: create, searchBox: searchBox, topRow: topRow, icon: icon };
 })();

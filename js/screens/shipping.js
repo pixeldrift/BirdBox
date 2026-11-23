@@ -31,20 +31,8 @@ const ShippingScreen = (function () {
     var wrap = document.createElement('div');
     wrap.className = 'list-screen';
 
-    var actions = document.createElement('div');
-    actions.className = 'list-actions';
-    var addBtn = document.createElement('button');
-    addBtn.type = 'button';
-    addBtn.className = 'btn-positive';
-    addBtn.textContent = '+ Add Shipment';
-    addBtn.addEventListener('click', function () { ShippingAddScreen.reset(); navigate('new'); });
-    actions.appendChild(addBtn);
-
-    var searchInput = document.createElement('input');
-    searchInput.type = 'search';
-    searchInput.placeholder = 'Search client, bird, carrier, waybill…';
-    searchInput.className = 'search-input';
-    searchInput.setAttribute('aria-label', 'Search shipments');
+    var top = ListTools.topRow({ placeholder: 'Search client, bird, carrier, waybill…', ariaLabel: 'Search shipments', query: state.query,
+      onQuery: function (v) { state.query = v; draw(); }, add: { label: '+ Add Shipment', onClick: function () { ShippingAddScreen.reset(); navigate('new'); } } });
 
     var chipsWrap = document.createElement('div');
     chipsWrap.className = 'filter-chips';
@@ -101,15 +89,9 @@ const ShippingScreen = (function () {
       }
     }
 
-    searchInput.addEventListener('input', function (e) {
-      state.query = e.target.value;
-      draw();
-    });
-
     draw();
 
-    wrap.appendChild(actions);
-    wrap.appendChild(searchInput);
+    wrap.appendChild(top);
     wrap.appendChild(chipsWrap);
     wrap.appendChild(countLabel);
     wrap.appendChild(listWrap);

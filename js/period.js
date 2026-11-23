@@ -128,8 +128,27 @@ const PeriodBar = (function () {
         prev.addEventListener('click', function () { step(-1); changed(); });
         nav.appendChild(prev);
       }
-      var title = el('strong', 'period-label', label());
-      nav.appendChild(title);
+      var p = parts(shared.anchor);
+      if (shared.mode === 'month' || shared.mode === 'year') {
+        // the month and year themselves are the menus, between the arrows
+        var years = [];
+        var lo = Math.min(firstYear, p.y), hi = Math.max(new Date().getFullYear(), p.y);
+        for (var y = hi; y >= lo; y--) years.push([String(y), String(y)]);
+        var menus = el('div', 'period-label period-menus');
+        if (shared.mode === 'month') {
+          var ms = select(MONTHS.map(function (n, i) { return [String(i), n]; }), p.m, function (v) { shared.anchor = iso(p.y, +v, 1); changed(); });
+          ms.className = 'form-input period-select';
+          ms.setAttribute('aria-label', 'Month');
+          menus.appendChild(ms);
+        }
+        var ys = select(years, p.y, function (v) { shared.anchor = iso(+v, p.m, 1); changed(); });
+        ys.className = 'form-input period-select';
+        ys.setAttribute('aria-label', 'Year');
+        menus.appendChild(ys);
+        nav.appendChild(menus);
+      } else {
+        nav.appendChild(el('strong', 'period-label', label()));
+      }
       if (stepping) {
         var next = el('button', 'cal-nav', '›'); next.type = 'button'; next.setAttribute('aria-label', 'Next');
         next.addEventListener('click', function () { step(1); changed(); });
@@ -138,16 +157,8 @@ const PeriodBar = (function () {
       bar.appendChild(nav);
 
       var pick = el('div', 'period-pick');
-      var p = parts(shared.anchor);
       if (shared.mode === 'day') pick.appendChild(field('Go to day', dateInput(shared.anchor, function (v) { shared.anchor = v; changed(); })));
       if (shared.mode === 'week') pick.appendChild(field('Week containing', dateInput(shared.anchor, function (v) { shared.anchor = v; changed(); })));
-      if (shared.mode === 'month' || shared.mode === 'year') {
-        var years = [];
-        var lo = Math.min(firstYear, p.y), hi = Math.max(new Date().getFullYear(), p.y);
-        for (var y = hi; y >= lo; y--) years.push([String(y), String(y)]);
-        if (shared.mode === 'month') pick.appendChild(field('Month', select(MONTHS.map(function (n, i) { return [String(i), n]; }), p.m, function (v) { shared.anchor = iso(p.y, +v, 1); changed(); })));
-        pick.appendChild(field('Year', select(years, p.y, function (v) { shared.anchor = iso(+v, p.m, shared.mode === 'year' ? 1 : 1); changed(); })));
-      }
       if (shared.mode === 'range') {
         pick.appendChild(field('From', dateInput(shared.from, function (v) { shared.from = v; changed(); })));
         pick.appendChild(field('To', dateInput(shared.to, function (v) { shared.to = v; changed(); })));

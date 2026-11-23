@@ -45,11 +45,8 @@ const AccountingScreen = (function () {
       });
     }
 
-    var searchInput = document.createElement('input');
-    searchInput.type = 'search';
-    searchInput.placeholder = 'Search transactions…';
-    searchInput.className = 'search-input';
-    searchInput.setAttribute('aria-label', 'Search transactions');
+    var top = ListTools.topRow({ placeholder: 'Search transactions…', ariaLabel: 'Search transactions', query: state.query,
+      onQuery: function (v) { state.query = v; draw(); }, add: { label: '+ Add Transaction', onClick: function () { navigate('new'); } } });
 
     var chipsWrap = document.createElement('div');
     chipsWrap.className = 'filter-chips';
@@ -101,25 +98,11 @@ const AccountingScreen = (function () {
       }
     }
 
-    searchInput.addEventListener('input', function (e) {
-      state.query = e.target.value;
-      draw();
-    });
-
     draw();
 
-    var txActions = document.createElement('div');
-    txActions.className = 'list-actions';
-    var addTx = document.createElement('button');
-    addTx.type = 'button';
-    addTx.className = 'btn-positive';
-    addTx.textContent = '+ Add Transaction';
-    addTx.addEventListener('click', function () { navigate('new'); });
-    txActions.appendChild(addTx);
-    wrap.appendChild(txActions);
+    wrap.appendChild(top);
     wrap.appendChild(period.el);
     wrap.appendChild(summary);
-    wrap.appendChild(searchInput);
     wrap.appendChild(chipsWrap);
     wrap.appendChild(countLabel);
     wrap.appendChild(listWrap);

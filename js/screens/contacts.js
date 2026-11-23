@@ -7,6 +7,39 @@ const ContactsScreen = (function () {
     return 'type-' + type.toLowerCase().replace(/\s+/g, '-');
   }
 
+  var BUSINESS_TYPES = ['Vendor', 'Store'];
+
+  // The picture for a contact: their first photo if they have one; otherwise a business icon for a business,
+  // or a circle with their initials for a person.
+  function initialsOf(name) {
+    var words = String(name || '').replace(/[^\p{L}\p{N}\s'-]/gu, ' ').split(/\s+/).filter(Boolean);
+    if (!words.length) return '?';
+    var first = words[0].charAt(0), last = words.length > 1 ? words[words.length - 1].charAt(0) : '';
+    return (first + last).toUpperCase();
+  }
+  function fillContactAvatar(container, contact) {
+    clearEl(container);
+    var photo = mediaPhotos('contact', contact.id)[0];
+    if (photo) {
+      var pic = document.createElement('img');
+      pic.src = photo.url;
+      pic.alt = '';
+      pic.className = 'avatar-photo';
+      container.appendChild(pic);
+    } else if (BUSINESS_TYPES.indexOf(contact.type) !== -1) {
+      var biz = document.createElement('img');
+      biz.src = 'icons/tinted/business/Business.png';
+      biz.alt = '';
+      container.appendChild(biz);
+    } else {
+      container.classList.add('avatar-person');
+      var ini = document.createElement('span');
+      ini.className = 'avatar-initials';
+      ini.textContent = initialsOf(contact.name);
+      container.appendChild(ini);
+    }
+  }
+
   function goToBird(birdId) {
     location.hash = '#/mybirds/birds/' + birdId;
   }
@@ -17,11 +50,8 @@ const ContactsScreen = (function () {
     var wrap = document.createElement('div');
     wrap.className = 'list-screen';
 
-    var searchInput = document.createElement('input');
-    searchInput.type = 'search';
-    searchInput.placeholder = 'Search name or company…';
-    searchInput.className = 'search-input';
-    searchInput.setAttribute('aria-label', 'Search contacts');
+    var top = ListTools.topRow({ placeholder: 'Search contacts…', ariaLabel: 'Search contacts', query: state.query,
+      onQuery: function (v) { state.query = v; draw(); }, add: { label: '+ Add Contact', onClick: function () { navigate('new'); } } });
 
     var chipsWrap = document.createElement('div');
     chipsWrap.className = 'filter-chips';
@@ -67,23 +97,9 @@ const ContactsScreen = (function () {
       }
     }
 
-    searchInput.addEventListener('input', function (e) {
-      state.query = e.target.value;
-      draw();
-    });
-
     draw();
 
-    var contactActions = document.createElement('div');
-    contactActions.className = 'list-actions';
-    var addContact = document.createElement('button');
-    addContact.type = 'button';
-    addContact.className = 'btn-positive';
-    addContact.textContent = '+ Add Contact';
-    addContact.addEventListener('click', function () { navigate('new'); });
-    contactActions.appendChild(addContact);
-    wrap.appendChild(contactActions);
-    wrap.appendChild(searchInput);
+    wrap.appendChild(top);
     wrap.appendChild(chipsWrap);
     wrap.appendChild(countLabel);
     wrap.appendChild(listWrap);
@@ -97,10 +113,7 @@ const ContactsScreen = (function () {
 
     var avatar = document.createElement('span');
     avatar.className = 'list-row-avatar';
-    var img = document.createElement('img');
-    img.src = 'icons/tinted/business/Contacts.png';
-    img.alt = '';
-    avatar.appendChild(img);
+    fillContactAvatar(avatar, contact);
 
     var info = document.createElement('span');
     info.className = 'list-row-info';
@@ -156,10 +169,7 @@ const ContactsScreen = (function () {
 
     var avatar = document.createElement('div');
     avatar.className = 'detail-avatar';
-    var img = document.createElement('img');
-    img.src = 'icons/tinted/business/Contacts.png';
-    img.alt = '';
-    avatar.appendChild(img);
+    fillContactAvatar(avatar, contact);
 
     var titleWrap = document.createElement('div');
     titleWrap.className = 'detail-title';
