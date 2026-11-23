@@ -136,14 +136,16 @@ const RecordForm = (function () {
     var save = el('button', 'save-btn', editing ? 'Save Changes' : 'Add ' + def.singular.replace(/^./, function (c) { return c.toUpperCase(); }));
     save.type = 'submit';
     form.appendChild(errorBox);
-    form.appendChild(save);
 
     var cancel = el('button', 'add-record-btn', 'Cancel');
     cancel.type = 'button';
     cancel.addEventListener('click', function () {
       if (opts.onCancel) opts.onCancel(); else if (editing) goTo(opts.id); else location.hash = def.hash.replace(/\/$/, '');
     });
-    form.appendChild(cancel);
+    var actions = el('div', 'form-actions'); // small, side by side, Save on the right
+    actions.appendChild(cancel);
+    actions.appendChild(save);
+    form.appendChild(actions);
 
     form.addEventListener('submit', function (e) {
       e.preventDefault();

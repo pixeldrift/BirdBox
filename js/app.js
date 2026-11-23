@@ -218,17 +218,32 @@
   main.textContent = 'Loading…';
   Promise.all([birdsLoaded, contactsLoaded, transactionsLoaded, healthLoaded, buildingsLoaded, placeTypesLoaded, waybillsLoaded, transfersLoaded, usersLoaded, suppliesLoaded, careLoaded, tasksLoaded, eventsLoaded, locationsLoaded, roomsLoaded, aviaryLoaded, cagesLoaded, filesLoaded, navigationLoaded]).then(route);
 
+  WhatsNew.announce();
+
   if ('serviceWorker' in navigator) {
     // The app shell is served from the phone's cache first and refreshed in the background, so right after an update the
     // old version can still be showing. When the new one has taken over, offer a refresh instead of leaving it stale.
     var hadController = !!navigator.serviceWorker.controller;
     navigator.serviceWorker.addEventListener('controllerchange', function () {
       if (!hadController || document.getElementById('update-bar')) return;
-      var bar = document.createElement('button');
+      var bar = document.createElement('div');
       bar.id = 'update-bar';
-      bar.type = 'button';
-      bar.textContent = 'A new version of BirdBox is ready — tap to refresh';
-      bar.addEventListener('click', function () { location.reload(); });
+      var msg = document.createElement('span');
+      msg.textContent = 'A new version of BirdBox is ready.';
+      var notes = document.createElement('button');
+      notes.type = 'button';
+      notes.className = 'update-notes';
+      notes.textContent = 'What’s new';
+      // the running (old) version doesn't have the new notes, so ask the server for them
+      notes.addEventListener('click', function () { WhatsNew.load(true).then(function (list) { WhatsNew.open(list, 1); }); });
+      var go = document.createElement('button');
+      go.type = 'button';
+      go.className = 'update-refresh';
+      go.textContent = 'Refresh';
+      go.addEventListener('click', function () { location.reload(); });
+      bar.appendChild(msg);
+      bar.appendChild(notes);
+      bar.appendChild(go);
       document.body.appendChild(bar);
     });
     window.addEventListener('load', function () {

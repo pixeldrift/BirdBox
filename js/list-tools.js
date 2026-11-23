@@ -186,5 +186,22 @@ const ListTools = (function () {
     return api;
   }
 
+  // Search boxes everywhere: tapping in opens the box wide (the add button tucks away), and tapping anywhere else — or pressing Search —
+  // puts the keyboard away again.
+  function searchBar(input) { return input.closest('.list-top, .loc-searchbar'); }
+  document.addEventListener('focusin', function (e) {
+    if (e.target && e.target.matches && e.target.matches('input[type="search"]')) { var bar = searchBar(e.target); if (bar) bar.classList.add('searching'); }
+  });
+  document.addEventListener('focusout', function (e) {
+    if (e.target && e.target.matches && e.target.matches('input[type="search"]')) { var bar = searchBar(e.target); if (bar) bar.classList.remove('searching'); }
+  });
+  document.addEventListener('pointerdown', function (e) {
+    var a = document.activeElement;
+    if (a && a.matches && a.matches('input[type="search"]') && e.target !== a && !(e.target.closest && e.target.closest('input[type="search"]'))) a.blur();
+  }, true);
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && e.target && e.target.matches && e.target.matches('input[type="search"]')) e.target.blur();
+  });
+
   return { create: create, searchBox: searchBox, topRow: topRow, icon: icon };
 })();

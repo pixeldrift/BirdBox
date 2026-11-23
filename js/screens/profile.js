@@ -58,6 +58,12 @@ const ProfileUI = (function () {
     badge.textContent = me.role;
     t.appendChild(badge);
     head.appendChild(t);
+    // Sign out sits at the right of your name
+    var out = button('signout-btn', 'Sign out', function () {
+      if (typeof Auth !== 'undefined' && Auth.enabled) Auth.signOut();
+      else { setCurrentUser(''); again(); }
+    });
+    head.appendChild(out);
     section.appendChild(head);
     var facts = document.createElement('div');
     facts.className = 'fact-grid';
@@ -71,7 +77,6 @@ const ProfileUI = (function () {
     });
     photo.className = 'photo-sub';
     section.appendChild(photo);
-    section.appendChild(button('pick-link', 'That’s not me', function () { setCurrentUser(''); again(); }));
     return section;
   }
 

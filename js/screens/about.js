@@ -71,6 +71,8 @@ const AboutScreen = (function () {
     hero.appendChild(byline);
     wrap.appendChild(hero);
 
+    WhatsNew.section(wrap);
+
     var who = el('div', 'detail-section');
     who.appendChild(el('h3', '', 'Who it’s for'));
     who.appendChild(el('p', 'notes-text', ABOUT.audience));
