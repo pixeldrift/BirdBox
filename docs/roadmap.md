@@ -432,3 +432,11 @@ Data is separated per account in the database (row-level security), logins plug 
 Stack Auth), new accounts start with a sample aviary that can be removed or reloaded. To do: wire the sign-in screen and set the
 environment variables; **invite team members** (email → their own login, same account) and **permissions by role**; billing/plan
 limits if ever needed; account deletion and data export.
+
+## Welcome guide for new accounts — parked until there are real users
+Idea: a short, skippable first-run guide (aviary name, what you keep, start with the sample aviary). Decided: **don't build it yet** — focus on making
+everything work and look right first, and revisit when there are actual users to learn from. Principles to keep when it comes back:
+- Everything is visible from the start; nothing is switched off by a questionnaire. People hide what they don't use (Account → Customize).
+- "What I keep" (parrots, chickens, more groups to add: pigeons, waterfowl, songbirds) only decides which kinds of place the menus offer first and
+  which bird picture My Birds wears — it never removes a feature.
+- No questions about accounting, shipping, teams and so on; no "hobby / breeder / rescue / zoo" question unless it changes something people see.
