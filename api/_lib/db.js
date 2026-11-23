@@ -63,6 +63,20 @@ sql.transaction = async function transaction(queries) {
   }
 };
 
+// Runs `fn` as one transaction on this request's connection: everything it does happens, or none of it does.
+async function inTransaction(fn) {
+  const { client } = session();
+  await client.query('begin');
+  try {
+    const out = await fn();
+    await client.query('commit');
+    return out;
+  } catch (err) {
+    try { await client.query('rollback'); } catch (e) { /* connection already gone */ }
+    throw err;
+  }
+}
+
 function account() { return session().accountId; }
 function identity() { return session().identity; }
 
@@ -119,4 +133,4 @@ function withAccount(handler, opts) {
   };
 }
 
-module.exports = { sql, withAccount, account, identity, setAccount, setSetting };
+module.exports = { sql, withAccount, account, identity, setAccount, setSetting, inTransaction };

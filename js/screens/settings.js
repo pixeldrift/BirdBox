@@ -88,6 +88,12 @@ const SettingsScreen = (function () {
       }
       facts.appendChild(factRow('Aviary', p.account.name));
       section.insertBefore(facts, body);
+      if (p.claim && p.claim.available) {
+        body.appendChild(noteEl('You look like the owner of the original BirdBox data — the aviary you had before accounts. This login is on a new, separate account.'));
+        body.appendChild(button('btn-positive', 'Use my original data', function () {
+          Modal.confirm({ title: 'Switch to your original data?', message: 'This login will open your original aviary — all the birds and records you had before accounts. The new, empty account it started with is left unused.', confirmLabel: 'Switch', onConfirm: function () { post('claim-legacy').then(reloadApp).catch(function (err) { Modal.alert(err.message, 'Couldn’t do that'); }); } });
+        }));
+      }
       body.appendChild(noteEl(p.demo.loaded
         ? 'The sample aviary is loaded — a made-up flock, places, supplies and records to explore. Remove it when you’re ready to start with your own; anything you’ve added yourself stays.'
         : 'Want something to look around in? Load a made-up sample aviary — you can remove it again any time.'));
@@ -98,6 +104,7 @@ const SettingsScreen = (function () {
       });
       body.appendChild(btn);
       if (Auth.enabled) body.appendChild(button('add-record-btn', 'Sign out', function () { Auth.signOut(); }));
+      body.appendChild(Object.assign(document.createElement('p'), { className: 'form-note account-id', textContent: 'Account ' + p.account.id }));
     }
     Auth.refresh().then(draw).catch(function () { draw(null); });
     return section;

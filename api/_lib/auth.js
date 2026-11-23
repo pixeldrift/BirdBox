@@ -48,7 +48,7 @@ async function identify(req, getKeys) {
   const jwks = process.env.NEON_AUTH_JWKS_URL || base + '/.well-known/jwks.json';
   const { payload } = await jwtVerify(token, getKeys ? getKeys : keysFor(jwks), { algorithms: ['EdDSA'], issuer: new URL(base).origin });
   if (!payload.sub) throw new Error('Token has no user');
-  return { authId: String(payload.sub), email: String(payload.email || '') };
+  return { authId: String(payload.sub), email: String(payload.email || ''), emailVerified: payload.emailVerified === true || payload.email_verified === true };
 }
 
 module.exports = { identify, required, mode, authUrl };

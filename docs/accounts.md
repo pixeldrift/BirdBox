@@ -56,3 +56,12 @@ are superseded by 039.
   login to the same account with their role. Permissions per role come after that.
 - Per-account customisation of menus is stored per account already; sharing an aviary between two accounts is not supported.
 - Pooler-safe mode (a transaction per request) if the direct connection ever becomes a limit.
+
+## Taking over the original data
+The data that existed before accounts lives in the account `legacy`. A login becomes its owner if **its user id is `LEGACY_OWNER_AUTH_ID`**
+(safest — Neon console → Auth → Users shows the id), or its email is `LEGACY_OWNER_EMAIL` **and the email is verified**. Neon Auth doesn't
+verify emails by default, so for an unverified email you must also set `LEGACY_ALLOW_UNVERIFIED=1` for the few minutes it takes to claim
+(while it is set, anyone could sign up with that address) and remove it afterwards. At first sign-in the owner lands in `legacy`
+automatically; if they already have a separate account (e.g. the setting wasn't deployed yet), Settings → Your account shows **Use my
+original data**, which points the login at `legacy`. Creating an account is all-or-nothing: if copying the sample data fails, no half-made
+account is left behind.
