@@ -183,3 +183,20 @@ select set_config('app.account_id', '', false);
 `;
 fs.writeFileSync(path.join(sqlDir, '039_demo_data.sql'), out);
 console.log('wrote sql/039_demo_data.sql', out.split('\n').length, 'lines');
+
+// The same sample aviary as ONE statement (a DO block), for SQL editors that run a long script a statement at a time on
+// separate connections — where "set the account" would be forgotten before the inserts. sql/batches/demo-one-block.sql
+const body = out.replace(/^select set_config\((.*)\);$/gm, 'perform set_config($1);');
+const one = `-- The sample aviary as a single statement. Paste ALL of it into the Neon SQL editor and run it once. Safe to run again.
+-- (Needs the species list loaded.) Afterwards, check it with the one-line query at the bottom of this file.
+do $demo_seed$
+begin
+${body}
+end
+$demo_seed$;
+
+-- Check (run on its own afterwards; the three numbers should all be above zero):
+-- select s.a, b.n as demo_birds, c.n as demo_cages, k.n as demo_contacts from (select set_config('app.account_id', 'demo', false) as a) s, lateral (select count(*) as n from birds where account_id = 'demo') b, lateral (select count(*) as n from cages where account_id = 'demo') c, lateral (select count(*) as n from contacts where account_id = 'demo') k;
+`;
+fs.writeFileSync(path.join(sqlDir, 'batches', 'demo-one-block.sql'), one);
+console.log('wrote sql/batches/demo-one-block.sql');
