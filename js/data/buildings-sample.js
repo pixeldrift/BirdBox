@@ -35,23 +35,41 @@ var placeTypesLoaded = loadList('placeTypes', PLACE_TYPE_ROWS);
 var buildingsLoaded = placesLoaded, roomsLoaded = placesLoaded, locationsLoaded = placesLoaded, cagesLoaded = placesLoaded;
 
 // ---- the types ----
-// What the app ships with. "Cage" is shown as "Coop" (etc.) for people who keep chickens — see js/terms.js.
+// What ships with the app. A cage and a coop are separate kinds, never swapped for each other. "What I keep" (Settings → My Aviary) only
+// changes which of these the menus offer, and in what order: chickens → coop, run, nest box; parrots → cage, flight; both → both; nothing
+// ticked → everything. Kinds you've made yourself, and kinds already in use, always show.
 var PLACE_TYPE_DEFAULTS = ['Location', 'Building', 'Room', 'Cage', 'Coop', 'Run', 'Pen', 'Box', 'Shelf', 'Flight', 'Brooder', 'Nest Box'];
+var PLACE_TYPES_EXOTIC = ['Cage', 'Flight'];
+var PLACE_TYPES_POULTRY = ['Coop', 'Run', 'Nest Box'];
+var PLACE_TYPES_GENERAL = ['Location', 'Building', 'Room', 'Pen', 'Box', 'Shelf', 'Brooder'];
 
 function placeTypeLabel(type) {
-  return type === 'Cage' ? T('Cage') : type;
+  return type;
 }
 
-// Every type to pick from: the ones that ship with the app, the ones you've added, and any already in use.
+// The default kinds to offer, for what you keep.
+function placeTypeOffer() {
+  var k = typeof Terms !== 'undefined' ? Terms.keeps() : { exotic: false, poultry: false };
+  if (k.poultry && !k.exotic) return PLACE_TYPES_POULTRY.concat(PLACE_TYPES_GENERAL);
+  if (k.exotic && !k.poultry) return PLACE_TYPES_EXOTIC.concat(PLACE_TYPES_GENERAL);
+  return PLACE_TYPE_DEFAULTS;
+}
+
+// The kind of place a bird would usually live in directly: a coop for chicken keepers, otherwise a cage.
+function leafPlaceType() {
+  var k = typeof Terms !== 'undefined' ? Terms.keeps() : { exotic: false, poultry: false };
+  return k.poultry && !k.exotic ? 'Coop' : 'Cage';
+}
+
+// Every kind to pick from: the ones offered for what you keep, ones you've added, and any already in use.
 function placeTypes() {
   var seen = {}, out = [];
   function add(t) {
-    var label = placeTypeLabel(t);
-    if (!t || seen[label.toLowerCase()]) return;
-    seen[label.toLowerCase()] = true;
+    if (!t || seen[t.toLowerCase()]) return;
+    seen[t.toLowerCase()] = true;
     out.push(t);
   }
-  PLACE_TYPE_DEFAULTS.forEach(add);
+  placeTypeOffer().forEach(add);
   PLACE_TYPE_ROWS.slice().sort(function (a, b) { return (a.sort || 0) - (b.sort || 0) || String(a.name).localeCompare(b.name); }).forEach(function (r) { add(r.name); });
   PLACES.forEach(function (p) { add(p.type); });
   return out;
@@ -113,7 +131,7 @@ function allCages() {
   var have = {};
   PLACES.forEach(function (p) { have[p.id] = true; });
   BIRDS_SAMPLE.forEach(function (b) {
-    if (b.cage && !have[b.cage]) { have[b.cage] = true; out.push({ code: b.cage, name: b.cage, parentId: null, description: '', type: 'Cage', setUp: false }); }
+    if (b.cage && !have[b.cage]) { have[b.cage] = true; out.push({ code: b.cage, name: b.cage, parentId: null, description: '', type: leafPlaceType(), setUp: false }); }
   });
   return out.sort(function (a, b) { return String(a.name).localeCompare(String(b.name), undefined, { numeric: true }); });
 }
@@ -137,8 +155,8 @@ function suggestedPlaceType(parentId) {
     return Object.keys(count).sort(function (a, b) { return count[b] - count[a]; })[0];
   }
   var parent = getPlace(parentId);
-  var next = { Location: 'Building', Building: 'Room', Room: 'Cage', Coop: 'Nest Box', Run: 'Cage', Shelf: 'Box' };
-  return parent ? next[parent.type] || 'Cage' : 'Building';
+  var next = { Location: 'Building', Building: 'Room', Room: leafPlaceType(), Coop: 'Nest Box', Run: 'Coop', Shelf: 'Box' };
+  return parent ? next[parent.type] || leafPlaceType() : 'Building';
 }
 
 // A place given as text (a CSV import, say): the place with that id, else the one with that name, else the text itself (a name not set up yet).

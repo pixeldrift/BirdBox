@@ -101,7 +101,7 @@ const CagingScreen = (function () {
 
   // Save a change to a place; a code that's only on birds is set up as a place first.
   function savePlace(id, changes) {
-    return getPlace(id) ? updateRecord('places', id, changes) : createRecord('places', Object.assign({ name: id, type: 'Cage' }, changes));
+    return getPlace(id) ? updateRecord('places', id, changes) : createRecord('places', Object.assign({ name: id, type: leafPlaceType() }, changes));
   }
 
   // The page for the unassigned birds, or for any place (including a code that's on birds but not set up yet).
@@ -117,7 +117,7 @@ const CagingScreen = (function () {
     var node = isLoose ? model.byId['loose:none'] : model.byId['place:' + id];
 
     var wrap = el('div', 'detail-screen');
-    wrap.appendChild(header(name, isLoose ? birdCount(birds.length) : [placeTypeLabel(rec ? rec.type : 'Cage'), node ? summary(node) : birdCount(birds.length)].join(' · '),
+    wrap.appendChild(header(name, isLoose ? birdCount(birds.length) : [placeTypeLabel(rec ? rec.type : leafPlaceType()), node ? summary(node) : birdCount(birds.length)].join(' · '),
       rec ? function () { navigate('edit~' + id); } : null, isLoose ? '' : mediaMainPhotoUrl('place', id)));
 
     if (!isLoose) {
@@ -202,7 +202,7 @@ const CagingScreen = (function () {
   function renderForm(main, parts, navigate, setTitle) {
     var mode = parts[0], key = parts[parts.length - 1] === parts[0] ? '' : parts[parts.length - 1]; // (old links had a kind in the middle: edit~cage~F2-001)
     var prefill = LocationExplorer.takePrefill();
-    if (mode === 'new' && key) { prefill.name = key; prefill.type = prefill.type || 'Cage'; }
+    if (mode === 'new' && key) { prefill.name = key; prefill.type = prefill.type || leafPlaceType(); }
     if (mode === 'new' && !prefill.type) prefill.type = suggestedPlaceType(prefill.parentId || '');
     var backList = function () { location.hash = '#/aviary/caging'; };
     var made = null;

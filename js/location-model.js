@@ -25,7 +25,7 @@ const LocationModel = (function () {
     // codes on birds that have no place record yet
     allCages().forEach(function (c) {
       if (c.setUp) return;
-      var n = make('place', c.code, c.name, null, 'Cage');
+      var n = make('place', c.code, c.name, null, c.type);
       n.setUp = false;
       n.flags.push('Not set up');
       nodes[c.code] = n;

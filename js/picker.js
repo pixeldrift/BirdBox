@@ -265,7 +265,7 @@ const Picker = (function () {
     }));
   }
   // (the same list, for the places birds live in)
-  function cages(opts) { return places(Object.assign({ placeholder: T('Search cages, or tap to browse…'), includeLoose: true }, opts)); }
+  function cages(opts) { return places(Object.assign({ placeholder: 'Search places, or tap to browse…', includeLoose: true }, opts)); }
 
   function users(opts) {
     return create(Object.assign({ placeholder: 'Search your team…' }, opts, {

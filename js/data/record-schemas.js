@@ -168,7 +168,7 @@ var RECORD_TYPES_UI = {
         pickerOpts: function (rec) { return rec ? { exclude: [rec.id].concat(placeDescendants(rec.id).map(function (d) { return d.id; })) } : {}; } },
       { key: 'description', label: 'Description', type: 'textarea' },
     ],
-    defaults: { type: 'Cage' },
+    defaults: {},
     afterSave: function (saved) { // a type you invented is remembered, even before anything else uses it
       var known = placeTypes().some(function (t) { return t.toLowerCase() === String(saved.type).toLowerCase(); });
       var stored = PLACE_TYPE_ROWS.some(function (r) { return r.name.toLowerCase() === String(saved.type).toLowerCase(); });
@@ -196,7 +196,7 @@ var RECORD_TYPES_UI = {
       { key: 'email', label: 'Email', type: 'text' },
       { key: 'website', label: 'Website', type: 'text' },
       { key: 'socials', label: 'Social links', type: 'text', hint: 'Optional — e.g. Instagram, Facebook.' },
-      { key: 'keeps', label: 'What I keep', type: 'enum', options: ['Parrots & exotic birds', 'Chickens & poultry'], hint: 'Changes the words the app uses — “coop” and “hatch” for chickens, “cage” and “clutch” for parrots.' },
+      { key: 'keeps', label: 'What I keep', type: 'checks', options: ['Parrots & exotic birds', 'Chickens & poultry'], hint: 'Tick everything you keep. The menus offer your kinds first — a coop and run for chickens, a cage and flight for parrots — and leave out the other’s. Tick both and you get both; tick nothing and you see everything. (A cage and a coop stay separate kinds of place.)' },
     ],
     defaults: {},
   },

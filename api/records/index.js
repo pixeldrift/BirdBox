@@ -48,7 +48,7 @@ function clean(schema, input, creating) {
     if (!present) {
       if (creating && f.required) return { error: label(key) + ' is required' };
       if (creating && f.type === 'boolean') { values[f.col] = true; continue; }
-      if (creating) values[f.col] = f.type === 'text' || f.type === 'enum' || f.type === 'phone' ? (f.ref ? null : '') : null;
+      if (creating) values[f.col] = f.type === 'text' || f.type === 'enum' || f.type === 'multi' || f.type === 'phone' ? (f.ref ? null : '') : null;
       continue;
     }
     let v = input[key];
@@ -64,6 +64,12 @@ function clean(schema, input, creating) {
       v = String(v == null ? '' : v).trim();
       if (!v) { if (f.required) return { error: label(key) + ' is required' }; values[f.col] = null; continue; }
       if (!isRealDate(v)) return { error: label(key) + ' must be a real date' };
+    } else if (f.type === 'multi') { // any number of the options, stored as a comma-separated list
+      const picked = (Array.isArray(v) ? v : String(v == null ? '' : v).split(',')).map((x) => String(x).trim()).filter(Boolean);
+      const bad = picked.find((x) => !f.options.includes(x));
+      if (bad) return { error: label(key) + ' must be any of: ' + f.options.join(', ') };
+      values[f.col] = f.options.filter((o) => picked.includes(o)).join(', ');
+      continue;
     } else if (f.type === 'enum') {
       v = String(v == null ? '' : v).trim();
       if (!v && !f.required) { values[f.col] = ''; continue; }

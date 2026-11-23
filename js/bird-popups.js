@@ -32,7 +32,7 @@ const BirdPopups = (function () {
 
     function drawTabs() {
       clearEl(tabs);
-      [['cage', T('In a cage')], ['person', 'With a person'], ['text', 'Somewhere else']].forEach(function (t) {
+      [['cage', 'In a place'], ['person', 'With a person'], ['text', 'Somewhere else']].forEach(function (t) {
         var chip = el('button', 'filter-chip' + (mode === t[0] ? ' active' : ''), t[1]);
         chip.type = 'button';
         chip.addEventListener('click', function () { mode = t[0]; drawTabs(); drawPanel(); });
@@ -43,19 +43,19 @@ const BirdPopups = (function () {
     function drawPanel() {
       clearEl(panel);
       if (mode === 'cage') {
-        panel.appendChild(el('p', 'form-note', T('Browse your places — buildings, rooms, coops, cages — or search by name.')));
+        panel.appendChild(el('p', 'form-note', 'Browse your places — buildings, rooms, coops, cages — or search by name.'));
         panel.appendChild(Picker.cages({
           value: picked.cage, allowClear: true, onChange: function (code) { picked.cage = code; },
           // A place that doesn't exist yet can be added right here (it can be moved inside something later).
           addNew: {
             needsText: true,
-            label: function (typed) { return typed ? T('+ Add “') + typed.trim() + '”' : T('+ New place — type its name above'); },
+            label: function (typed) { return typed ? '+ Add “' + typed.trim() + '”' : '+ New place — type its name above'; },
             onClick: function (typed, done) {
               var name = typed.trim();
               if (!name) return;
               var same = PLACES.filter(function (p) { return p.name.toLowerCase() === name.toLowerCase(); })[0];
               if (same) { done(same.id); return; }
-              createRecord('places', { name: name, type: 'Cage' }).then(function (rec) { done(rec.id); })
+              createRecord('places', { name: name, type: leafPlaceType() }).then(function (rec) { done(rec.id); })
                 .catch(function (err) { Modal.alert(err.message); });
             },
           },

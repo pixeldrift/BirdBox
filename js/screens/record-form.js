@@ -56,7 +56,7 @@ const RecordForm = (function () {
         placeTypes().forEach(function (t) { var o = el('option', '', placeTypeLabel(t)); o.value = t; sel.appendChild(o); });
         var neu = el('option', '', '+ A new kind of place…'); neu.value = '__new__'; sel.appendChild(neu);
         if (current && placeTypes().indexOf(current) === -1) { var cur = el('option', '', current); cur.value = current; sel.insertBefore(cur, neu); }
-        sel.value = current || 'Cage';
+        sel.value = current || leafPlaceType();
         var custom = el('input', 'form-input');
         custom.placeholder = 'Name it — e.g. Hutch, Pasture, Tractor';
         custom.style.display = 'none';
@@ -66,6 +66,18 @@ const RecordForm = (function () {
         control.appendChild(custom);
         get = function () { return sel.value === '__new__' ? custom.value.trim() : sel.value; };
         control.addEventListener('change', function () {}); // (the select's own change event bubbles to showWhen handlers)
+      } else if (f.type === 'checks') {
+        // tick any number of the options; the value is a comma-separated list
+        control = el('div', 'check-list');
+        var have = String(current).split(',').map(function (x) { return x.trim(); }).filter(Boolean);
+        var boxes = f.options.map(function (o) {
+          var row = el('label', 'check-row');
+          var cb = el('input'); cb.type = 'checkbox'; cb.checked = have.indexOf(o) !== -1; cb.value = o;
+          row.appendChild(cb); row.appendChild(el('span', '', o));
+          control.appendChild(row);
+          return cb;
+        });
+        get = function () { return boxes.filter(function (b) { return b.checked; }).map(function (b) { return b.value; }).join(', '); };
       } else if (f.type === 'enum') {
         control = el('select', 'form-input');
         if (!f.required) { var blank = el('option', '', '—'); blank.value = ''; control.appendChild(blank); }
@@ -102,7 +114,7 @@ const RecordForm = (function () {
         get = function () { return control.value; };
       }
       getters[f.key] = get;
-      var label = el(f.ref || f.type === 'suggest' || f.type === 'placetype' ? 'div' : 'label', 'form-field');
+      var label = el(f.ref || f.type === 'suggest' || f.type === 'placetype' || f.type === 'checks' ? 'div' : 'label', 'form-field');
       fieldEls[f.key] = label;
       controls[f.key] = control;
       label.appendChild(el('span', 'form-label', T(f.label) + (f.required || f.requiredIfShown ? ' *' : '')));

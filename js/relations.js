@@ -147,7 +147,7 @@ function waybillPayload(wb, changes) {
 
 // Put a place inside another (or take it out: parentId ''). A code seen only on birds is set up as a place first.
 function movePlace(id, parentId) {
-  return getPlace(id) ? updateRecord('places', id, { parentId: parentId || '' }) : createRecord('places', { name: id, type: 'Cage', parentId: parentId || '' });
+  return getPlace(id) ? updateRecord('places', id, { parentId: parentId || '' }) : createRecord('places', { name: id, type: leafPlaceType(), parentId: parentId || '' });
 }
 
 // ---- how linked records look in a list (a tappable row that opens the record) -------------
