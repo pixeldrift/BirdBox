@@ -44,6 +44,9 @@ body::before {
   pointer-events: none;
 }
 
+/* Buttons take the page's text colour. (iPhones otherwise paint plain button text system blue — which is what made list item names blue.) */
+button { color: inherit; }
+
 h1, h2, h3 {
   font-family: 'Bree Serif', 'Nunito', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   font-weight: 400;
@@ -395,6 +398,7 @@ h1, h2, h3 {
 }
 
 .list-row-title {
+  color: var(--text);
   font-weight: 700;
   font-size: 0.92rem;
   overflow: hidden;
