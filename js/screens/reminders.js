@@ -1,4 +1,4 @@
-// My Birds → Reminders (hidden for now; show it from Settings → Make BirdBox yours): how often each disease should be tested again.
+// My Birds → Reminders (hidden for now; show it from Settings → Customize menus): how often each disease should be tested again.
 // It belongs with Health, and it moved out of Settings. The starting values are common practice, not rules — change any of them.
 const RemindersScreen = (function () {
   function sectionEl(title) {

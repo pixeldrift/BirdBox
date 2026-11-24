@@ -1,5 +1,5 @@
-// Account -> Settings: My Aviary (with the sample data), your profile, the menu editor (reorder / hide / move the home tiles and tabs), and
-// Icon Style (which icon pack resolveBirdIcon() draws from, see js/data/icon-taxonomy.js).
+// Account -> Settings: My Aviary (with the sample data), your profile, Icon Style (which icon pack resolveBirdIcon() draws from, see js/data/icon-taxonomy.js), then
+// Customize menus (reorder / hide / move the home tiles and tabs). Your profile is its own tab.
 const SettingsScreen = (function () {
   function renderIconPackCard(pack, isActive, onSelect) {
     var card = document.createElement('button');
@@ -134,14 +134,7 @@ const SettingsScreen = (function () {
     var wrap = document.createElement('div');
     wrap.className = 'list-screen';
     wrap.appendChild(aviaryCard(main));
-    wrap.appendChild(ProfileUI.card(function () { renderList(main); }, '#/account/settings/edit~me'));
 
-    // The menu editor (it used to be its own Customize tab): reorder, hide or move the home tiles and tabs.
-    var menus = sectionEl('Make BirdBox yours');
-    var menuBody = document.createElement('div');
-    menus.appendChild(menuBody);
-    wrap.appendChild(menus);
-    NavEditor.build(menuBody);
 
     var section = document.createElement('div');
     section.className = 'detail-section';
@@ -183,6 +176,13 @@ const SettingsScreen = (function () {
     }
 
     wrap.appendChild(section);
+
+    // The menu editor (it used to be its own Customize tab): reorder, hide or move the home tiles and tabs.
+    var menus = sectionEl('Customize menus');
+    var menuBody = document.createElement('div');
+    menus.appendChild(menuBody);
+    wrap.appendChild(menus);
+    NavEditor.build(menuBody);
     main.appendChild(wrap);
   }
 
