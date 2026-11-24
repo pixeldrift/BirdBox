@@ -64,6 +64,7 @@ const ProfileUI = (function () {
       if (typeof Auth !== 'undefined' && Auth.enabled) Auth.signOut();
       else { setCurrentUser(''); again(); }
     });
+    out.appendChild(ListTools.icon('logout')); // an exit arrow pointing right
     var top = document.createElement('div');
     top.className = 'section-head';
     top.appendChild(section.firstChild);

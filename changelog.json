@@ -1,5 +1,16 @@
 [
   {
+    "version": "2026.11.24",
+    "date": "2026-11-24",
+    "title": "An Awards tab, a tidier menu, smaller photo controls",
+    "notes": [
+      "Awards has its own tab next to Production, with a trophy — every show, race and trial result in one searchable list.",
+      "Production now comes before Health. My Team moved under Business, Messages has a pair of speech balloons, and Privacy is tucked away for now.",
+      "Customize moved into Settings (Make BirdBox yours), and the sample-data button sits under Edit my aviary.",
+      "Sign out is a small orange link with an exit arrow. Photo ✕ buttons are smaller and sit at the top right, and photos stay small while you drag them to reorder."
+    ]
+  },
+  {
     "version": "2026.11.23",
     "date": "2026-11-23",
     "title": "Places your way, a better media gallery, easier searching",

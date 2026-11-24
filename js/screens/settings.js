@@ -1,5 +1,5 @@
-// Account -> Settings. Currently just Icon Style (choosing which icon pack resolveBirdIcon()
-// draws from, see js/data/icon-taxonomy.js) — more preferences land here over time.
+// Account -> Settings: My Aviary (with the sample data), your profile, the menu editor (reorder / hide / move the home tiles and tabs), and
+// Icon Style (which icon pack resolveBirdIcon() draws from, see js/data/icon-taxonomy.js).
 const SettingsScreen = (function () {
   function renderIconPackCard(pack, isActive, onSelect) {
     var card = document.createElement('button');
@@ -66,48 +66,31 @@ const SettingsScreen = (function () {
     return b;
   }
 
-  // Your account: who's signed in, and the sample data (a copy of the demo aviary you can look around in, and clear out
-  // again without touching anything you've added).
-  function accountCard(main) {
-    var section = sectionEl('Your account');
-    var body = document.createElement('div');
-    section.appendChild(body);
+  // Under "Edit my aviary": the sample data (a made-up aviary to look around in, removable without touching anything you've added), and — for
+  // the owner of the original data — the way to bring it into this login. Small, so they don't compete with the main button.
+  function accountActions(box) {
     function post(action) {
       return fetch('/api/account', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: action }) })
         .then(function (res) { return res.json().then(function (d) { if (!res.ok) throw new Error(d.error || 'That didn’t work'); return d; }); });
     }
     function reloadApp() { location.reload(); }
     function draw(p) {
-      clearEl(body);
-      if (!p) { body.appendChild(noteEl('Account details aren’t available right now.')); return; }
-      var facts = document.createElement('div');
-      facts.className = 'fact-grid';
-      if (Auth.enabled) {
-        if (p.me && p.me.name) facts.appendChild(factRow('Signed in as', p.me.name + (p.me.role ? ' · ' + p.me.role : '')));
-        if (Auth.email()) facts.appendChild(factRow('Email', Auth.email()));
-      }
-      facts.appendChild(factRow('Aviary', p.account.name));
-      section.insertBefore(facts, body);
+      clearEl(box);
+      if (!p) return;
       if (p.claim && p.claim.available) {
-        body.appendChild(noteEl('You look like the owner of the original BirdBox data — the aviary you had before accounts. This login is on a new, separate account.'));
-        body.appendChild(button('btn-positive', 'Use my original data', function () {
+        box.appendChild(noteEl('You look like the owner of the original BirdBox data — the aviary you had before accounts. This login is on a new, separate account.'));
+        box.appendChild(button('add-record-btn small-btn', 'Use my original data', function () {
           Modal.confirm({ title: 'Switch to your original data?', message: 'This login will open your original aviary — all the birds and records you had before accounts. The new, empty account it started with is left unused.', confirmLabel: 'Switch', onConfirm: function () { post('claim-legacy').then(reloadApp).catch(function (err) { Modal.alert(err.message, 'Couldn’t do that'); }); } });
         }));
       }
-      body.appendChild(noteEl(p.demo.loaded
-        ? 'The sample aviary is loaded — a made-up flock, places, supplies and records to explore. Remove it when you’re ready to start with your own; anything you’ve added yourself stays.'
-        : 'Want something to look around in? Load a made-up sample aviary — you can remove it again any time.'));
-      var btn = button(p.demo.loaded ? 'add-record-btn danger-btn' : 'btn-positive', p.demo.loaded ? 'Remove sample data' : 'Load sample data', function () {
+      var btn = button(p.demo.loaded ? 'add-record-btn small-btn danger-btn' : 'add-record-btn small-btn', p.demo.loaded ? 'Remove sample data' : 'Load sample data', function () {
         function go() { btn.disabled = true; post(p.demo.loaded ? 'remove-demo' : 'load-demo').then(reloadApp).catch(function (err) { btn.disabled = false; Modal.alert(err.message, 'Couldn’t do that'); }); }
         if (p.demo.loaded) Modal.confirm({ title: 'Remove the sample data?', message: 'This deletes only the made-up sample records. Anything you added yourself stays.', confirmLabel: 'Remove', danger: true, onConfirm: go });
         else go();
       });
-      body.appendChild(btn);
-      if (Auth.enabled) body.appendChild(button('add-record-btn', 'Sign out', function () { Auth.signOut(); }));
-      body.appendChild(Object.assign(document.createElement('p'), { className: 'form-note account-id', textContent: 'Account ' + p.account.id }));
+      box.appendChild(btn);
     }
     Auth.refresh().then(draw).catch(function () { draw(null); });
-    return section;
   }
 
   // My Aviary: the name, optional public details, and logo and photos, all in one place.
@@ -119,41 +102,16 @@ const SettingsScreen = (function () {
     section.appendChild(facts);
     section.appendChild(noteEl('Everything is optional apart from the name. These details can be used later in the public directory.'));
     section.appendChild(button('btn-positive', 'Edit my aviary', function () { location.hash = '#/account/settings/edit~main'; }));
+    var more = document.createElement('div');
+    more.className = 'account-actions';
+    section.appendChild(more);
+    accountActions(more);
     var photos = PhotosSection.render({
       title: 'Logo & photos', ownerType: 'aviary', ownerId: 'main', name: AVIARY.name, photos: mediaPhotos('aviary', 'main'),
       refresh: function () { renderList(main); },
     });
     photos.className = 'photo-sub'; // part of this card, not a card of its own
     section.appendChild(photos);
-    return section;
-  }
-
-  // How often each disease should be re-tested. The starting values are common practice, not rules — change any of them.
-  function testRemindersCard(main) {
-    var section = sectionEl('Test reminders');
-    section.appendChild(noteEl('How often each disease should be tested again. BirdBox flags a test as due soon (within ' + DUE_SOON_DAYS + ' days) or overdue. The starting values are common practice — they vary by disease, program and state, so check with your vet and change them to suit you.'));
-    var OPTIONS = [[0, 'No reminder'], [3, 'Every 3 months'], [6, 'Every 6 months'], [12, 'Every year'], [24, 'Every 2 years'], [36, 'Every 3 years']];
-    knownDiseases().forEach(function (disease) {
-      var current = testIntervalMonths(disease);
-      var row = document.createElement('div');
-      row.className = 'reminder-row';
-      var label = document.createElement('span');
-      label.className = 'reminder-label';
-      label.textContent = disease;
-      row.appendChild(label);
-      var sel = document.createElement('select');
-      sel.className = 'form-input reminder-select';
-      sel.setAttribute('aria-label', disease + ' retest interval');
-      var opts = OPTIONS.slice();
-      if (!opts.some(function (o) { return o[0] === current; })) opts.push([current, 'Every ' + current + ' months']);
-      opts.forEach(function (o) { var op = document.createElement('option'); op.value = String(o[0]); op.textContent = o[1]; sel.appendChild(op); });
-      sel.value = String(current);
-      sel.addEventListener('change', function () {
-        setTestInterval(disease, Number(sel.value)).then(function () { renderList(main); }).catch(function (err) { Modal.alert(err.message || 'That didn’t save — try again.', 'Couldn’t save that'); });
-      });
-      row.appendChild(sel);
-      section.appendChild(row);
-    });
     return section;
   }
 
@@ -175,10 +133,15 @@ const SettingsScreen = (function () {
 
     var wrap = document.createElement('div');
     wrap.className = 'list-screen';
-    wrap.appendChild(accountCard(main));
     wrap.appendChild(aviaryCard(main));
     wrap.appendChild(ProfileUI.card(function () { renderList(main); }, '#/account/settings/edit~me'));
-    wrap.appendChild(testRemindersCard(main));
+
+    // The menu editor (it used to be its own Customize tab): reorder, hide or move the home tiles and tabs.
+    var menus = sectionEl('Make BirdBox yours');
+    var menuBody = document.createElement('div');
+    menus.appendChild(menuBody);
+    wrap.appendChild(menus);
+    NavEditor.build(menuBody);
 
     var section = document.createElement('div');
     section.className = 'detail-section';

@@ -26,7 +26,6 @@ const NavEditor = (function () {
 
     function save(changes) {
       if (!changes.length) return Promise.resolve();
-      if (!NAV_ROWS.length) { fail(new Error('Run sql/017_navigation.sql in Neon first, then you can customize.')); return Promise.resolve(); }
       return saveNavigation(changes).then(function () { clearEl(message); if (onChange) onChange(); }).catch(fail);
     }
 

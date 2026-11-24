@@ -28,6 +28,7 @@ const ListTools = (function () {
     list: 'M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01',
     grid: 'M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z',
     pencil: 'M4 20h4L19 9l-4-4L4 16zM13.5 6.5l4 4',
+    logout: 'M10 4H5.5A1.5 1.5 0 0 0 4 5.5v13A1.5 1.5 0 0 0 5.5 20H10M15 8l4 4-4 4M19 12H9',
     check: 'M5 12.5l4.5 4.5L19 7.5',
     close: 'M6 6l12 12M18 6L6 18',
     prev: 'M15 5l-7 7 7 7',

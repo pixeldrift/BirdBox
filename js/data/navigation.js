@@ -27,7 +27,7 @@ function navRow(id) {
 // still find its screen.
 var NAV_DEFAULT = NAV.map(function (g) {
   g.screens.forEach(function (s) { s.key = g.id + '/' + s.id; s.home = g.id; });
-  return { id: g.id, label: g.label, icon: g.icon, blurb: g.blurb, homeTile: g.homeTile, screens: g.screens.map(function (s) { return { id: s.id, key: s.key, label: s.label, icon: s.icon, blurb: s.blurb }; }) };
+  return { id: g.id, label: g.label, icon: g.icon, blurb: g.blurb, homeTile: g.homeTile, screens: g.screens.map(function (s) { return { id: s.id, key: s.key, label: s.label, icon: s.icon, blurb: s.blurb, defaultHidden: !!s.defaultHidden }; }) };
 });
 var NAV_SCREENS = [];
 NAV.forEach(function (g) { g.screens.forEach(function (s) { NAV_SCREENS.push(s); }); });
@@ -50,7 +50,7 @@ function applyNavigation() {
     var srow = navRow(s.key);
     var sd = NAV_DEFAULT.filter(function (d) { return d.id === s.home; })[0].screens.filter(function (x) { return x.key === s.key; })[0];
     s.label = srow ? srow.label : sd.label;
-    s.hidden = !!(srow && !srow.visible);
+    s.hidden = srow ? !srow.visible : !!sd.defaultHidden; // a tab with no saved choice follows its built-in default (a few start hidden)
     sorder[s.key] = srow ? srow.sort : prevSort !== null ? prevSort + 0.5 : i;
     prevSort = sorder[s.key];
     var parent = srow && srow.parentId && NAV.some(function (g) { return g.id === srow.parentId; }) ? srow.parentId : s.home;
@@ -73,7 +73,7 @@ function saveNavigation(changes) {
       var def = grp || tab || {};
       return recordsRequest('POST', 'navigation', null, Object.assign({
         id: c.id, label: def.label || c.label || c.id, icon: def.icon || '', blurb: def.blurb || '', parentId: grp ? '' : (tab ? tab.home : ''),
-        sort: 0, visible: true, homeTile: grp ? grp.homeTile !== false : false,
+        sort: 0, visible: tab ? !tab.defaultHidden : true, homeTile: grp ? grp.homeTile !== false : false,
       }, body));
     });
   }, Promise.resolve()).then(function () {
@@ -90,7 +90,18 @@ function resetNavigation() {
   var changes = [];
   NAV_DEFAULT.forEach(function (g, gi) {
     changes.push({ id: g.id, sort: (gi + 1) * 10, visible: true, homeTile: g.homeTile !== false, label: g.label });
-    g.screens.forEach(function (s, si) { changes.push({ id: s.key, parentId: g.id, sort: (si + 1) * 10 + gi * 100, visible: true, label: s.label }); });
+    g.screens.forEach(function (s, si) { changes.push({ id: s.key, parentId: g.id, sort: (si + 1) * 10 + gi * 100, visible: !s.defaultHidden, label: s.label }); });
   });
   return saveNavigation(changes);
+}
+
+// Where a tab lives right now (it may have been moved to another section): '#/business/myteam' for key 'business/myteam'.
+function navHash(key, rest) {
+  for (var i = 0; i < NAV.length; i++) {
+    for (var j = 0; j < NAV[i].screens.length; j++) {
+      var sc = NAV[i].screens[j];
+      if ((sc.key || NAV[i].id + '/' + sc.id) === key) return '#/' + NAV[i].id + '/' + sc.id + (rest ? '/' + rest : '');
+    }
+  }
+  return '#/' + key + (rest ? '/' + rest : '');
 }

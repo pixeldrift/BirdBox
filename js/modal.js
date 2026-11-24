@@ -38,6 +38,7 @@ const Modal = (function () {
       if (closed) return;
       closed = true;
       document.removeEventListener('keydown', onKey);
+      window.removeEventListener('hashchange', close);
       if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
       openCount -= 1;
       if (openCount <= 0) { openCount = 0; document.body.classList.remove('modal-open'); }
@@ -48,6 +49,7 @@ const Modal = (function () {
     x.addEventListener('click', close);
     overlay.addEventListener('mousedown', function (e) { if (e.target === overlay) close(); });
     document.addEventListener('keydown', onKey);
+    window.addEventListener('hashchange', close); // going to another screen puts a popup away
     openCount += 1;
     document.body.classList.add('modal-open');
     document.body.appendChild(overlay);

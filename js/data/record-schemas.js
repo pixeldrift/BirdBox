@@ -25,7 +25,7 @@ var RECORD_TYPES_UI = {
     defaults: { type: 'Breeder' },
   },
   users: {
-    singular: 'team member', pk: 'id', hash: '#/account/myteam/',
+    singular: 'team member', pk: 'id', get hash() { return navHash('business/myteam') + '/'; },
     list: function () { return USERS_SAMPLE; },
     nameOf: function (r) { return userFullName(r); },
     fields: [
@@ -150,7 +150,7 @@ var RECORD_TYPES_UI = {
     defaults: { kind: 'Show' },
   },
   navigation: {
-    singular: 'menu item', pk: 'id', hash: '#/account/customize',
+    singular: 'menu item', pk: 'id', hash: '#/account/settings',
     list: function () { return NAV_ROWS; },
     nameOf: function (r) { return r.label; },
     fields: [],
@@ -196,7 +196,7 @@ var RECORD_TYPES_UI = {
       { key: 'email', label: 'Email', type: 'text' },
       { key: 'website', label: 'Website', type: 'text' },
       { key: 'socials', label: 'Social links', type: 'text', hint: 'Optional — e.g. Instagram, Facebook.' },
-      { key: 'keeps', label: 'What I keep', type: 'checks', options: ['Parrots & exotic birds', 'Chickens & poultry'], hint: 'Tick everything you keep. The menus offer your kinds first — a coop and run for chickens, a cage and flight for parrots — and leave out the other’s. Tick both and you get both; tick nothing and you see everything. (A cage and a coop stay separate kinds of place.)' },
+      { key: 'keeps', label: 'What I keep', type: 'checks', options: ['Parrots & exotic birds', 'Chickens & poultry'], hint: 'Prioritize which options BirdBox shows you based on your flock.' },
     ],
     defaults: {},
   },

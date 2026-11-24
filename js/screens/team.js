@@ -80,8 +80,8 @@ const TeamScreen = (function () {
       RecordForm.render(main, {
         type: 'users', id: editId, navigate: navigate, setTitle: setTitle,
         after: function (savedId) { navigate(savedId); },
-        onCancel: function () { if (editId) navigate(editId); else location.hash = '#/account/myteam'; },
-        afterDelete: function () { location.hash = '#/account/myteam'; },
+        onCancel: function () { if (editId) navigate(editId); else location.hash = navHash('business/myteam'); },
+        afterDelete: function () { location.hash = navHash('business/myteam'); },
       });
       return;
     }

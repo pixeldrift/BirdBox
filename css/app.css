@@ -2170,7 +2170,8 @@ input[type="search"]::-webkit-search-decoration { display: none; }
 /* Sign out, floating to the right of your profile */
 .section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
 .section-head h3 { margin: 0 0 8px; }
-.signout-link { border: 0; background: none; padding: 2px 0; font: inherit; font-size: 0.78rem; color: var(--muted); text-decoration: underline; cursor: pointer; flex: 0 0 auto; }
+.signout-link { display: inline-flex; align-items: center; gap: 5px; border: 0; background: none; padding: 2px 0; font: inherit; font-size: 0.82rem; font-weight: 700; color: var(--accent-gold); cursor: pointer; flex: 0 0 auto; }
+.signout-link .loc-icon { width: 15px; height: 15px; stroke-width: 2.2; }
 .signout-link:hover { color: #A6543D; }
 
 /* gray italic notes get room below them, everywhere */
@@ -2190,3 +2191,13 @@ input[type="search"]::-webkit-search-decoration { display: none; }
 .whatsnew-entry + .whatsnew-entry { margin-top: 14px; padding-top: 14px; border-top: 1px solid #E9DCC9; }
 .whatsnew-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 4px; }
 .whatsnew-date { font-size: 0.75rem; color: var(--muted); white-space: nowrap; }
+
+/* photos: a small ✕ at the top right; a dragged photo keeps its thumbnail size */
+.photo-act-del { top: 4px; right: 4px; bottom: auto; width: 22px; height: 22px; border-width: 1.5px; }
+.photo-act-del .photo-act-icon { width: 11px; height: 11px; stroke-width: 2.8; }
+.photo-tile.dragging { position: relative; margin: 0; pointer-events: none; }
+
+/* a smaller button, for the quiet extras under a main one */
+.small-btn { width: auto; display: inline-block; padding: 7px 16px; margin: 10px 8px 0 0; border-radius: 999px; font-size: 0.82rem; }
+.account-actions { margin-top: 2px; }
+.account-actions .form-note { margin-top: 10px; }

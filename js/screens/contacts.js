@@ -148,7 +148,7 @@ const ContactsScreen = (function () {
     // A team member's details are edited under My Team, not here.
     if (id.indexOf('edit~') === 0) {
       var editing = getContact(id.slice(5));
-      if (editing && editing.userId) { location.hash = '#/account/myteam/edit~' + editing.userId; return; }
+      if (editing && editing.userId) { location.hash = navHash('business/myteam', 'edit~' + editing.userId); return; }
     }
     if (RecordForm.route(main, id, 'contacts', navigate, setTitle)) return;
     var contact = getContact(id);
